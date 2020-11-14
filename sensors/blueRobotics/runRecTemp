@@ -1,0 +1,43 @@
+#!/bin/bash
+# Run record and send temp data for microSWIFT
+
+#directories and files needed 
+tempDir=/home/pi/microSWIFT/updatedmicroWave/testmicroWave/Temperature_python_code
+config=/home/pi/microSWIFT/updatedmicroWave/testmicroWave/config/Config.dat
+configDir=/home/pi/microSWIFT/updatedmicroWave/testmicroWave/config/
+lib=/usr/local/lib/python2.7/dist-packages
+
+#get PIDs  
+tempPID=$(ps -ef | grep "record_temperature.py" | grep -v grep | awk '{ print $2 }')
+echo "tempPID=" $tempPID
+
+#add directories needed to run temp,pressure,humidity app to pythonpath
+export PYTHONPATH=$PYTHONPATH/$tempDir:/$configDir
+
+#=================================================================================
+#killl apps if necessary 
+#=================================================================================
+if [ $# -eq 1 ]; then
+    if [ $1 == "stop" ]; then
+        echo "STOP Requested"
+        # Kill the control GUI if it's running
+        if [ ! -z $tempPID ]; then
+            echo "Killing temp app"
+            sudo kill -9 $tempPID
+        else
+            echo "temp not running"
+        fi 
+        exit 
+    fi 
+fi 
+
+#=================================================================================
+#Kill running apps 
+#=================================================================================
+./runRecTemp stop 
+
+#=================================================================================
+#Run app
+#=================================================================================
+echo " --- RUN RECORD TEMP ---"
+python2 record_temperature.py $config &
