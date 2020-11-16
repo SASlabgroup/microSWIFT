@@ -70,7 +70,7 @@ def main():
     ina.configure(ina.RANGE_16V)
     tLastRead = time.time()
     while True:
-        now = datetime.now()
+        now = datetime.utcnow()
         tNow = time.time()
         elapsedTime = tNow - tStart
         # at burst time interval
@@ -90,7 +90,7 @@ def main():
                 time.sleep(recInterval)
                 eventLog.info('[%.3f] - num sample: %d, num sample needed: %d' % (elapsedTime,isample,voltNumSamples))
 
-                fnow = datetime.now()
+                fnow = datetime.utcnow()
                 tHere = time.time()
                 elapsed = tHere - tStart
                 tSinceLastRead = tNow - tLastRead

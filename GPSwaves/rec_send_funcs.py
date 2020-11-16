@@ -14,32 +14,40 @@ from datetime import datetime
 import time
 import pynmea2
 import glob
+import subprocess
 
 ##########################################################################
-
+#----------------------------------------------------------------------------------------
 # Names files created with current date and time and return it
+#----------------------------------------------------------------------------------------
 def currentTimeString(): 	
     # Name the file according to the current time and date  
     dataFile = datetime.strftime(datetime.now(), "%Y%m%d%H%M%S")
     return dataFile
 
-# Gets the latest file created and return it
+#----------------------------------------------------------------------------------------
+# Gets the latest temp and volt files created and return it
+#----------------------------------------------------------------------------------------
 def getLatestFile(name,dataDir,floatID,projectName):
     file = os.path.join(dataDir + "microswift_" + floatID + "_" + projectName + name)
     meanFile = glob.glob(file)
     latestFile = max(meanFile, key=os.path.getctime)
     return latestFile
 
+#----------------------------------------------------------------------------------------
 # Calculate the elapsed time and return it
+#----------------------------------------------------------------------------------------
 def getElapsedTime(tStart,elapsed):
     tNow = time.time()
     elapse = tNow-tStart
     elapsedTime = elapsed+elapse
     return elapsedTime
 
+#----------------------------------------------------------------------------------------
 # gets the mean data from latest file and return it. If the time on the file is 3 hours
 # or more difference than the current time, then the value is converted to a
 # bad value 999.0
+#----------------------------------------------------------------------------------------
 def getMean(data,maxHours,badValue):
     mean = badValue
     now = datetime.now()
@@ -66,8 +74,10 @@ def getMean(data,maxHours,badValue):
             
     return mean
 
+#----------------------------------------------------------------------------------------
 # gets the mean u,v,z means. It account for bad values (999.0) and 'nan' values.
-# If value is 'nan', it is turned into a bad value and then returned. 
+# If value is 'nan', it is turned into a bad value and then returned.
+#----------------------------------------------------------------------------------------
 def getuvzMean(badValue,resultType):
     mean = badValue     #set values to 999 initially and fill if valid values  
     nan = float('nan')  #account for nan values
@@ -81,6 +91,7 @@ def getuvzMean(badValue,resultType):
         
     return mean
 
+#----------------------------------------------------------------------------------------
 # parse out the gpgga sentences collected form the gps and return the parsed data
 # fields in GPGGA from pynmea2:
 #       ('Timestamp', 'timestamp', timestamp),
@@ -97,6 +108,7 @@ def getuvzMean(badValue,resultType):
 #       ('Units of Geoidal Separation (meters)', 'geo_sep_units'),
 #       ('Age of Differential GPS Data (secs)', 'age_gps_data'),
 #       ('Differential Reference Station ID', 'ref_station_id'))
+#----------------------------------------------------------------------------------------
 def parse_nmea_gpgga(gpgga_stc,
                      eventLog,
                      elapsedTime):
@@ -127,6 +139,7 @@ def parse_nmea_gpgga(gpgga_stc,
     
     return parse_data  
 
+#----------------------------------------------------------------------------------------
 # parse out the gpvtg sentences collected form the gps and return the parsed data
 #   Track Made Good and Ground Speed fields:
 #       ("True Track made good", "true_track", float),
@@ -138,6 +151,7 @@ def parse_nmea_gpgga(gpgga_stc,
 #       ("Speed over ground kmph", "spd_over_grnd_kmph", float),
 #       ("Speed over ground kmph symbol", "spd_over_grnd_kmph_sym"),
 #       ("FAA mode indicator", "faa_mode"))
+#----------------------------------------------------------------------------------------
 def parse_nmea_gpvtg(gpvtg_stc,
                      eventLog,
                      elapsedTime):
@@ -162,10 +176,12 @@ def parse_nmea_gpvtg(gpvtg_stc,
     
     eventLog.info('[%.3f] - Parse_data: %s' % (elapsedTime, str(parse_data)))
     
-    return parse_data 
+    return parse_data
 
+#---------------------------------------------------------------------------------------
 # get the average temperaure over the span of the burse interval and save to a file
 # if temp is valid, otherwise save as 999.0
+#---------------------------------------------------------------------------------------
 def GetMeanTemp(maxHours,
                 badValue,
                 floatID,
@@ -195,9 +211,10 @@ def GetMeanTemp(maxHours,
         meanTemp = getMean(TempData,maxHours,badValue)
         
     return meanTemp
-
+#-----------------------------------------------------------------------------------
 # get the average voltage over the span of the burse interval and save to a file
 # if voltage is valid, otherwise save as 999.0
+#-----------------------------------------------------------------------------------
 def GetMeanVolt(maxHours,
                 badValue,
                 floatID,
@@ -228,6 +245,8 @@ def GetMeanVolt(maxHours,
 
     return meanVolt
 
+#-----------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------
 def myRound2(value, N):
     value = np.asarray(value).copy()
     zero_mask = (value == 0)
@@ -239,3 +258,51 @@ def myRound2(value, N):
     #result[sign_mask] *= -1
     result[zero_mask] = 0.0
     return result
+
+#-----------------------------------------------------------------------------------
+#Log time from GPS to a file and then set the raspberry pi time from the file
+#file with time is located in data dir 
+#calls a bashsript located in utils directory that sets the time to the pi 
+#-----------------------------------------------------------------------------------
+def setPiTime(timePort):
+    print ("open port?")
+    #timePort.open()
+    print ("going into loop")
+    while True:
+        line = timePort.readline()
+        print (line)
+	if "GPRMC" in line:
+            splitLine = line.split(',')
+            UTCTime = splitLine[1]
+            date = splitLine[9]
+            
+            splitTime = list(UTCTime)
+            hour = (splitTime[0] + splitTime[1])
+            minute = splitTime[2] + splitTime[3]
+            sec = splitTime[4] + splitTime[5]
+            second = (int(sec) + 2)
+            print (second)
+            dateSplit = list(date)
+            day = dateSplit[0] + dateSplit[1]
+            month = dateSplit[2] + dateSplit[3]
+            year = dateSplit[4] + dateSplit[5]
+            
+            if (hour >= 7 and hour >= 19 or hour == 0):
+                hour = int(hour) - 7
+            elif (hour >= 20 and hour <= 24):
+                hour = int(hour) - 19
+            else:
+                hour = int(hour) + 5
+                
+            hour = format(hour, "02")
+            second = format(second, "02")
+            
+            file = open('/home/pi/microSWIFT/data/' + 'setTime', 'w')
+            file.write(str(month) + str(day) + str(hour) + str(minute) + str(second) + "20" + str(year))
+            file.flush()
+            subprocess.call('/home/pi/microSWIFT/utils/setTime')
+            file.close()
+            break
+
+    
+    

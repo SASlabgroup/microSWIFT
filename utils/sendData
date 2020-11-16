@@ -18,8 +18,10 @@ PASSWORD=$shipPass
 #initialize send data flag 
 sendData=0
 
-#will most likely happen at the same time 
+#turn wifi on 
+sudo rfkill unblock wifi
 
+#will most likely happen at the same time 
 while [ "$sendData" -eq 0 ]
 do 
     #try to find server to connect to 

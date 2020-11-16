@@ -57,7 +57,7 @@ def send_sbd_msg(message,bytelen):
             print 'checksum = ',checksum
             
             print 'message ',message
-            #sbd.write(message)
+            sbd.write(message)
             sleep(2)
             print 'wrote message ',reply
             sbd.write(chr(checksum >> 8))
@@ -145,21 +145,21 @@ def main():
         struct.pack('35f\r',*WaveSpectra_Freq[0:35]))
     bytelen0 = struct.calcsize('sbbhfff42f35f') + 9
 
-    bytestart = struct.calcsize('sbbhfff42f35f')-3
+    bytestart = struct.calcsize('sbbhfff42f35f')
     dataToSend1=(struct.pack('<5s3ss7f', packetTypeId,str(bytestart),':',
                  *WaveSpectra_Freq[35:42]) +
                  struct.pack('42f',*WaveSpectra_a1) +
                  struct.pack('33f\r',*WaveSpectra_b1[0:33]))
     bytelen1 = struct.calcsize('7f42f33f') + 9
 
-    bytestart = struct.calcsize('sbbhfff42f42f42f33f') -3
+    bytestart = struct.calcsize('sbbhfff42f42f42f33f')
     dataToSend2=(struct.pack('<5s3ss9f', packetTypeId,str(bytestart),':',
                  *WaveSpectra_b1[33:42])+
                  struct.pack('42f',*WaveSpectra_a2) +
                  struct.pack('31f\r',*WaveSpectra_b2[0:31]))
     bytelen2 = struct.calcsize('9f42f31f') + 9
 
-    bytestart = struct.calcsize('sbbhfff42f42f42f42f42f31f') -3
+    bytestart = struct.calcsize('sbbhfff42f42f42f42f42f31f')
     dataToSend3=(struct.pack('<5s3ss11f', packetTypeId,str(bytestart),':',
                  *WaveSpectra_b2[31:42])+
                  struct.pack('42f',*checkdata) + struct.pack('ff\r',lat , lon))

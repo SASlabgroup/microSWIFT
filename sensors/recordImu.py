@@ -83,7 +83,7 @@ tStart = time.time()
 #LOOP BEGINS
 #-------------------------------------------------------------------------------
 while True:
-    now = datetime.now()
+    now = datetime.utcnow()
     tNow = time.time()
     elapsedTime = tNow - tStart
     
@@ -106,7 +106,7 @@ while True:
             time.sleep(recRate)
             tHere = time.time()
             elapsed = tHere - tStart
-            fnow = datetime.now()
+            fnow = datetime.utcnow()
             isample = isample + 1
             eventLog.info('[%.3f] - Num of samples: %d, Wanted samples: %d' % (elapsed,isample,imuNumSamples))
 

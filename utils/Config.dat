@@ -74,10 +74,11 @@ payloadVersion=7
 badValue=999
 
 #change num samples to log for a longer period of time
+#360 = 6min       --> 1440 total samples
 #512 = 8min 30sec --> 2048 total samples
 #1850 = 31 min    --> 7400 total samples 
 #3400 = 1hr       --> 13600 total samples 
-numSamplesConst=512
+numSamplesConst=360
 port=6
 numCoef=42
 #======================== Iridium Parameters =======================
@@ -93,9 +94,9 @@ iridiumGpio=16
 IfHourlyCall=False 
 MakeCall=True
 #time between calls to record_serial
-burstInt=12    
+burstInt=3    
 #interval between SBD calls
-callInt=10      
+callInt=1      
 #========================== GPS Parameters ========================
 [GPS]
 port=/dev/ttyS0
@@ -116,9 +117,9 @@ maxHours=3
 
 #===================== Temperature Parameters =====================
 [Temp]
-tempfreq=4
+tempfreq=1
 maxHours=3
-recRate=4
+recRate=1
 
 #SPI pins for ADC
 CLK=11
@@ -130,6 +131,6 @@ CS=8
 [Voltage]
 shuntOhms=0.1
 maxExpectedAmps=2.0
-recRate=4
-voltFreq=4
+recRate=1
+voltFreq=1
 maxHours=3

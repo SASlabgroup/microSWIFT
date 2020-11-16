@@ -52,10 +52,6 @@ floatID = config.getString('System', 'floatID')
 bad = config.getInt('System', 'badValue')
 projectName = config.getString('System', 'projectName')
 
-# Start SPI connection
-spi = spidev.SpiDev() # Created an object
-spi.open(0,0)
-
 ##LOGGING
 dataFile = str(currentTimeString()) #file name
 #EVENT Log
@@ -80,7 +76,7 @@ def main():
     while True:
         #time.sleep(1)
         # at burst time interval
-        now = datetime.now()
+        now = datetime.utcnow()
         if (now.minute % burstInterval == 0 and now.second == 0):
             #time.sleep(1)
             tNow = time.time()
@@ -100,15 +96,16 @@ def main():
                 tNow = time.time()
                 elapsedTime = tNow - tStart
                 
-                temp_output = mcp.read_adc(0)
+                analog_output = mcp.read_adc(0)
+                output_volt = ConvertVolts(analog_output,2)
                 eventLog.info('[%.3f] - num sample: %d, num sample needed: %d' % (elapsedTime,isample,tempNumSamples))
-                temperature = ConvertTemp(temp_output)
+                temperature = ConvertTemp(output_volt,2)
                 print("Temp: %f" % temperature)
                 
                 time.sleep(recInterval)
                 tSinceLastRead = tNow - tLastRead
                 if (tSinceLastRead >= recInterval):
-                    fnow = datetime.now()
+                    fnow = datetime.utcnow()
                     fdname = fnow.strftime('%d%b%Y')
                     ftname = fnow.strftime('%H:%M:%S')
                 

@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python2
 #
 # Opens a serial connection with a RockBlock 9603 SBD modem and
 # transmits binary data that is passed to the main function
@@ -167,6 +167,8 @@ def main(formatType,
          decStr,
          MeanVoltage,
          modemGpio):
+    
+    GPIO.output(modemGpio,GPIO.HIGH) #turn modem on
 
     print ("UNRECORDED VALUES")
     print ("Pay load", PayLoadType)
@@ -176,7 +178,7 @@ def main(formatType,
     print ("lon", lon)
     print ("lat", lat)
     print ("============================")
-    time.sleep(1)
+    #time.sleep(1)
     #f = open("/home/pi/Desktop/newFile.txt","w+")
     
     #-------------------------------------------------------
