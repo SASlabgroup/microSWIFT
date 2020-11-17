@@ -64,7 +64,7 @@ shipUser=pi
 shipPass='apluw'
 
 # 4 digit string for float id
-floatID=006
+floatID=002
 # 2 digit string for project id
 projectName=TX
 #PayLoadType either 7 or the new type 50
