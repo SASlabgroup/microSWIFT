@@ -28,9 +28,7 @@ from rec_send_funcs import *
 import GPSwavesC
 from config2 import Config
 
-#set gpio
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
+
 ##########################################################################
 #Load config file 
 configDat =  sys.argv[1]
@@ -100,13 +98,16 @@ eventLogFileHandler.setLevel(LOG_LEVEL)
 eventLogFileHandler.setFormatter(Formatter(LOG_FORMAT))
 eventLog.addHandler(eventLogFileHandler)
 
+#set GPIO pin and initialize
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(modemGpio,GPIO.OUT)
+GPIO.setup(gpsGpio,GPIO.OUT)
+
 #time keeping
 tMain = time.time()
 nowStart = datetime.utcnow()
 ########################################################################
-#initialize gpio pins
-GPIO.setup(modemGpio,GPIO.OUT)
-GPIO.setup(gpsGpio,GPIO.OUT)
 
 #-----------------------------------------------------------------------
 #set time initially
@@ -205,7 +206,7 @@ def record_serial(fname,
             ivel = 0
 
             if newline != '':
-            #while loop record n seconds of serial data
+                #while loop record n seconds of serial data
                 isample = 0
                 while ((ipos < gpsNumSamples or ivel < gpsNumSamples) and
                       (ivel < (gpsNumSamples +10) and ipos< (gpsNumSamples+10))):
@@ -244,13 +245,13 @@ def record_serial(fname,
                     #print('[%.3f] - isample:%d,ivel:%d,ipos:%d' %(elapsedTime,isample,ivel,ipos))
                     #eventLog.info('[%.3f] - isample:%d,ivel:%d,ipos:%d' %(elapsedTime,isample,ivel,ipos))
                     	if (ivel > gpsNumSamples) and (setTimeAtEnd == False): 
-				if ("GPRMC" in newline): 
+                            if ("GPRMC" in newline): 
                     			splitLine = newline.split(',')
                     			UTCTime = splitLine[1]
                     			date = splitLine[9]
                         
                     			splitTime = list(UTCTime)
-                   			hour = (splitTime[0] + splitTime[1])
+                                hour = (splitTime[0] + splitTime[1])
                     			minute = splitTime[2] + splitTime[3]
                     			sec = splitTime[4] + splitTime[5]
                     			second = (int(sec) + 2)
@@ -265,7 +266,7 @@ def record_serial(fname,
                     			elif (hour >= 20 and hour <= 24):
                         			hour = int(hour) - 19
                     			else:
-                        			hour = int(hour) + 5
+                                    hour = int(hour) + 5
                             
                     			hour = format(hour, "02")
                     			second = format(second, "02")
