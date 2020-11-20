@@ -26,7 +26,7 @@ from time import sleep
 import send_sbd_binary_data
 from rec_send_funcs import *
 import GPSwavesC
-from config2 import Config
+from config3 import Config
 
 
 ##########################################################################
