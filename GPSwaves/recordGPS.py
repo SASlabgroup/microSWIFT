@@ -26,7 +26,7 @@ config = Config() # Create object and load file
 ok = config.loadFile( configFilename )
 if( not ok ):
 	print ('Error loading config file: "%s"' % configFilename)
-	#LOG ERROR
+	#LOG ERROR - logger not set up yet
 	sys.exit(0)
 
 #system parameters
@@ -37,9 +37,6 @@ badValue = config.getInt('System', 'badValue')
 numCoef = config.getInt('System', 'numCoef')
 Port = config.getInt('System', 'port')
 payloadVersion = config.getInt('System', 'payloadVersion')
-#Log parameters
-dataDir = config.getString('LogLocation', 'dataDir')
-logDir = config.getString('LogLocation', 'logDir')
 
 #GPS parameters 
 gpsPort = config.getString('GPS', 'port')
@@ -64,22 +61,26 @@ formatType = config.getInt('Iridium', 'formatType')
 callInt = config.getInt('Iridium', 'callInt')
 burst_num = config.getInt('Iridium', 'burstNum')
 
-
 #hard coded parameters to change 
 IfHourlyCall = config.getString('Iridium', 'IfHourlyCall')
 IfHourlyCall = eval(IfHourlyCall) #boolean
 MakeCall = config.getString('Iridium', 'MakeCall') 
 MakeCall = eval(MakeCall) #boolean
 
-
 #set up logging
-
-
-
-
-
-
-
+dataDir = config.getString('LogLocation', 'dataDir')
+logDir = config.getString('LogLocation', 'logDir')
+LOG_LEVEL = config.getString('Loggers', 'DefautLogLevel')
+LOG_FORMAT = ('%(asctime)s, %(name)s - [%(levelname)s] - %(message)s')
+LOG_FILE = (logDir + '/' + __name__+  + '.log')
+logger = logger.getLoger("microSWIFT_system")
+logger.setLevel(LOG_LEVEL)
+logFileHandler = logging.FileHandler(LOG_FILE)
+logFileHandler = FileHandler(LOG_FILE)
+logFileHandler.setLevel(LOG_LEVEL)
+logFileHandler.converter = time.gmtime()	
+logFileHandler.setFormatter(Formatter(LOG_FORMAT))
+log.addHandler(eventLogFileHandler)
 
 #setup GPIO and initialize
 GPIO.setmode(GPIO.BCM)
