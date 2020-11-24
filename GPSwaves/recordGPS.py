@@ -4,7 +4,7 @@
 import serial, io, sys, os
 import numpy as np
 from struct import *
-import logging
+from logging import *
 from datetime import datetime
 import time
 import RPi.GPIO as GPIO
@@ -46,47 +46,48 @@ GPSfrequency = config.getInt('GPS', 'GPSfrequency')
 numSamplesConst = config.getInt('System', 'numSamplesConst')
 gpsNumSamples = GPSfrequency*numSamplesConst
 numLines = config.getInt('GPS', 'numLines')
-gpsGpio = config.getInt('GPS', 'gpsGpio')
+gpsGPIO = config.getInt('GPS', 'gpsGPIO')
 getFix = config.getInt('GPS', 'getFix') # min before rec gps
 
 #temp and volt params 
-maxHoursTemp = config.getInt('Temp', 'maxHours')
-maxHoursVolt = config.getInt('Voltage', 'maxHours')
+#maxHoursTemp = config.getInt('Temp', 'maxHours')
+#maxHoursVolt = config.getInt('Voltage', 'maxHours')
 
 #Iridium parameters
-modemPort = config.getString('Iridium', 'port')
-modemBaud = config.getInt('Iridium', 'baud')
-modemGpio = config.getInt('Iridium', 'iridiumGpio')
-formatType = config.getInt('Iridium', 'formatType')
-callInt = config.getInt('Iridium', 'callInt')
-burst_num = config.getInt('Iridium', 'burstNum')
+#modemPort = config.getString('Iridium', 'port')
+#modemBaud = config.getInt('Iridium', 'baud')
+#modemGPIO = config.getInt('Iridium', 'modemGPIO')
+#formatType = config.getInt('Iridium', 'formatType')
+#callInt = config.getInt('Iridium', 'callInt')
+#burst_num = config.getInt('Iridium', 'burstNum')
 
 #hard coded parameters to change 
-IfHourlyCall = config.getString('Iridium', 'IfHourlyCall')
-IfHourlyCall = eval(IfHourlyCall) #boolean
-MakeCall = config.getString('Iridium', 'MakeCall') 
-MakeCall = eval(MakeCall) #boolean
+#IfHourlyCall = config.getString('Iridium', 'IfHourlyCall')
+#IfHourlyCall = eval(IfHourlyCall) #boolean
+#MakeCall = config.getString('Iridium', 'MakeCall') 
+#MakeCall = eval(MakeCall) #boolean
 
 #set up logging
 dataDir = config.getString('LogLocation', 'dataDir')
 logDir = config.getString('LogLocation', 'logDir')
 LOG_LEVEL = config.getString('Loggers', 'DefautLogLevel')
-LOG_FORMAT = ('%(asctime)s, %(name)s - [%(levelname)s] - %(message)s')
-LOG_FILE = (logDir + '/' + __name__+  + '.log')
-logger = logger.getLoger("microSWIFT_system")
+#format log messages (example: 2020-11-23 14:31:00,578, microSWIFT_system - info - this is a log message)
+#NOTE: TIME IS SYSTEM TIME
+LOG_FORMAT = ('%(asctime)s , %(name)s - [%(levelname)s] - %(message)s')
+#log file name (example: home/pi/microSWIFT/recordGPS_23Nov2020.log)
+LOG_FILE = (logDir + '/' + __name__+ '_' + datetime.strftime(datetime.now(), '%d%b%Y') + '.log')
+logger = getLoger("microSWIFT_system")
 logger.setLevel(LOG_LEVEL)
-logFileHandler = logging.FileHandler(LOG_FILE)
 logFileHandler = FileHandler(LOG_FILE)
 logFileHandler.setLevel(LOG_LEVEL)
-logFileHandler.converter = time.gmtime()	
 logFileHandler.setFormatter(Formatter(LOG_FORMAT))
-log.addHandler(eventLogFileHandler)
+logger.addHandler(logFileHandler)
 
 #setup GPIO and initialize
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
-GPIO.setup(modemGpio,GPIO.OUT)
-GPIO.setup(gpsGpio,GPIO.OUT)
+#GPIO.setup(modemGPIO,GPIO.OUT)
+GPIO.setup(gpsGPIO,GPIO.OUT)
 
 #attempt to set time based on GPS -> turn on and wait 30 sec
 
@@ -98,30 +99,42 @@ try:
 	#open serial port with expected baud rate 115200
 	ser = serial.Serial(gpsPort,baud,timeout=1)
 	print("GPS serial port open at %s baud" % (baud, gpsPort))
+	#set output sentence to GPGGA and GPVTG only (See GlobalTop PMTK command packet PDF)
+	print('setting NMEA output sentence')
+	ser.write('$PMTK314,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*28\r\n'.encode())
 	#set interval to 250ms (4 Hz)
 	ser.write('$PMTK220,250*29\r\n'.encode())
 	print("setting GPS to 4 Hz rate")
+	ser.close()
 except:
 	print("unable to open GPS serial port, trying default baud rate 9600")
 	try:
 		#try default baud rate 9600
 		ser = serial.Serial(gpsPort,9600,timeout=1)
-		#set baud rate to 115200 and interval to 250ms (4 Hz)
+		#set baud rate to 115200, set NMEA output, and set interval to 250ms (4 Hz)
 		print("setting baud rate to 115200")
 		ser.write('$PMTK251,115200*1F\r\n'.encode())
+		#set output sentence to GPGGA and GPVTG only (See GlobalTop PMTK command packet PDF)
+		print('setting NMEA output sentence')
+		ser.write('$PMTK314,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*28\r\n'.encode())
 		print("setting GPS to 4 Hz rate")
 		ser.write('$PMTK220,250*29\r\n'.encode())
+		ser.close()
 	except:
 		print("unable to open GPS serial port on 9600")
 else:
 	print("unable to open GPS serial port at %s and 9600 on port %s" % (baud, gpsPort))
+	ser.close()
 	sys.exit(0)
 
 
 
 
 
-#def record_serial
+
+
+
+def main
 
 	#initialize empty numpy array and fill with bad values
 	u = np.empty(gpsNumSamples)

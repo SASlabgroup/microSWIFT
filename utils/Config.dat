@@ -89,7 +89,7 @@ burstNum=0
 formatType=10
 portNum=6
 timeToWrite=8
-iridiumGpio=16
+modemGPIO=16
 
 IfHourlyCall=False 
 MakeCall=True
@@ -102,7 +102,7 @@ callInt=1
 port=/dev/ttyS0
 startBaud=9600
 baud=115200
-gpsGpio=21
+gpsGPIO=21
 #sampling rate
 GPSfrequency=4  
 numLines=5
