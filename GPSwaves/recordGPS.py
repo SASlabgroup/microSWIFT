@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 
 #imports
-import serial, io, sys, os
+import serial, sys, os
 import numpy as np
 from struct import *
 from logging import *
@@ -11,7 +11,7 @@ import RPi.GPIO as GPIO
 import pynmea2
 import glob
 import struct
-from time import sleep
+import time
 
 #my imports
 import send_sbd_binary_data
@@ -48,6 +48,7 @@ gpsNumSamples = GPSfrequency*numSamplesConst
 numLines = config.getInt('GPS', 'numLines')
 gpsGPIO = config.getInt('GPS', 'gpsGPIO')
 getFix = config.getInt('GPS', 'getFix') # min before rec gps
+gpsTimout = config.getInt('GPS','timeout')
 
 #temp and volt params 
 #maxHoursTemp = config.getInt('Temp', 'maxHours')
@@ -88,6 +89,8 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 #GPIO.setup(modemGPIO,GPIO.OUT)
 GPIO.setup(gpsGPIO,GPIO.OUT)
+#set GPS enable pin high to turn on and start acquiring signal
+GPIO.output(gpsGPIO,GPIO.HIGH)
 
 #attempt to set time based on GPS -> turn on and wait 30 sec
 
@@ -148,27 +151,49 @@ def main
     lon = np.empty(gpsNumSamples)
     lon.fill(badValue)
     
-	#open serial port
-	try:
-        
-        with serial.Serial('/dev/ttyS0',115200,timeout=.25) as pt, open(fname, 'a') as gpsOut: 
-            ser = io.TextIOWrapper(io.BufferedRWPair(pt,pt,1), encoding='ascii',
-                    errors='ignore', newline='\r', line_buffering=True)
-            
-            eventLog.info('[%.3f] - Open GPS port and file name: %s, %s' %  (elapsed, gpsPort,fname))
+  
 
-            #test for incoming data over serial port
-            for i in range(1):
-                newline = ser.readline()
-                print('[%.3f] - New GPS output: %s' % (elapsedTime,newline))
-                eventLog.info('[%.3f] - New GPS output' % elapsedTime)
-                #sleep(1)   
+    
+	#read lines from GPS serial port and wait for fix
+	try:
+		ser.flushInput()
+		newline=ser.readline()
+		if newline != '':
+			#test for GPS fix
+			timeout=time.time() + gpsTimout
+			
+			
+			while time.time() < timeout:
+				ser.flushInput()
+				newline=ser.readline()
+				print('newline= ' + newline)
+				if 'GPGGA' in newline:
+					print('found GPGGA sentence')
+					msg=pynmea2.parse(newline,check=True)
+					print('GPS quality= ' + str(msg.gps_qual))
+					if msg.gps_qual > 0:
+						print('GPS fix acquired')
+						
+						break
+				sleep(1)
+			
 
             gpgga_stc = ''
             gpvtg_stc = ''
             ipos = 0
             ivel = 0
-
+	except Exception as e:
+		print(e)
+	
+	#open file for writing lines of GPS data
+	
+	
+	#for loop to iterate until number of samples achieved or time exceeds burst seconds
+	
+	
+	
+	
+	
 
 	#read some lines of data and log it
 	

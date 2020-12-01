@@ -107,6 +107,7 @@ gpsGPIO=21
 GPSfrequency=4  
 numLines=5
 getFix=2
+timeout=60
 
 #========================== IMU Parameters ========================
 [IMU]
