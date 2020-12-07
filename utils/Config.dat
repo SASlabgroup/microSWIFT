@@ -56,7 +56,7 @@ DefaultLogLevel=INFO
 # Main app(s)
 microSWIFTHandler=INFO
 
-#=============== micoSWIFT Communications Parameters ===============
+#=============== micoSWIFT System Parameters ===============
 [System]
 #where to send data 
 shipIP=192.168.0.28
