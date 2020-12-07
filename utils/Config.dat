@@ -29,16 +29,10 @@
 #### Common variable usage ####
 
 BASEDIR=/home/pi/microSWIFT/
-
-#========================= System Parameters ====================
-[LogLocation]
-#where to put logs 
-dataDir=/home/pi/microSWIFT/data/
-logDir=/home/pi/microSWIFT/logs/
-shipDir=/home/pi/Desktop
-
 # ========================== Logging Parameters =================
 [Loggers]
+#where to put logs 
+logDir=/home/pi/microSWIFT/logs/
 
 # Set the default logging level.
 # This is used in any module which does not specify a level
@@ -58,10 +52,14 @@ microSWIFTHandler=INFO
 
 #=============== micoSWIFT System Parameters ===============
 [System]
+#data directory #(/home/pi/microSWIFT/data/)
+dataDir=/home/pi/microSWIFT/data/
+
 #where to send data 
 shipIP=192.168.0.28
 shipUser=pi
 shipPass='apluw'
+shipDir=/home/pi/Desktop
 
 # 4 digit string for float id
 floatID=002
@@ -73,14 +71,18 @@ payLoadType=50
 payloadVersion=7
 badValue=999
 
+burst_seconds=512 #default number of seconds to record, whether 1, 2, 3, 4, or 5 bursts per hour
+burst_time=0 #minute of the hour on which to start the burst
+burst_interval=12 #number of minutes between bursts (12=5x6, 15=4x6, 20=3x6, 30=2x6, 60=1x6)
+
 #change num samples to log for a longer period of time
 #360 = 6min       --> 1440 total samples
 #512 = 8min 30sec --> 2048 total samples
 #1850 = 31 min    --> 7400 total samples 
 #3400 = 1hr       --> 13600 total samples 
-numSamplesConst=360
-port=6
-numCoef=42
+#numSamplesConst=360
+#port=6 ??
+#numCoef=42 ??
 #======================== Iridium Parameters =======================
 [Iridium]
 port=/dev/ttyUSB0
@@ -94,9 +96,12 @@ modemGPIO=16
 IfHourlyCall=False 
 MakeCall=True
 #time between calls to record_serial
-burstInt=3    
+#burstInt=3 
+
+#time of call
+call_time=10   
 #interval between SBD calls
-callInt=1      
+call_interval=60   
 #========================== GPS Parameters ========================
 [GPS]
 port=/dev/ttyS0
@@ -104,9 +109,10 @@ startBaud=9600
 baud=115200
 gpsGPIO=21
 #sampling rate
-GPSfrequency=4  
+gps_frequency=4  
 numLines=5
 getFix=2
+
 timeout=60
 
 #========================== IMU Parameters ========================
