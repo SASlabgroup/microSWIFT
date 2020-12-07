@@ -9,12 +9,13 @@ from datetime import datetime
 import time
 import RPi.GPIO as GPIO
 import pynmea2
+import glob
 import struct
 import time
 
 #my imports
-#import send_sbd_binary_data
-#from rec_send_funcs import *
+import send_sbd_binary_data
+from rec_send_funcs import *
 import GPSwavesC
 from config3 import Config
 
@@ -25,32 +26,29 @@ config = Config() # Create object and load file
 ok = config.loadFile( configFilename )
 if( not ok ):
 	print ('Error loading config file: "%s"' % configFilename)
-	sys.exit(1)
+	#LOG ERROR - logger not set up yet
+	sys.exit(0)
 
 #system parameters
-dataDir = config.getString('System', 'dataDir')
 floatID = config.getString('System', 'floatID') 
 projectName = config.getString('System', 'projectName')
 payLoadType = config.getInt('System', 'payLoadType')
 badValue = config.getInt('System', 'badValue')
-#numCoef = config.getInt('System', 'numCoef')
-#Port = config.getInt('System', 'port')
+numCoef = config.getInt('System', 'numCoef')
+Port = config.getInt('System', 'port')
 payloadVersion = config.getInt('System', 'payloadVersion')
-burst_seconds('System', 'burst_seconds')
-burst_time('System', 'burst_time')
-burst_int('System', 'burst_interval')
 
 #GPS parameters 
-gps_port = config.getString('GPS', 'port')
+gpsPort = config.getString('GPS', 'port')
 baud = config.getInt('GPS', 'baud')
 startBaud = config.getInt('GPS', 'startBaud')
-gps_freq = config.getInt('GPS', 'GPSfrequency') #currently not used, hardcoded at 4 Hz (see init_gps function)
+GPSfrequency = config.getInt('GPS', 'GPSfrequency')
 numSamplesConst = config.getInt('System', 'numSamplesConst')
-gps_samples = gps_freq*burst_seconds
+gpsNumSamples = GPSfrequency*numSamplesConst
 numLines = config.getInt('GPS', 'numLines')
 gpsGPIO = config.getInt('GPS', 'gpsGPIO')
 getFix = config.getInt('GPS', 'getFix') # min before rec gps
-gps_timeout = config.getInt('GPS','timeout')
+gpsTimout = config.getInt('GPS','timeout')
 
 #temp and volt params 
 #maxHoursTemp = config.getInt('Temp', 'maxHours')
@@ -71,7 +69,8 @@ gps_timeout = config.getInt('GPS','timeout')
 #MakeCall = eval(MakeCall) #boolean
 
 #set up logging
-logDir = config.getString('Loggers', 'logDir')
+dataDir = config.getString('LogLocation', 'dataDir')
+logDir = config.getString('LogLocation', 'logDir')
 LOG_LEVEL = config.getString('Loggers', 'DefautLogLevel')
 #format log messages (example: 2020-11-23 14:31:00,578, microSWIFT_system - info - this is a log message)
 #NOTE: TIME IS SYSTEM TIME
@@ -90,270 +89,163 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 #GPIO.setup(modemGPIO,GPIO.OUT)
 GPIO.setup(gpsGPIO,GPIO.OUT)
-GPIO.output(gpsGPIO,GPIO.HIGH) #set GPS enable pin high to turn on and start acquiring signal
+#set GPS enable pin high to turn on and start acquiring signal
+GPIO.output(gpsGPIO,GPIO.HIGH)
 
-#------------------------------------------------------------------------------------------------------
-#------------------------------------------------------------------------------------------------------
-def init_gps():
-	success=True
-	nmea_time=''
-	nmea_date=''
-	#set GPS enable pin high to turn on and start acquiring signal
-	GPIO.output(gpsGPIO,GPIO.HIGH)
-	
+#attempt to set time based on GPS -> turn on and wait 30 sec
+
+#turn off GPS and modem via GPIO pins
+
+
+#try to open serial port, check for lines of data, make sure is set to 4hz rate and 115200 baud
+try:
+	#open serial port with expected baud rate 115200
+	ser = serial.Serial(gpsPort,baud,timeout=1)
+	print("GPS serial port open at %s baud" % (baud, gpsPort))
+	#set output sentence to GPGGA and GPVTG only (See GlobalTop PMTK command packet PDF)
+	print('setting NMEA output sentence')
+	ser.write('$PMTK314,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*28\r\n'.encode())
+	#set interval to 250ms (4 Hz)
+	ser.write('$PMTK220,250*29\r\n'.encode())
+	print("setting GPS to 4 Hz rate")
+	ser.close()
+except:
+	print("unable to open GPS serial port, trying default baud rate 9600")
 	try:
-		#start with GPS default baud whether it is right or not
-		print("try GPS serial port at 9600")
-		ser=serial.Serial(gps_port,startBaud,timeout=1)
-		try:
-			#set device baud rate to 115200
-			print("setting baud rate to 115200 $PMTK251,115200*1F\r\n")
-			ser.write('$PMTK251,115200*1F\r\n'.encode())
-			#switch to 115200
-			ser.baudrate=115200
-			print("switching to %s on port %s" % (baud, gps_port))
-			#set output sentence to GPGGA and GPVTG, plus GPRMC once every 4 positions (See GlobalTop PMTK command packet PDF)
-			print('setting NMEA output sentence $PMTK314,0,4,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*2C')
-			ser.write('$PMTK314,0,4,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*2C'.encode())
-			#set interval to 250ms (4 Hz)
-			print("setting GPS to 4 Hz rate $PMTK220,250*29\r\n")
-			ser.write("$PMTK220,250*29\r\n".encode())
-		except Exception as e:
-			success=False
-			print("error setting up serial port")
-			print(e)
-	except Exception as e:
-		success=False
-		print("error opening serial port")
-		print(e)
-					
-	def get_fix():
-		#read lines from GPS serial port and wait for fix
-		try:
-			#loop until timeout dictated by gps_timeout value (seconds)
-			timeout=time.time() + gps_timeout
-			while time.time() < timeout:
-				ser.flushInput()
-				ser.read_until('\n'.encode())
-				newline=ser.readline().decode('utf-8')
-				print(newline)
-				if not 'GPGGA' in newline:
-					newline=ser.readline().decode('utf-8')
-					if 'GPGGA' in newline:
-						print('found GPGGA sentence')
-						gpgga=pynmea2.parse(newline,check=True)
-						print('GPS quality= ' + str(gpgga.gps_qual))
-						#check gps_qual value from GPGGS sentence. 0=invalid,1=GPS fix,2=DGPS fix
-						if gpgga.gps_qual > 0:
-							print('GPS fix acquired')
-							#get date and time from GPRMC sentence - GPRMC reported only once every 8 lines
-							for i in range(8):
-								newline=ser.readline().decode('utf-8')
-								if 'GPRMC' in newline:
-									try:
-										gprmc=pynmea2.parse(newline)
-										nmea_time=gprmc.timestamp
-										nmea_date=gprmc.datestamp
-										break		
-									except Exception as e:
-										print(e)
-										continue
-							return True, nmea_time, nmea_date
-				sleep(1)
-			#return False if loop is allowed to timeout
-			return False, nmea_time, nmea_date
-		except Exception as e:
-			print(e)
-			return False, nmea_time, nmea_date
-	
-	#call get_fix inner function and get result
-	success, nmea_time, nmea_date = get_fix()
-	return ser, success, nmea_time, nmea_date
-#------------------------------------------------------------------------------------------------------
-#------------------------------------------------------------------------------------------------------
-def record_gps(ser,fname):
+		#try default baud rate 9600
+		ser = serial.Serial(gpsPort,9600,timeout=1)
+		#set baud rate to 115200, set NMEA output, and set interval to 250ms (4 Hz)
+		print("setting baud rate to 115200")
+		ser.write('$PMTK251,115200*1F\r\n'.encode())
+		#set output sentence to GPGGA and GPVTG only (See GlobalTop PMTK command packet PDF)
+		print('setting NMEA output sentence')
+		ser.write('$PMTK314,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*28\r\n'.encode())
+		print("setting GPS to 4 Hz rate")
+		ser.write('$PMTK220,250*29\r\n'.encode())
+		ser.close()
+	except:
+		print("unable to open GPS serial port on 9600")
+else:
+	print("unable to open GPS serial port at %s and 9600 on port %s" % (baud, gpsPort))
+	ser.close()
+	sys.exit(0)
+
+
+
+
+
+
+
+
+def main
 
 	#initialize empty numpy array and fill with bad values
-	u = np.empty(gps_samples)
-	u.fill(badValue)
-	v = np.empty(gps_samples)
-	v.fill(badValue)
-	z = np.empty(gps_samples)
-	z.fill(badValue)
-	lat = np.empty(gps_samples)
-	lat.fill(badValue)
-	lon = np.empty(gps_samples)
-	lon.fill(badValue)
-	
+	u = np.empty(gpsNumSamples)
+    u.fill(badValue)
+    v = np.empty(gpsNumSamples)
+    v.fill(badValue)
+    z = np.empty(gpsNumSamples)
+    z.fill(badValue)
+    lat = np.empty(gpsNumSamples)
+    lat.fill(badValue)
+    lon = np.empty(gpsNumSamples)
+    lon.fill(badValue)
+    
+  
+
+    
+	#read lines from GPS serial port and wait for fix
 	try:
 		ser.flushInput()
-		with open(fname, 'w',newline='\n') as gps_out:
+		newline=ser.readline()
+		if newline != '':
+			#test for GPS fix
+			timeout=time.time() + gpsTimout
 			
-			print('open file for writing: %s' %fname)
-			t_end = time.time() + burst_seconds #get end time for burst
-			isample=0
-			while time.time() <= t_end or isample < gps_samples:
-				newline=ser.readline().decode()
-				gps_out.write(newline)
-				gps_out.flush()
-		
-				if "GPGGA" in newline:
-					gpgga = pynmea2.parse(newline,check=True)   #grab gpgga sentence to return
-					z[ipos] = gpgga.altitude
-					lat[isample] = gpgga.latitude
-					lon[isample] = gpgga.longitude
-					
-				elif "GPVTG" in newline:
-					gpvtg = pynmea2.parse(newline,check=True)   #grab gpvtg sentence
-					u[isample] = gpvtg.spd_over_gnd_kmph*np.cos(gpvtg.true_track) #units are kmph
-					v[isample] = gpvtg.spd_over_gnd_kmph*np.sin(gpvtg.true_track) #units are kmph
-				else: #if not GPGGA or GPVTG, continue to start of loop, do not increment sample count
-					continue
-				
-				isample +=1
 			
-				#if burst has ended but we are close to getting the right number of samples, continue for as short while
-				if time.time() >= t_end and 0 < gps_samples-isample <= 10
-					continue
-				elif isample = gps_samples:
-					break
-				else:
-					break
-					
-			print('number of GPS samples = %d' %isample)
+			while time.time() < timeout:
+				ser.flushInput()
+				newline=ser.readline()
+				print('newline= ' + newline)
+				if 'GPGGA' in newline:
+					print('found GPGGA sentence')
+					msg=pynmea2.parse(newline,check=True)
+					print('GPS quality= ' + str(msg.gps_qual))
+					if msg.gps_qual > 0:
+						print('GPS fix acquired')
 						
-		return u,v,z,lat,lon
+						break
+				sleep(1)
+			
+
+            gpgga_stc = ''
+            gpvtg_stc = ''
+            ipos = 0
+            ivel = 0
 	except Exception as e:
 		print(e)
-		return u,v,z,lat,lon
-
-
-#------------------------------------------------------------------------------------------------------
-#------------------------------------------------------------------------------------------------------
-def main():
 	
-	#call function to initialize GPS
-	ser, gps_initialized, time, date = init_gps()
+	#open file for writing lines of GPS data
 	
-	if gps_initialized:
-		
-		#set system time
-		date_str="{:%B %d, %Y}".format(date)+ ' '+"{:%H:%M:%S}".format(time)
-		os.system('date -s %s' % date_str)
-		os.system('hwclock --set %s' % date_str)
-		
-		#burst start conditions
-		if  now.minute == burst_time and now.minute % burstInt == 0 and now.second == 0:
-			
-			#create file name
-         	fname = dataDir + 'microSWIFT'+floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
-			#call record_gps	
-			u,v,z,lat,lon = record_gps(ser,fname)
-		
-			GPS_waves_results = GPSwavesC.main_GPSwaves(gps_samples,
-							u,v,z,gps_freq)
-							
-			SigwaveHeight = GPS_waves_results[0]
-			print ('WAVEHEIGHT: %f' %SigwaveHeight)
-			
-			Peakwave_Period = GPS_waves_results[1]
-			Peakwave_dirT = GPS_waves_results[2]
+	
+	#for loop to iterate until number of samples achieved or time exceeds burst seconds
+	
+	
+	
+	
+	
 
-			WaveSpectra_Energy = np.squeeze(GPS_waves_results[3])
-			WaveSpectra_Energy = np.where(WaveSpectra_Energy>=18446744073709551615, 999.00000, WaveSpectra_Energy)
-			WaveSpectra_Freq = np.squeeze(GPS_waves_results[4])
-			WaveSpectra_Freq = np.where(WaveSpectra_Freq>=18446744073709551615, 999.00000, WaveSpectra_Freq)
-			WaveSpectra_a1 = np.squeeze(GPS_waves_results[5])
-			WaveSpectra_a1 = np.where(WaveSpectra_a1>=18446744073709551615, 999.00000, WaveSpectra_a1)
-			WaveSpectra_b1 = np.squeeze(GPS_waves_results[6])
-			WaveSpectra_b1 = np.where(WaveSpectra_b1>=18446744073709551615, 999.00000, WaveSpectra_b1)
-			WaveSpectra_a2 = np.squeeze(GPS_waves_results[7])
-			WaveSpectra_a2 = np.where(WaveSpectra_a2>=18446744073709551615, 999.00000, WaveSpectra_a2)
-			WaveSpectra_b2 = np.squeeze(GPS_waves_results[8])
-			WaveSpectra_b2 = np.where(WaveSpectra_b2>=18446744073709551615, 999.00000, WaveSpectra_b2)
-			
-			checkdata = np.full(numCoef,1)
-			
-			np.set_printoptions(formatter={'float_kind':'{:.5f}'.format})
-			np.set_printoptions(formatter={'float_kind':'{:.2e}'.format})
-		
-			uMean = getuvzMean(badValue,u)
-			vMean = getuvzMean(badValue,v)
-			zMean = getuvzMean(badValue,z)
-			
-			u_mean
-			
-			dname = now.strftime('%d%b%Y')
-			tname = now.strftime('%H:%M:%S') 
-			
-			fbinary = (dataDir + floatID + 'SWIFT' + '_' + projectName + '_' + 
-						dname + '_' + tname + '.sbd')
-			eventLog.info('[%.3f] - SBD file: %s' %(elapsedTime, fbinary ))
-		
-			if payLoadType == 50:
-				payLoadSize = (16 + 7*42)*4
-				eventLog.info('[%.3f] - Payload type: %d' % (elapsedTime, payLoadType))
-				eventLog.info('[%.3f] - payLoadSize: %d' % (elapsedTime, payLoadSize))
-			else:
-				payLoadSize =  (5 + 7*42)*4
-				eventLog.info('[%.3f] - Payload type: %d' % (elapsedTime, payLoadType))
-				eventLog.info('[%.3f] - payLoadSize: %d' % (elapsedTime, payLoadSize))
+	#read some lines of data and log it
 	
-			try:
-				fbinary = open(fbinary, 'wb')
+	#initialize some variables
+
+	#If lines are not empty, enter loop
+		#while counter is less than expected samples
+			#read new line, write to file, flush
+			#determine if line is GPGGA or GPVTG sentence
+				#pass line to parse_nmea funtions in 'record_send_funcs.py'
+				#get z,lat,lon from GPGGA or u,v from GPVTG
 				
-			except:
-				print ('[%.3f] - To write binary file is already open' % elapsedTime)
-			
-			SigwaveHeight = round(SigwaveHeight,6)
-			Peakwave_Period = round(Peakwave_Period,6)
-			Peakwave_dirT = round(Peakwave_dirT,6)
-			
-			lat[0] = round(lat[0],6)
-			lon[0] = round(lon[0],6)
-			uMean= round(uMean,6)
-			vMean= round(vMean,6)
-			zMean= round(zMean,6)
-			
-			fbinary.write(struct.pack('<sbbhfff', 
-									 str(payloadVersion),payLoadType,Port,
-									 payLoadSize,SigwaveHeight,Peakwave_Period,Peakwave_dirT))
-	 
-			fbinary.write(struct.pack('<42f', *WaveSpectra_Energy))
-			fbinary.write(struct.pack('<42f', *WaveSpectra_Freq))
-			fbinary.write(struct.pack('<42f', *WaveSpectra_a1))
-			fbinary.write(struct.pack('<42f', *WaveSpectra_b1))
-			fbinary.write(struct.pack('<42f', *WaveSpectra_a2))
-			fbinary.write(struct.pack('<42f', *WaveSpectra_b2))
-			fbinary.write(struct.pack('<42f', *checkdata))
-			fbinary.write(struct.pack('<f', lat[0]))
-			fbinary.write(struct.pack('<f', lon[0]))
-			fbinary.write(struct.pack('<f', temp))
-			fbinary.write(struct.pack('<f', volt))
-			fbinary.write(struct.pack('<f', uMean))
-			fbinary.write(struct.pack('<f', vMean))
-			fbinary.write(struct.pack('<f', zMean))
-			fbinary.write(struct.pack('<i', int(now.year)))
-			fbinary.write(struct.pack('<i', int(now.month)))
-			fbinary.write(struct.pack('<i', int(now.day)))
-			fbinary.write(struct.pack('<i', int(now.hour)))
-			fbinary.write(struct.pack('<i', int(now.minute)))
-			fbinary.write(struct.pack('<i', int(now.second)))
-			fbinary.flush()
-			fbinary.close()
+				#check if we have enough samples, and check if setTimeAtEnd flag is false
+					#attempt to get and set time from GPRMC sentence
 
+	#increment counter *should be incremented in while loop*
 
-				
-	else:
-		print("GPS not initialized, no data will be logged")
+	#else print 'no serial data'
+
+	#return u,v,z,lat,lon arrays
+
+#def main
+	
+	#start time and elapsed time
+
+	#initialize empty numpy arrays for u,v,z,lat,lon,temp,volt but do not fill with bad values
+
+	#initialize numpy arrays for a1,b1,a2,b2,energy,freq
+
+	#get burst interval
+
+	#TimeBetweenBurst_call = busrtInt-callInt (??)
+
+	#check if callInt is larger than burstInt and if so log an error message (??)
+
+	#turn some switched off
+
+	#while true
+		#get time and set elapsed time
+
 		
 
-	
 
 
 
-ser.close()
-sys.exit(0)
+
+
+
+
+
+
+
 
 
 
