@@ -26,7 +26,7 @@ from time import sleep
 import send_sbd_binary_data
 from rec_send_funcs import *
 import GPSwavesC
-from config3 import Config
+from config2 import Config
 
 
 ##########################################################################
@@ -249,9 +249,9 @@ def record_serial(fname,
                     			splitLine = newline.split(',')
                     			UTCTime = splitLine[1]
                     			date = splitLine[9]
-                        
+                                
                     			splitTime = list(UTCTime)
-                                hour = (splitTime[0] + splitTime[1])
+                    			hour = splitTime[0] + splitTime[1]
                     			minute = splitTime[2] + splitTime[3]
                     			sec = splitTime[4] + splitTime[5]
                     			second = (int(sec) + 2)
@@ -266,7 +266,7 @@ def record_serial(fname,
                     			elif (hour >= 20 and hour <= 24):
                         			hour = int(hour) - 19
                     			else:
-                                    hour = int(hour) + 5
+									hour = int(hour) + 5
                             
                     			hour = format(hour, "02")
                     			second = format(second, "02")
