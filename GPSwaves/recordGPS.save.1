@@ -17,5 +17,17 @@ export PYTHONPATH=$PYTHONPATH/$GPSwavesDir:/$utilsDir
 #Run app
 #=================================================================================
 
+case "$1" in 
+        start)
+                echo "Starting to record and send gps data"
+                cd $GPSwavesDir
+                python3 recordG
+                ;;
+        stop)
+                echo "stopping recording and sending gps data"
+                killall recSaveGPSAtBoot
+                ;;
+        *)
+                echo "Usage: /etc/init.d/recSaveGPSAtBoot start|s
 echo " --- RUN RECORD AND SEND GPS APP ---"
 python3 recordGPS.py $config &

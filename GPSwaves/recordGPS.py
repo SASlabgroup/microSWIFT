@@ -25,17 +25,17 @@ configFilename = sys.argv[1] #Load config file/parameters needed
 config = Config() # Create object and load file
 ok = config.loadFile( configFilename )
 if( not ok ):
-	print ('Error loading config file: "%s"' % configFilename)
+	logger.info ('Error loading config file: "%s"' % configFilename)
 	sys.exit(1)
 	
 #set up logging
 logDir = config.getString('Loggers', 'logDir')
 LOG_LEVEL = config.getString('Loggers', 'DefaultLogLevel')
-#format log messages (example: 2020-11-23 14:31:00,578, microSWIFT_system - info - this is a log message)
+#format log messages (example: 2020-11-23 14:31:00,578, recordGPS - info - this is a log message)
 #NOTE: TIME IS SYSTEM TIME
-LOG_FORMAT = ('%(asctime)s , %(name)s - [%(levelname)s] - %(message)s')
+LOG_FORMAT = ('%(asctime)s, recordGPS - [%(levelname)s] - %(message)s')
 #log file name (example: home/pi/microSWIFT/recordGPS_23Nov2020.log)
-LOG_FILE = (logDir + '/' + __name__+ '_' + datetime.strftime(datetime.now(), '%d%b%Y') + '.log')
+LOG_FILE = (logDir + '/' + 'recordGPS' + '_' + datetime.strftime(datetime.now(), '%d%b%Y') + '.log')
 logger = getLogger("microSWIFT_system")
 logger.setLevel(LOG_LEVEL)
 logFileHandler = FileHandler(LOG_FILE)
@@ -103,32 +103,32 @@ def init_gps():
 	
 	try:
 		#start with GPS default baud whether it is right or not
-		print("try GPS serial port at 9600")
+		logger.info("try GPS serial port at 9600")
 		ser=serial.Serial(gps_port,startBaud,timeout=1)
 		try:
 			#set device baud rate to 115200
-			print("setting baud rate to 115200 $PMTK251,115200*1F\r\n")
+			logger.info("setting baud rate to 115200 $PMTK251,115200*1F\r\n")
 			ser.write('$PMTK251,115200*1F\r\n'.encode())
 			sleep(1)
 			#switch ser port to 115200
 			ser.baudrate=baud
-			print("switching to %s on port %s" % (baud, gps_port))
+			logger.info("switching to %s on port %s" % (baud, gps_port))
 			#set output sentence to GPGGA and GPVTG, plus GPRMC once every 4 positions (See GlobalTop PMTK command packet PDF)
-			print('setting NMEA output sentence $PMTK314,0,4,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*2C')
+			logger.info('setting NMEA output sentence $PMTK314,0,4,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*2C')
 			ser.write('$PMTK314,0,4,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*2C\r\n'.encode())
 			sleep(1)
 			#set interval to 250ms (4 Hz)
-			print("setting GPS to 4 Hz rate $PMTK220,250*29\r\n")
+			logger.info("setting GPS to 4 Hz rate $PMTK220,250*29\r\n")
 			ser.write("$PMTK220,250*29\r\n".encode())
 			sleep(1)
 		except Exception as e:
 			return ser, False, nmea_time, nmea_date
-			print("error setting up serial port")
-			print(e)
+			logger.info("error setting up serial port")
+			logger.info(e)
 	except Exception as e:
 		return ser, False, nmea_time, nmea_date
-		print("error opening serial port")
-		print(e)
+		logger.info("error opening serial port")
+		logger.info(e)
 					
 	#read lines from GPS serial port and wait for fix
 	try:
@@ -138,17 +138,17 @@ def init_gps():
 			ser.flushInput()
 			ser.read_until('\n'.encode())
 			newline=ser.readline().decode('utf-8')
-			print(newline)
+			logger.info(newline)
 			if not 'GPGGA' in newline:
 				newline=ser.readline().decode('utf-8')
 				if 'GPGGA' in newline:
-					print('found GPGGA sentence')
-					print(newline)
+					logger.info('found GPGGA sentence')
+					logger.info(newline)
 					gpgga=pynmea2.parse(newline,check=True)
-					print('GPS quality= ' + str(gpgga.gps_qual))
+					logger.info('GPS quality= ' + str(gpgga.gps_qual))
 					#check gps_qual value from GPGGS sentence. 0=invalid,1=GPS fix,2=DGPS fix
 					if gpgga.gps_qual > 0:
-						print('GPS fix acquired')
+						logger.info('GPS fix acquired')
 						#get date and time from GPRMC sentence - GPRMC reported only once every 8 lines
 						for i in range(8):
 							newline=ser.readline().decode('utf-8')
@@ -157,9 +157,10 @@ def init_gps():
 									gprmc=pynmea2.parse(newline)
 									nmea_time=gprmc.timestamp
 									nmea_date=gprmc.datestamp
+									
 									return ser, True, nmea_time, nmea_date		
 								except Exception as e:
-									print(e)
+									logger.info(e)
 									continue
 							
 						return ser, True, nmea_time, nmea_date
@@ -167,7 +168,7 @@ def init_gps():
 		#return False if loop is allowed to timeout
 		return ser, False, nmea_time, nmea_date
 	except Exception as e:
-		print(e)
+		logger.info(e)
 		return ser, False, nmea_time, nmea_date
 	
 #------------------------------------------------------------------------------------------------------
@@ -190,12 +191,11 @@ def record_gps(ser,fname):
 		ser.flushInput()
 		with open(fname, 'w',newline='\n') as gps_out:
 			
-			print('open file for writing: %s' %fname)
+			logger.info('open file for writing: %s' %fname)
 			t_end = time.time() + burst_seconds #get end time for burst
-			isample=0
 			ipos=0
 			ivel=0
-			while time.time() <= t_end or isample < gps_samples:
+			while time.time() <= t_end or ipos < gps_samples or ivel < gps_samples:
 				newline=ser.readline().decode()
 				gps_out.write(newline)
 				gps_out.flush()
@@ -221,12 +221,13 @@ def record_gps(ser,fname):
 				elif ipos == gps_samples and ivel == gps_samples:
 					break
 					
-			print('gps_samples ' + str(gps_samples))	
-			print('number of GPS samples = %d' %isample)
+			logger.info('gps_samples ' + str(gps_samples))	
+			logger.info('number of GPGGA samples = %d' %ipos)
+			logger.info('number of GPVTG samples = %d' %ivel)
 						
 		return u,v,z,lat,lon
 	except Exception as e:
-		print(e)
+		logger.info(e)
 		return u,v,z,lat,lon
 
 
@@ -238,32 +239,34 @@ def main():
 	ser, gps_initialized, time, date = init_gps()
 	
 	if gps_initialized:
-		print("GPS initialized")
+		logger.info("GPS initialized")
 		#set system time
 		if time != '' and date != '':
 			try:
+				#logger.info("setting system time from GPS: %" %(date, time))
 				os.system('sudo timedatectl set-timezone UTC')
 				os.system('sudo date -s "%s %s"' %(date, time))
 				os.system('sudo hwclock -w')
 			except Exception as e:
-				print(e)
-				print('error setting system time')
+				logger.info(e)
+				logger.info('error setting system time')
 		
 		while True:
 			#burst start conditions
 			now=datetime.utcnow()
-			print(now)
 			if  now.minute == burst_time or now.minute % burst_int == 0 and now.second == 0:
+				logger.info("starting burst")
 				
 				#create file name
 				fname = dataDir + 'microSWIFT'+floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
+				logger.info("file name: %s" %fname)
 				#call record_gps	
 				u,v,z,lat,lon = record_gps(ser,fname)
 			
 				#GPS_waves_results = GPSwavesC.main_GPSwaves(gps_samples,u,v,z,gps_freq)
 								
 				#SigwaveHeight = GPS_waves_results[0]
-				#print ('WAVEHEIGHT: %f' %SigwaveHeight)
+				#logger.info ('WAVEHEIGHT: %f' %SigwaveHeight)
 				
 				#Peakwave_Period = GPS_waves_results[1]
 				#Peakwave_dirT = GPS_waves_results[2]
@@ -309,7 +312,7 @@ def main():
 				#	fbinary = open(fbinary, 'wb')
 					
 				#except:
-				#	print ('[%.3f] - To write binary file is already open' % elapsedTime)
+				#	logger.info ('[%.3f] - To write binary file is already open' % elapsedTime)
 				
 				#SigwaveHeight = round(SigwaveHeight,6)
 				#Peakwave_Period = round(Peakwave_Period,6)
@@ -351,7 +354,7 @@ def main():
 
 				
 	else:
-		print("GPS not initialized, no data will be logged")
+		logger.info("GPS not initialized, no data will be logged")
 		
 	sys.exit(0)
 
