@@ -101,6 +101,7 @@ def init_gps():
 	#set GPS enable pin high to turn on and start acquiring signal
 	GPIO.output(gpsGPIO,GPIO.HIGH)
 	
+	logger.info('initializing GPS')
 	try:
 		#start with GPS default baud whether it is right or not
 		logger.info("try GPS serial port at 9600")
@@ -114,7 +115,7 @@ def init_gps():
 			ser.baudrate=baud
 			logger.info("switching to %s on port %s" % (baud, gps_port))
 			#set output sentence to GPGGA and GPVTG, plus GPRMC once every 4 positions (See GlobalTop PMTK command packet PDF)
-			logger.info('setting NMEA output sentence $PMTK314,0,4,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*2C')
+			logger.info('setting NMEA output sentence $PMTK314,0,4,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*2C\r\n')
 			ser.write('$PMTK314,0,4,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*2C\r\n'.encode())
 			sleep(1)
 			#set interval to 250ms (4 Hz)
@@ -157,7 +158,8 @@ def init_gps():
 									gprmc=pynmea2.parse(newline)
 									nmea_time=gprmc.timestamp
 									nmea_date=gprmc.datestamp
-									
+									logger.info("nmea time: %s" %nmea_time)
+									logger.info("nmea date: %s" %nmea_date)
 									return ser, True, nmea_time, nmea_date		
 								except Exception as e:
 									logger.info(e)
@@ -235,6 +237,8 @@ def record_gps(ser,fname):
 #------------------------------------------------------------------------------------------------------
 def main():
 	
+	logger.info("---------------recordGPS.py------------------")
+	logger.info(sys.version)
 	#call function to initialize GPS
 	ser, gps_initialized, time, date = init_gps()
 	
@@ -243,7 +247,7 @@ def main():
 		#set system time
 		if time != '' and date != '':
 			try:
-				#logger.info("setting system time from GPS: %" %(date, time))
+				logger.info("setting system time from GPS: %s %s" %(date, time))
 				os.system('sudo timedatectl set-timezone UTC')
 				os.system('sudo date -s "%s %s"' %(date, time))
 				os.system('sudo hwclock -w')
