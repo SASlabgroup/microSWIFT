@@ -15,7 +15,6 @@ import adafruit_fxas21002c
 
 #my imports 
 from config3 import Config
-from utils import *
 
 #---------------------------------------------------------------
 configDat = sys.argv[1]
@@ -62,7 +61,7 @@ burstNum = config.getInt('Iridium', 'burstNum')
 
 #IMU parameters
 imuFreq=config.getInt('IMU', 'imuFreq')
-imuNumSamples = imuFreq*burst_seconds
+imu_samples = imuFreq*burst_seconds
 maxHours=config.getInt('IMU', 'maxHours')
 imu_gpio=config.getInt('IMU', 'imu_gpio')
 recRate = config.getInt('IMU', 'recRate')
@@ -76,10 +75,8 @@ GPIO.setup(imu_gpio,GPIO.OUT)
 GPIO.output(imu_gpio,GPIO.HIGH)
 
 i2c = busio.I2C(board.SCL, board.SDA)
-#fxos = adafruit_fxos8700.FXOS8700(i2c)
-#fxas = adafruit_fxas21002c.FXAS21002C(i2c)
-sensor = adafruit_fxos8700.FXOS8700(i2c)
-sensor2 = adafruit_fxas21002c.FXAS21002C(i2c)
+fxos = adafruit_fxos8700.FXOS8700(i2c)
+fxas = adafruit_fxas21002c.FXAS21002C(i2c)
 
 # Optionally create the sensor with a different accelerometer range (the
 # default is 2G, but you can use 4G or 8G values):
@@ -88,7 +85,7 @@ sensor2 = adafruit_fxas21002c.FXAS21002C(i2c)
  
 # Main loop will read the acceleration and magnetometer values every second
 # and print them out.
-imu = np.empty(imuNumSamples)
+imu = np.empty(imu_samples)
 isample = 0
 
 
@@ -102,48 +99,68 @@ while True:
     elapsedTime = tNow - tStart
     
     if now.minute % burstInterval == 0 and now.second == 0:
+        
+        
         logger.info('[%.3f] - Start new burst interval' % elapsedTime)
         
         #create new file for new burst interval 
-        dname = now.strftime('%d%b%Y')
-        tname = now.strftime('%H:%M:%S')
-        fname = (dataDir + floatID +'_Imu_' + dname + '_' + tname +'UTC_burst_' +str(burstInterval) + '.dat')
+        fname = dataDir + 'microSWIFT'+ floatID + '_IMU_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
+        print('filename = ',fname)
+        logger.info("file name: %s" %fname)
         logger.info('[%.3f] - IMU file name: %s' % (elapsedTime,fname))
         fid=open(fname,'w')
-        print('filename = ',fname)
         
         #turn imu on
         GPIO.output(imu_gpio,GPIO.HIGH)
         logger.info('[%.3f] - IMU ON' % elapsedTime)
+        
+        
+        with open(fname, 'w',newline='\n') as imu_out:
+        
+            t_end = time.time() + burst_seconds #get end time for burst
+            isample=0
+            while time.time() <= t_end or ipos < imu_samples:
+        
+                accel_x, accel_y, accel_z = fxos.accelerometer
+                mag_x, mag_y, mag_z = fxos.magnetometer
+                gyro_x, gyro_y, gyro_z = fxas.gyroscope
+                roll = 180 * math.atan(accel_x/math.sqrt(accel_y*accel_y + accel_z*accel_z))/math.pi
+                pitch = 180 * math.atan(accel_y/math.sqrt(accel_x*accel_x + accel_z*accel_z))/math.pi
+                yaw = 180 * math.atan(accel_z/math.sqrt(accel_x*accel_x + accel_z*accel_z))/math.pi
+                
+                timestring = (str(fnow.year) + ',' + str(fnow.month) + ',' + str(fnow.day) +
+                                  ',' + str(fnow.hour) + ',' + str(fnow.minute) + ',' + str(fnow.second))
+                fdname = fnow.strftime('%d%b%Y')
+                ftname = fnow.strftime('%H:%M:%S')
+                print('TIME ',fdname,ftname)
+                fid.write('%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n' %(elapsed,accel_x,accel_y,accel_z,mag_x,mag_y,mag_z,gyro_x,gyro_y,gyro_z,roll,pitch,yaw))
+                fid.flush()
+        
+        
+        
+                if time.time() >= t_end and 0 < imu_samples-isample <= 10:
+                        
+                        continue
+                    elif ipos == imu_samples and ivel == imu_samples:
+                        break
+        
+        
+                isample = isample + 1
 
-        for isample in range(imuNumSamples):
-            time.sleep(recRate)
-            tHere = time.time()
-            elapsed = tHere - tStart
-            fnow = datetime.utcnow()
-            isample = isample + 1
-            logger.info('[%.3f] - Num of samples: %d, Wanted samples: %d' % (elapsed,isample,imuNumSamples))
-
-            accel_x, accel_y, accel_z = sensor.accelerometer
-            mag_x, mag_y, mag_z = sensor.magnetometer
-            gyro_x, gyro_y, gyro_z = sensor2.gyroscope
-            roll = 180 * math.atan(accel_x/math.sqrt(accel_y*accel_y + accel_z*accel_z))/math.pi
-            pitch = 180 * math.atan(accel_y/math.sqrt(accel_x*accel_x + accel_z*accel_z))/math.pi
-            yaw = 180 * math.atan(accel_z/math.sqrt(accel_x*accel_x + accel_z*accel_z))/math.pi
-            
-            timestring = (str(fnow.year) + ',' + str(fnow.month) + ',' + str(fnow.day) +
-                              ',' + str(fnow.hour) + ',' + str(fnow.minute) + ',' + str(fnow.second))
-            fdname = fnow.strftime('%d%b%Y')
-            ftname = fnow.strftime('%H:%M:%S')
-            print('TIME ',fdname,ftname)
-            fid.write('%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n' %(elapsed,accel_x,accel_y,accel_z,mag_x,mag_y,mag_z,gyro_x,gyro_y,gyro_z,roll,pitch,yaw))
-            fid.flush()
-            
-        #turn imu off/ stop writing to file      
-        fid.close()
-        GPIO.output(imu_gpio,GPIO.LOW)
-        logger.info('[%.3f] - IMU OFF' % elapsedTime)
-        logger.info('[%.3f] - End of burst interval' % elapsedTime)
+                for isample in range(imu_samples):
+                time.sleep(recRate)
+                tHere = time.time()
+                elapsed = tHere - tStart
+                fnow = datetime.utcnow()
+                
+                logger.info('[%.3f] - Num of samples: %d, Wanted samples: %d' % (elapsed,isample,imu_samples))
+    
+                
+                
+            #turn imu off/ stop writing to file      
+            GPIO.output(imu_gpio,GPIO.LOW)
+            logger.info('[%.3f] - IMU OFF' % elapsedTime)
+            logger.info('[%.3f] - End of burst interval' % elapsedTime)
 
 
     
