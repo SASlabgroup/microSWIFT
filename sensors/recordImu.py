@@ -17,7 +17,7 @@ import adafruit_fxas21002c
 from config3 import Config
 from utils import *
 
-#initialize gpio pin 21 as modem on/off control
+#initialize IMU GPIO pin as modem on/off control
 GPIO.setmode(GPIO.BCM)
 #---------------------------------------------------------------
 configDat = sys.argv[1]
@@ -46,24 +46,33 @@ logger.addHandler(logFileHandler)
 
 dataFile = str(currentTimeString()) #file name
 
-
-#set parameters 
-burstInterval = config.getInt('Iridium', 'burstInt')
-burstNum = config.getInt('Iridium', 'burstNum')
-dataDir = config.getString('System', 'dataDir')
-logDir = config.getString('Loggers', 'logDir')
+#load parameters from Config.dat
+#system parameters 
 floatID = config.getString('System', 'floatID')
+dataDir = config.getString('System', 'dataDir')
+burst_interval=config.getInt('System', 'burst_interval')
+burst_time=config.getInt('System', 'burst_time')
+burst_seconds=config.getInt('System', 'burst_seconds')
+
 bad = config.getInt('System', 'badValue')
 projectName = config.getString('System', 'projectName')
-
-imuFreq=config.getInt('IMU', 'imuFreq')
 numSamplesConst = config.getInt('System', 'numSamplesConst')
 
+#iridium parameters
+burstInterval = config.getInt('Iridium', 'burstInt')
+burstNum = config.getInt('Iridium', 'burstNum')
+
+#IMU parameters
+imuFreq=config.getInt('IMU', 'imuFreq')
 imuNumSamples = imuFreq*numSamplesConst
 maxHours=config.getInt('IMU', 'maxHours')
 imuGpio=config.getInt('IMU', 'imuGpio')
 recRate = config.getInt('IMU', 'recRate')
 recRate = 1./recRate
+
+
+
+
 
 #turn imu on for script recognizes i2c address
 GPIO.setup(imuGpio,GPIO.OUT)
