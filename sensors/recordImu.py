@@ -28,11 +28,30 @@ ok = config.loadFile( configFilename )
 if( not ok ):
     sys.exit(0)
 
+#set up logging
+logDir = config.getString('Loggers', 'logDir')
+LOG_LEVEL = config.getString('Loggers', 'DefaultLogLevel')
+#format log messages (example: 2020-11-23 14:31:00,578, recordIMU - info - this is a log message)
+#NOTE: TIME IS SYSTEM TIME
+LOG_FORMAT = ('%(asctime)s, %(filename)s - [%(levelname)s] - %(message)s')
+#log file name (example: home/pi/microSWIFT/recordIMU_23Nov2020.log)
+LOG_FILE = (logDir + '/' + 'recordIMU' + '_' + datetime.strftime(datetime.now(), '%d%b%Y') + '.log')
+logger = getLogger('system_logger')
+logger.setLevel(LOG_LEVEL)
+logFileHandler = FileHandler(LOG_FILE)
+logFileHandler.setLevel(LOG_LEVEL)
+logFileHandler.setFormatter(Formatter(LOG_FORMAT))
+logger.addHandler(logFileHandler)
+
+
+dataFile = str(currentTimeString()) #file name
+
+
 #set parameters 
 burstInterval = config.getInt('Iridium', 'burstInt')
 burstNum = config.getInt('Iridium', 'burstNum')
-dataDir = config.getString('LogLocation', 'dataDir')
-logDir = config.getString('LogLocation', 'logDir')
+dataDir = config.getString('System', 'dataDir')
+logDir = config.getString('Loggers', 'logDir')
 floatID = config.getString('System', 'floatID')
 bad = config.getInt('System', 'badValue')
 projectName = config.getString('System', 'projectName')
@@ -65,18 +84,7 @@ sensor2 = adafruit_fxas21002c.FXAS21002C(i2c)
 # and print them out.
 imu = np.empty(imuNumSamples)
 isample = 0
-##LOGGING
-dataFile = str(currentTimeString()) #file name
-#EVENT Log
-LOG_FORMAT = ('[%(levelname)s] %(message)s')
-LOG_LEVEL = logging.INFO 
-EVENT_LOG_FILE = (logDir + '/' + 'imuEvent' + dataFile + '.log')
-eventLog = logging.getLogger("Event")
-eventLog.setLevel(LOG_LEVEL)
-eventLogFileHandler = FileHandler(EVENT_LOG_FILE)
-eventLogFileHandler.setLevel(LOG_LEVEL)
-eventLogFileHandler.setFormatter(Formatter(LOG_FORMAT))
-eventLog.addHandler(eventLogFileHandler)
+
 
 tStart = time.time()
 #-------------------------------------------------------------------------------
