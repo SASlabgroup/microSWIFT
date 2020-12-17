@@ -121,7 +121,7 @@ timeout=60
 #========================== IMU Parameters ========================
 [IMU]
 imuFreq=4
-imuGpio=20
+imu_gpio=20
 recRate=4
 maxHours=3
 

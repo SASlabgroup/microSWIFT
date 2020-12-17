@@ -17,8 +17,6 @@ import adafruit_fxas21002c
 from config3 import Config
 from utils import *
 
-#initialize IMU GPIO pin as modem on/off control
-GPIO.setmode(GPIO.BCM)
 #---------------------------------------------------------------
 configDat = sys.argv[1]
 configFilename = configDat #Load config file/parameters needed
@@ -64,23 +62,22 @@ burstNum = config.getInt('Iridium', 'burstNum')
 
 #IMU parameters
 imuFreq=config.getInt('IMU', 'imuFreq')
-imuNumSamples = imuFreq*numSamplesConst
+imuNumSamples = imuFreq*burst_seconds
 maxHours=config.getInt('IMU', 'maxHours')
-imuGpio=config.getInt('IMU', 'imuGpio')
+imu_gpio=config.getInt('IMU', 'imu_gpio')
 recRate = config.getInt('IMU', 'recRate')
 recRate = 1./recRate
 
 
-
-
-
-#turn imu on for script recognizes i2c address
-GPIO.setup(imuGpio,GPIO.OUT)
-GPIO.output(imuGpio,GPIO.HIGH)
+#initialize IMU GPIO pin as modem on/off control
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(imu_gpio,GPIO.OUT)
+#turn IMU on for script recognizes i2c address
+GPIO.output(imu_gpio,GPIO.HIGH)
 
 i2c = busio.I2C(board.SCL, board.SDA)
-fxos = adafruit_fxos8700.FXOS8700(i2c)
-fxas = adafruit_fxas21002c.FXAS21002C(i2c)
+#fxos = adafruit_fxos8700.FXOS8700(i2c)
+#fxas = adafruit_fxas21002c.FXAS21002C(i2c)
 sensor = adafruit_fxos8700.FXOS8700(i2c)
 sensor2 = adafruit_fxas21002c.FXAS21002C(i2c)
 
@@ -105,19 +102,19 @@ while True:
     elapsedTime = tNow - tStart
     
     if now.minute % burstInterval == 0 and now.second == 0:
-        eventLog.info('[%.3f] - Start new burst interval' % elapsedTime)
+        logger.info('[%.3f] - Start new burst interval' % elapsedTime)
         
         #create new file for new burst interval 
         dname = now.strftime('%d%b%Y')
         tname = now.strftime('%H:%M:%S')
         fname = (dataDir + floatID +'_Imu_' + dname + '_' + tname +'UTC_burst_' +str(burstInterval) + '.dat')
-        eventLog.info('[%.3f] - IMU file name: %s' % (elapsedTime,fname))
+        logger.info('[%.3f] - IMU file name: %s' % (elapsedTime,fname))
         fid=open(fname,'w')
         print('filename = ',fname)
         
         #turn imu on
-        GPIO.output(imuGpio,GPIO.HIGH)
-        eventLog.info('[%.3f] - IMU ON' % elapsedTime)
+        GPIO.output(imu_gpio,GPIO.HIGH)
+        logger.info('[%.3f] - IMU ON' % elapsedTime)
 
         for isample in range(imuNumSamples):
             time.sleep(recRate)
@@ -125,7 +122,7 @@ while True:
             elapsed = tHere - tStart
             fnow = datetime.utcnow()
             isample = isample + 1
-            eventLog.info('[%.3f] - Num of samples: %d, Wanted samples: %d' % (elapsed,isample,imuNumSamples))
+            logger.info('[%.3f] - Num of samples: %d, Wanted samples: %d' % (elapsed,isample,imuNumSamples))
 
             accel_x, accel_y, accel_z = sensor.accelerometer
             mag_x, mag_y, mag_z = sensor.magnetometer
@@ -144,9 +141,9 @@ while True:
             
         #turn imu off/ stop writing to file      
         fid.close()
-        GPIO.output(imuGpio,GPIO.LOW)
-        eventLog.info('[%.3f] - IMU OFF' % elapsedTime)
-        eventLog.info('[%.3f] - End of burst interval' % elapsedTime)
+        GPIO.output(imu_gpio,GPIO.LOW)
+        logger.info('[%.3f] - IMU OFF' % elapsedTime)
+        logger.info('[%.3f] - End of burst interval' % elapsedTime)
 
 
     
