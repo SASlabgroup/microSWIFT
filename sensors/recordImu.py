@@ -40,9 +40,6 @@ logFileHandler.setLevel(LOG_LEVEL)
 logFileHandler.setFormatter(Formatter(LOG_FORMAT))
 logger.addHandler(logFileHandler)
 
-
-dataFile = str(currentTimeString()) #file name
-
 #load parameters from Config.dat
 #system parameters 
 floatID = config.getString('System', 'floatID')
@@ -94,74 +91,56 @@ tStart = time.time()
 #LOOP BEGINS
 #-------------------------------------------------------------------------------
 while True:
-    now = datetime.utcnow()
-    tNow = time.time()
-    elapsedTime = tNow - tStart
     
-    if now.minute % burstInterval == 0 and now.second == 0:
+    logger.info("---------------recordIMU.py------------------")
+    if  now.minute == burst_time or now.minute % burst_int == 0 and now.second == 0:
         
-        
-        logger.info('[%.3f] - Start new burst interval' % elapsedTime)
+        logger.info('starting burst')
         
         #create new file for new burst interval 
         fname = dataDir + 'microSWIFT'+ floatID + '_IMU_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
-        print('filename = ',fname)
-        logger.info("file name: %s" %fname)
-        logger.info('[%.3f] - IMU file name: %s' % (elapsedTime,fname))
-        fid=open(fname,'w')
-        
+        logger.info("file name: ", fname)
         #turn imu on
         GPIO.output(imu_gpio,GPIO.HIGH)
-        logger.info('[%.3f] - IMU ON' % elapsedTime)
-        
+        logger.info('power on IMU')
         
         with open(fname, 'w',newline='\n') as imu_out:
-        
+            logger.info('open file for writing: ', fname)
             t_end = time.time() + burst_seconds #get end time for burst
             isample=0
-            while time.time() <= t_end or ipos < imu_samples:
+            while time.time() <= t_end or isample < imu_samples:
         
-                accel_x, accel_y, accel_z = fxos.accelerometer
-                mag_x, mag_y, mag_z = fxos.magnetometer
-                gyro_x, gyro_y, gyro_z = fxas.gyroscope
+                try:
+                    accel_x, accel_y, accel_z = fxos.accelerometer
+                    mag_x, mag_y, mag_z = fxos.magnetometer
+                    gyro_x, gyro_y, gyro_z = fxas.gyroscope
+                except Exception as e:
+                    logger.info(e)
+                    logger.info('error reading IMU data')
+
                 roll = 180 * math.atan(accel_x/math.sqrt(accel_y*accel_y + accel_z*accel_z))/math.pi
                 pitch = 180 * math.atan(accel_y/math.sqrt(accel_x*accel_x + accel_z*accel_z))/math.pi
                 yaw = 180 * math.atan(accel_z/math.sqrt(accel_x*accel_x + accel_z*accel_z))/math.pi
-                
-                timestring = (str(fnow.year) + ',' + str(fnow.month) + ',' + str(fnow.day) +
-                                  ',' + str(fnow.hour) + ',' + str(fnow.minute) + ',' + str(fnow.second))
-                fdname = fnow.strftime('%d%b%Y')
-                ftname = fnow.strftime('%H:%M:%S')
-                print('TIME ',fdname,ftname)
-                fid.write('%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n' %(elapsed,accel_x,accel_y,accel_z,mag_x,mag_y,mag_z,gyro_x,gyro_y,gyro_z,roll,pitch,yaw))
-                fid.flush()
-        
-        
+         
+                timestamp="{:%Y-%m-%d %H:%M:%S}".format(datetime.utcnow())
+
+                imu_out.write('%s,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n' %(timestamp,accel_x,accel_y,accel_z,mag_x,mag_y,mag_z,gyro_x,gyro_y,gyro_z,roll,pitch,yaw))
+                imu_out.flush()
         
                 if time.time() >= t_end and 0 < imu_samples-isample <= 10:
-                        
                         continue
-                    elif ipos == imu_samples and ivel == imu_samples:
+                elif isample == imu_sampless:
                         break
         
-        
                 isample = isample + 1
-
-                for isample in range(imu_samples):
-                time.sleep(recRate)
-                tHere = time.time()
-                elapsed = tHere - tStart
-                fnow = datetime.utcnow()
                 
-                logger.info('[%.3f] - Num of samples: %d, Wanted samples: %d' % (elapsed,isample,imu_samples))
-    
-                
-                
-            #turn imu off/ stop writing to file      
+            logger.info('end burst')
+            logger.info('IMU samples ', imu_samples)  
+            #turn imu off     
             GPIO.output(imu_gpio,GPIO.LOW)
-            logger.info('[%.3f] - IMU OFF' % elapsedTime)
-            logger.info('[%.3f] - End of burst interval' % elapsedTime)
+            logger.info('power down IMU')
+            
 
-
-    
-    time.sleep(.50)
+    #exit script and let it be restarted by service
+    sys.exit(0)    
+    #time.sleep(.50)
