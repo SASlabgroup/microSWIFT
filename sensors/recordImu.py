@@ -92,6 +92,8 @@ tStart = time.time()
 #-------------------------------------------------------------------------------
 while True:
     
+    #changes
+    
     logger.info("---------------recordIMU.py------------------")
     if  now.minute == burst_time or now.minute % burst_int == 0 and now.second == 0:
         
@@ -133,7 +135,7 @@ while True:
                         break
         
                 isample = isample + 1
-                
+            
             logger.info('end burst')
             logger.info('IMU samples ', imu_samples)  
             #turn imu off     
