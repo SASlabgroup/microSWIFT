@@ -18,12 +18,12 @@ def GetMeanTemp(datewant):
         fid = fopen(fnameMeanfile,'r')
         templine = fid.readline()
         tempdata = templine.split(',')
-        print tempdata
+        print(tempdata)
         tempdate = datetime.datetime(year=tempdata[0], month=tempdata[1],
                    day=tempdata[2], hour = tempdata[3],min=tempdata[4],
                   sec=tempdata[5])
         delTime = tempdate - datewant
-        print delTime
+        print(delTime)
 
         meanTemp = tempdata[6]
         
@@ -31,4 +31,4 @@ def GetMeanTemp(datewant):
 def main():
     systime = time.gmtime()
     meanTemp = GetMeanTemp(systime)
-    print 'mean temp',meanTemp
+    print('mean temp',meanTemp)

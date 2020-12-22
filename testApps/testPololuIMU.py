@@ -11,7 +11,7 @@
 import smbus
 import time
 import math
-import thread
+import _thread
 
 class MinIMU_v5_pi:
 	#aScale = 2g/2^15, gScale = 500dps/2^15, mScale = 4guass/2^15
@@ -347,7 +347,7 @@ class MinIMU_v5_pi:
 	"""Creates another thread which calls updateAngle every 4ms (250Hz) to track the
 	current roll, pitch, and yaw"""
 	def trackAngle(self):
-		thread.start_new_thread(self.trackAngleThread, ())
+		_thread.start_new_thread(self.trackAngleThread, ())
 	
 	def trackAngleThread(self):
 		while True:
@@ -357,7 +357,7 @@ class MinIMU_v5_pi:
 	"""Creates another thread which calls updateYaw every 4ms (250Hz) to track the
 	current yaw"""
 	def trackYaw(self):
-		thread.start_new_thread(self.trackYawThread, ())
+		_thread.start_new_thread(self.trackYawThread, ())
 	
 	def trackYawThread(self):
 		while True:
@@ -379,12 +379,12 @@ def main():
                     i += 1
                     IMU.updateYaw()
                     time.sleep(0.004)           
-                print IMU.prevYaw[0]
-                print  IMU.readAccelerometer() + IMU.readGyro() + IMU.readMagnetometer()
+                print(IMU.prevYaw[0])
+                print(IMU.readAccelerometer() + IMU.readGyro() + IMU.readMagnetometer())
                 time.sleep(0.004)
 
 
 if __name__ == "__main__":
-    print "MinIMU is main"
+    print("MinIMU is main")
     main()
     

@@ -130,6 +130,6 @@ def latLonDegMin2Dec( string ):
 def currentTimeString(): 	
     # Name the file according to the current time and date  
     dataFile = datetime.strftime(datetime.now(), "%Y%m%d%H%M%S")
-    print dataFile
+    print(dataFile)
     return dataFile
 

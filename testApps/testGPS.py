@@ -6,4 +6,4 @@ import sys
 
 gpsPort = '/dev/ttyS0'
 line = sys.stdin.readline()
-print line 
+print(line) 

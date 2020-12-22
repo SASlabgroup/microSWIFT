@@ -83,11 +83,11 @@ while True:
         #temp 1
         temp_volts0 = ConvertVolts(temp_output0)
         temp0 = ConvertTemp(temp_output0)
-        print("Temp0 : {} ({}V) {} deg C".format(temp_output0,temp_volts0,temp0))
+        print(("Temp0 : {} ({}V) {} deg C".format(temp_output0,temp_volts0,temp0)))
         #temp 2
         temp_volts1 = ConvertVolts(temp_output1)
         temp1 = ConvertTemp(temp_output1)
-        print("Temp1 : {} ({}V) {} deg C".format(temp_output1,temp_volts1,temp1))
+        print(("Temp1 : {} ({}V) {} deg C".format(temp_output1,temp_volts1,temp1)))
 
         #f.write('%f,%f,%f,%f,%f,%f,%f\n' % (elapsedTime,temp_volts0,temp0,temp_volts1,temp1,temp_volts2,temp2))
         #f.flush()

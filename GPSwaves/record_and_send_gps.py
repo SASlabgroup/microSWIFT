@@ -119,7 +119,7 @@ success = True
 
 timePort = serial.Serial(gpsPort, startBaud, timeout=1)
 read = timePort.readline()
-print ("THIS IS TIMEPORT", read)
+print(("THIS IS TIMEPORT", read))
 if not "GP" in read:
     print ("No NMEA")
     timePort.close()
@@ -165,9 +165,9 @@ def record_serial(fname,
     
     burst_num += 1
     eventLog.info('[%.3f] - Record_serial' % elapsed)
-    print ('[%.3f] - Record_serial' % elapsed)
+    print(('[%.3f] - Record_serial' % elapsed))
     eventLog.info('[%.3f] - Burst number: %s' %  (elapsed,str(burst_num)))
-    print ('[%.3f] - Burst number: %s' %  (elapsed,str(burst_num)))
+    print(('[%.3f] - Burst number: %s' %  (elapsed,str(burst_num))))
 
     u = np.empty(gpsNumSamples)
     u.fill(badValue)
@@ -196,7 +196,7 @@ def record_serial(fname,
             #test for incoming data over serial port
             for i in range(1):
                 newline = ser.readline()
-                print('[%.3f] - New GPS output: %s' % (elapsedTime,newline))
+                print(('[%.3f] - New GPS output: %s' % (elapsedTime,newline)))
                 eventLog.info('[%.3f] - New GPS output' % elapsedTime)
                 #sleep(1)   
 
@@ -224,11 +224,11 @@ def record_serial(fname,
                         eventLog.info('parse_nmea %s',str(parse_data_pos));
                         if ipos < gpsNumSamples:
                             z[ipos] = parse_data_pos['altitude']
-                            print ('[%.3f] - z[ipos]: %s' % (elapsedTime, z[ipos]))
+                            print(('[%.3f] - z[ipos]: %s' % (elapsedTime, z[ipos])))
                             lat[ipos] = parse_data_pos['lat']
-                            print ('[%.3f] - lat[ipos]: %s' % (elapsedTime, lat[ipos]))
+                            print(('[%.3f] - lat[ipos]: %s' % (elapsedTime, lat[ipos])))
                             lon[ipos] = parse_data_pos['lon']
-                            print ('[%.3f] - lon[ipos]: %s' % (elapsedTime, lon[ipos]))
+                            print(('[%.3f] - lon[ipos]: %s' % (elapsedTime, lon[ipos])))
                         ipos = ipos + 1
               
                     if "GPVTG" in newline:
@@ -237,9 +237,9 @@ def record_serial(fname,
                         eventLog.info('parse_nmea %s',str(parse_data_vel));
                         if ivel < gpsNumSamples:
                             u[ivel] = parse_data_vel['u_vel']
-                            print ('[%.3f] - u[ivel]: %s' % (elapsedTime, u[ivel]))
+                            print(('[%.3f] - u[ivel]: %s' % (elapsedTime, u[ivel])))
                             v[ivel] = parse_data_vel['v_vel']
-                        print ('[%.3f] - v[ivel]: %s' % (elapsedTime,v[ivel]))
+                        print(('[%.3f] - v[ivel]: %s' % (elapsedTime,v[ivel])))
                         ivel = ivel + 1
                     #isample = isample + 1
                     #print('[%.3f] - isample:%d,ivel:%d,ipos:%d' %(elapsedTime,isample,ivel,ipos))
@@ -277,14 +277,14 @@ def record_serial(fname,
 		    isample = isample + 1
 
             else:
-                print("[%.3f] - No serial data" % elapsedTime)
+                print(("[%.3f] - No serial data" % elapsedTime))
                 eventLog.info('[%.3f] - No serial data' % elapsedTime)
                 
-        print('IN SERIAL:',(elapsedTime,u,v,z,lat,lon))
+        print(('IN SERIAL:',(elapsedTime,u,v,z,lat,lon)))
         return u,v,z,lat,lon
 
     except Exception as e1:
-        print('[%.3f] - Error: %s' % (elapsedTime,str(e1 )))
+        print(('[%.3f] - Error: %s' % (elapsedTime,str(e1 ))))
         eventLog.error('[%.3f] - Error: %s' % (elapsedTime,str(e1 )))
         return u,v,z,lat,lon
     
@@ -319,11 +319,11 @@ def main():
     burstInt = config.getInt('Iridium', 'burstInt')
 
     TimeBetweenBurst_Call = (burstInt - callInt)
-    print('[%.3f] - Time between burst and call: %f' % (elapsed,TimeBetweenBurst_Call))
+    print(('[%.3f] - Time between burst and call: %f' % (elapsed,TimeBetweenBurst_Call)))
     eventLog.info('[%.3f] - Time between burst and call: %f' % (elapsed,TimeBetweenBurst_Call))
     
     if(TimeBetweenBurst_Call < 0):
-        print('[%.3f] - Error callInt larger than burst interval' % elasped)
+        print(('[%.3f] - Error callInt larger than burst interval' % elasped))
         eventLog.error('[%.3f] - Error - callInt larger than burst interval' % elasped)
         
     gpsOn = False        #GPS is off
@@ -338,24 +338,24 @@ def main():
         now = datetime.utcnow()
         
         #make SBD call at call interval as long as there has been at least one burst
-        print('[%.3f] - systime min= %d' % (elapsedTime,now.minute))
-        print('[%.3f] - call interval= %d'% (elapsedTime,callInt))
-        print('[%.3f] - burst interval = %d' % (elapsedTime,burstInt))
-        print('[%.3f] - systime sec= %d'% (elapsedTime,now.second))
+        print(('[%.3f] - systime min= %d' % (elapsedTime,now.minute)))
+        print(('[%.3f] - call interval= %d'% (elapsedTime,callInt)))
+        print(('[%.3f] - burst interval = %d' % (elapsedTime,burstInt)))
+        print(('[%.3f] - systime sec= %d'% (elapsedTime,now.second)))
 
         #check if at every call interval or hourly at callInt
         HowManyBurstsThisHour = now.minute // burstInt
         
         MinuteWantForCall = (callInt*(HowManyBurstsThisHour+1) + HowManyBurstsThisHour*TimeBetweenBurst_Call)
         
-        print('[%.3f] - Burst this hour: %d' % (elapsedTime, HowManyBurstsThisHour))
-        print('[%.3f] - Minute need for call: %d' % (elapsedTime, MinuteWantForCall))
-        print ("[%.3f] - Call hourly: %s" % (elapsedTime, IfHourlyCall))
-        print ("[%.3f] - Time(min): %d" % (elapsedTime, now.minute))
-        print ("[%.3f] - Burst number: %d" % (elapsedTime, burst_num))
-        print ("[%.3f] - Call interval: %d" % (elapsedTime,callInt))
+        print(('[%.3f] - Burst this hour: %d' % (elapsedTime, HowManyBurstsThisHour)))
+        print(('[%.3f] - Minute need for call: %d' % (elapsedTime, MinuteWantForCall)))
+        print(("[%.3f] - Call hourly: %s" % (elapsedTime, IfHourlyCall)))
+        print(("[%.3f] - Time(min): %d" % (elapsedTime, now.minute)))
+        print(("[%.3f] - Burst number: %d" % (elapsedTime, burst_num)))
+        print(("[%.3f] - Call interval: %d" % (elapsedTime,callInt)))
         gpsOnTime = (MinuteWantForCall-1)
-        print ("gpsOnTime = ", gpsOnTime)
+        print(("gpsOnTime = ", gpsOnTime))
         
         # turn on GPS specified number of min before the time to start burst interval in order to get
         # a fix before recording data. Can't currently be in a burst and this will only happen if
@@ -372,20 +372,20 @@ def main():
 
                 GPIO.output(gpsGpio,GPIO.LOW)
                 eventLog.info('[%.3f] - Turn GPS off' % elapsedTime)
-                print ('[%.3f] - Turn GPS off' % elapsedTime)
+                print(('[%.3f] - Turn GPS off' % elapsedTime))
                 doneGPS = False
                 
                 time.sleep(5)
                 GPIO.output(gpsGpio,GPIO.HIGH)
                 eventLog.info('[%.3f] - Turn GPS on' % elapsedTime)
-                print ('[%.3f] - Turn GPS on' % elapsedTime)
+                print(('[%.3f] - Turn GPS on' % elapsedTime))
                     
                 bootPort = serial.Serial(gpsPort, startBaud, timeout=1)
 
                 time.sleep(5)
                 bootPort.write('$PMTK251,115200*1F\r\n'.encode())
                 eventLog.info('[%.3f] - Set GPS to 115200 baud' % elapsedTime)
-                print ('[%.3f] - Set GPS to 115200 baud' % elapsedTime)
+                print(('[%.3f] - Set GPS to 115200 baud' % elapsedTime))
 
                 bootPort.flush()
 
@@ -395,9 +395,9 @@ def main():
                 wantedPort.write('$PMTK220,250*29\r\n'.encode())
                 eventLog.info('[%.3f] - Set sampling rate' % elapsedTime)
                 
-                print ('[%.3f] - Set sampling rate' % elapsedTime)
+                print(('[%.3f] - Set sampling rate' % elapsedTime))
                 data = wantedPort.readline()
-                print ('[%.3f] - Serial output: %s' % (elapsedTime,data))
+                print(('[%.3f] - Serial output: %s' % (elapsedTime,data)))
                 eventLog.info('[%.3f] - Serial output: %s' % (elapsedTime,data))
 
                 recordGps = True  #record GPS next 
@@ -412,7 +412,7 @@ def main():
                  (IfHourlyCall == True and now.minute % burstInt == 0 and numSamplesConst > 360) ):
                 
                 doneSampling = False 
-                print('[%.3f] - Prepping to read GPS lines' % elapsedTime)
+                print(('[%.3f] - Prepping to read GPS lines' % elapsedTime))
                 # save lines with position and velocity'
                 gdname = now.strftime('%d%b%Y')
                 gtname = now.strftime('%H:%M:%S') 
@@ -431,7 +431,7 @@ def main():
                                              elapsedTime,
                                              gpsGpio,
                                              startBaud)
-                print('[%.3f] - In loop , u=%s, v=%s, z=%s' % (elapsedTime,u,v,z)) 
+                print(('[%.3f] - In loop , u=%s, v=%s, z=%s' % (elapsedTime,u,v,z))) 
                 eventLog.info('[%.3f] - In loop , u=%s, v=%s, z=%s' % (elapsedTime,u,v,z))
                 
                 burstInt = config.getInt('Iridium', 'burstInt')
@@ -439,7 +439,7 @@ def main():
                 if (IfHourlyCall == True):
                     GPIO.output(gpsGpio,GPIO.LOW)
                     eventLog.info('[%.3f] - Turn GPS off' % elapsedTime)
-                    print ('[%.3f] - Turn GPS off' % elapsedTime)
+                    print(('[%.3f] - Turn GPS off' % elapsedTime))
                     iridiumCall = True
                     gpsOn = False 
                     recordGps = False
@@ -469,12 +469,12 @@ def main():
                 GPS_waves_results = GPSwavesC.main_GPSwaves(gpsNumSamples,
                                 u,v,z,GPSfrequency)
             
-                print('[%.3f] - GPS_waves_results: %s' % (elapsedTime, GPS_waves_results))
+                print(('[%.3f] - GPS_waves_results: %s' % (elapsedTime, GPS_waves_results)))
                 eventLog.info('[%.3f] - GPS_waves_results: %s' % (elapsedTime, GPS_waves_results))
             
                 #TO ACTUALLY RUN
                 SigwaveHeight = GPS_waves_results[0]
-                print ('[%.3f] WAVEHEIGHT: %f'% (elapsedTime,SigwaveHeight))
+                print(('[%.3f] WAVEHEIGHT: %f'% (elapsedTime,SigwaveHeight)))
                 
                 Peakwave_Period = GPS_waves_results[1]
                 Peakwave_dirT = GPS_waves_results[2]
@@ -503,10 +503,10 @@ def main():
                 np.set_printoptions(formatter={'float_kind':'{:.2e}'.format})
                 time.sleep(5)
                 #----------------------------
-                print('U=',u)
-                print('V=',v)
-                print('Z=',z)
-                print('RESULTS',GPS_waves_results)
+                print(('U=',u))
+                print(('V=',v))
+                print(('Z=',z))
+                print(('RESULTS',GPS_waves_results))
             
                 uMean = getuvzMean(badValue,u)
                 vMean = getuvzMean(badValue,v)
@@ -523,7 +523,7 @@ def main():
                                     elapsedTime)
                 
                 temp = float(tempMean)
-                print('[%.3f] - Mean Temperature = %f' % (elapsedTime, temp))
+                print(('[%.3f] - Mean Temperature = %f' % (elapsedTime, temp)))
                 eventLog.info('[%.3f] - Get mean Temperature = %f' % (elapsedTime, temp))
             
                 voltMean = GetMeanVolt(maxHoursVolt,
@@ -535,7 +535,7 @@ def main():
                                     elapsedTime)
                 
                 volt = float(voltMean)
-                print('[%.3f] - Mean Voltage = %s' % (elapsedTime, volt))
+                print(('[%.3f] - Mean Voltage = %s' % (elapsedTime, volt)))
                 eventLog.info('[%.3f] - Get mean Voltage = %s' % (elapsedTime, volt))
             
                 fbinary = (dataDir + floatID + 'SWIFT' + '_' + projectName + '_' + 
@@ -555,7 +555,7 @@ def main():
                     fbinary = open(fbinary, 'wb')
                     
                 except:
-                    print ('[%.3f] - To write binary file is already open' % elapsedTime)
+                    print(('[%.3f] - To write binary file is already open' % elapsedTime))
                 
                 SigwaveHeight = round(SigwaveHeight,6)
                 Peakwave_Period = round(Peakwave_Period,6)
@@ -623,7 +623,7 @@ def main():
                                           modemGpio)
 
                 eventLog.info('[%.3f] - Send sbd_binary_data' % elapsedTime)
-                print('[%.3f] - Sending sbd binary data' % elapsedTime)
+                print(('[%.3f] - Sending sbd binary data' % elapsedTime))
                 doneIridium = True
                 doneSampling = False
         else: 

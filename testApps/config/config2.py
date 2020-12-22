@@ -7,8 +7,8 @@
 ########################################################################
 
 import os.path
-import ConfigParser
-import StringIO
+import configparser
+import io
 
 '''
 # Class def start
@@ -40,7 +40,7 @@ class Config:
 
         # Sanity check
         if( not os.path.exists(configFilename) ):
-            print ('ERROR: File "%s" not found' % configFilename)
+            print(('ERROR: File "%s" not found' % configFilename))
             return False
 
         # Open the file & read it all in
@@ -62,7 +62,7 @@ class Config:
                 param_sub_map[split_line[0].strip()] = new_token
             elif '$' in line:
                 new_line = line
-                for token, replacement in param_sub_map.items():
+                for token, replacement in list(param_sub_map.items()):
                     new_line = line.replace(token, replacement)
                 section_list.append(new_line)
                     
@@ -70,10 +70,10 @@ class Config:
                 section_list.append(line)
                         
         combined_sections = default_section + section_list
-        stringObj = StringIO.StringIO(''.join(combined_sections))
+        stringObj = io.StringIO(''.join(combined_sections))
 
         # Save the config object
-        self.config = ConfigParser.SafeConfigParser()
+        self.config = configparser.SafeConfigParser()
         self.config.readfp(stringObj)
 
         return True
@@ -92,7 +92,7 @@ class Config:
         try:
             value = self.config.get( section, key )
         except:
-            print('ERROR: Section/Key "%s/%s" combination not found' % (section,key))
+            print(('ERROR: Section/Key "%s/%s" combination not found' % (section,key)))
             return None
         return value
 
@@ -120,8 +120,8 @@ class Config:
             return intVal
         # No-can-do...
         except:
-            print ('ERROR: Value "%s" for key "%s" cannot be converted to int' \
-                % (strVal,key))
+            print(('ERROR: Value "%s" for key "%s" cannot be converted to int' \
+                % (strVal,key)))
             return None
 
         
@@ -148,8 +148,8 @@ class Config:
             return floatVal
         # No-can-do...
         except:
-            print ('ERROR: Value "%s" for key "%s" cannot be converted to float' \
-                % (strVal,key))
+            print(('ERROR: Value "%s" for key "%s" cannot be converted to float' \
+                % (strVal,key)))
             return None
 
         

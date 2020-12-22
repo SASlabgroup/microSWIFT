@@ -46,7 +46,7 @@ def send_sbd_msg(message,bytelen):
             #if response[1].decode("ascii").rstrip("\r\n"))=='OK':
 
             #write data to MO buffer
-            print 'length in bytes =',bytelen
+            print('length in bytes =',bytelen)
 
             sbd.write(('AT+SBDWB='+str(bytelen) + '\r').encode())
             sleep(2)
@@ -54,17 +54,17 @@ def send_sbd_msg(message,bytelen):
             print(reply)
 
             checksum = sum(bytearray(message))
-            print 'checksum = ',checksum
+            print('checksum = ',checksum)
             
-            print 'message ',message
+            print('message ',message)
             sbd.write(message)
             sleep(2)
-            print 'wrote message ',reply
+            print('wrote message ',reply)
             sbd.write(chr(checksum >> 8))
             sbd.write(chr(checksum & 0xFF))
             sleep(2)
             reply = sbd.readlines()
-            print('wrote checksum ',reply)
+            print(('wrote checksum ',reply))
 
 
 
@@ -135,7 +135,7 @@ def main():
     packetTypeId = '1,' + idStr + ','
 
     SizeInBytes = struct.calcsize('sbbhfff42f42f42f42f42f42f42fff') -3
-    print 'SizeInBytes',SizeInBytes
+    print('SizeInBytes',SizeInBytes)
     PayLoadSize =  (5 + 7*42)*4 + 5
     dataToSend0= (struct.pack('<5sss4sssbbhfff',packetTypeId, str(0),',',
         str(SizeInBytes),':',str(PayLoadType),
@@ -164,26 +164,26 @@ def main():
                  *WaveSpectra_b2[31:42])+
                  struct.pack('42f',*checkdata) + struct.pack('ff\r',lat , lon))
     bytelen3 = struct.calcsize('11f42fff') + 9
-    print 'bytelen3',bytelen3
+    print('bytelen3',bytelen3)
 
-    print '----- dataToSend0 ='
-    print dataToSend0
-    print 'byte len =',bytelen0
+    print('----- dataToSend0 =')
+    print(dataToSend0)
+    print('byte len =',bytelen0)
     send_sbd_msg(dataToSend0,bytelen0)
 
-    print '----- dataToSend1 =' 
-    print dataToSend1
-    print 'byte len ',bytelen1
+    print('----- dataToSend1 =') 
+    print(dataToSend1)
+    print('byte len ',bytelen1)
     send_sbd_msg(dataToSend1,bytelen1)
 
-    print '----- dataToSend2 =' 
-    print dataToSend2
-    print 'byte len ',bytelen2
+    print('----- dataToSend2 =') 
+    print(dataToSend2)
+    print('byte len ',bytelen2)
     send_sbd_msg(dataToSend2,bytelen2)    
  
-    print '----- dataToSend3 =' 
-    print dataToSend3 
-    print 'byte len ',bytelen3
+    print('----- dataToSend3 =') 
+    print(dataToSend3) 
+    print('byte len ',bytelen3)
     send_sbd_msg(dataToSend3,bytelen3)
 
 

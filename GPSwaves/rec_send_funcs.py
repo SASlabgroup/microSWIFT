@@ -61,7 +61,7 @@ def getMean(data,maxHours,badValue):
     dayDiff = abs(int(data[2]) - dayNow)
     hourDiff = abs(int(data[3]) - hourNow)
     print (hourNow)
-    print (data[3])
+    print((data[3]))
     #give correct value if time is correct, otherwise give bad value 
     if (yearDiff == 0 and monthDiff == 0 and dayDiff == 0):
         print ("time is correct")
@@ -116,7 +116,7 @@ def parse_nmea_gpgga(gpgga_stc,
     eventLog.info('[%.3f] - Parse nmea GGA' % elapsedTime)
     
     msg = pynmea2.parse(gpgga_stc, check=True)  #parse gpgga sentence
-    print ('[%.3f] - GGA: %s' % (elapsedTime,msg))
+    print(('[%.3f] - GGA: %s' % (elapsedTime,msg)))
 
     latlon = str(msg.latitude) + ', ' + str(msg.longitude)  #save lat and lon as a list
     eventLog.info('[%.3f] - latlon = %s' % (elapsedTime,latlon))
@@ -159,14 +159,14 @@ def parse_nmea_gpvtg(gpvtg_stc,
     eventLog.info('[%.3f] - Parse nmea VTG' % elapsedTime)
 
     msg = pynmea2.parse(gpvtg_stc, check=True)  #parse gpvtg sentence
-    print ('[%.3f] - VTG: %s' % (elapsedTime,msg))
+    print(('[%.3f] - VTG: %s' % (elapsedTime,msg)))
 
     speed_over_grnd_kmph = msg.spd_over_grnd_kmph
-    print ('[%.3f] - Speed_over_grnd_kmph: %s' % (elapsedTime, speed_over_grnd_kmph))
+    print(('[%.3f] - Speed_over_grnd_kmph: %s' % (elapsedTime, speed_over_grnd_kmph)))
     true_track = msg.true_track
-    print ('[%.3f] - True_track: %s' % (elapsedTime,true_track))
+    print(('[%.3f] - True_track: %s' % (elapsedTime,true_track)))
     mag_track=msg.mag_track
-    print ('[%.3f] - Mag_track: %s' % (elapsedTime,mag_track))
+    print(('[%.3f] - Mag_track: %s' % (elapsedTime,mag_track)))
 
     u_vel = speed_over_grnd_kmph*np.cos(true_track)
     v_vel = speed_over_grnd_kmph*np.sin(true_track)
@@ -199,7 +199,7 @@ def GetMeanTemp(maxHours,
         latestFile = getLatestFile(txName,dataDir,floatID,projectName)
 
     except:
-        print ('[%.3f] - No mean temp file found' % elapsedTime)
+        print(('[%.3f] - No mean temp file found' % elapsedTime))
     
     eventLog.info('[%.3f] - Mean temp file to open: %s' % (elapsedTime, latestFile))
 
@@ -232,7 +232,7 @@ def GetMeanVolt(maxHours,
         latestFile = getLatestFile(txName,dataDir,floatID,projectName)
 
     except:
-        print ('[%.3f] - No mean volt file found' % elapsedTime)
+        print(('[%.3f] - No mean volt file found' % elapsedTime))
  
     eventLog.info('[%.3f] - Mean volt to read: %s' % (elapsedTime, latestFile))
 

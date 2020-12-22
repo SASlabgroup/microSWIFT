@@ -47,7 +47,7 @@ def send_sbd_msg(message,
     #calculate elapsed time
     elapsedTime = getElapsedTime(tStart,elapsed)
 
-    print('[%.3f] - Initializing SBD modem' % elapsedTime)
+    print(('[%.3f] - Initializing SBD modem' % elapsedTime))
     eventLog.info('[%.3f] - Initializing SBD modem' % elapsedTime)
 
     #create serial object and open port
@@ -73,40 +73,40 @@ def send_sbd_msg(message,
             #issue AT command and check for OK response
             sbd.write('AT\r'.encode())
             status = sbd.readlines()
-            print('[%.3f] - Iridium modem status: %s' % (elapsedTime,status))
+            print(('[%.3f] - Iridium modem status: %s' % (elapsedTime,status)))
             
             #get signal strength
             sbd.write('AT+CSQ\r'.encode())
             signal_strength = sbd.readlines()
-            print('[%.3f] - Iridium modem signal strength: %s' % (elapsedTime,signal_strength))
+            print(('[%.3f] - Iridium modem signal strength: %s' % (elapsedTime,signal_strength)))
             eventLog.info('[%.3f] - Send AT and AT+CSQ. Response: %s, %s' % (elapsedTime,status,signal_strength))
 
             #write data to MO buffer
             sleep(sleepTime)
             eventLog.info('[%.3f] - Write data to MO buffer' % elapsedTime)
 
-            print ('[%.3f] - Length in bytes: %d' % (elapsedTime, bytelen))
+            print(('[%.3f] - Length in bytes: %d' % (elapsedTime, bytelen)))
             eventLog.info('[%.3f] - Length in bytes: %d' % (elapsedTime, bytelen))
             
             sbd.write(('AT+SBDWB='+str(bytelen) + '\r').encode())
             sleep(sleepTime)
             reply = sbd.readlines()
-            print('[%.3f] - Write to MO buffer reply: %s' % (elapsedTime,reply))
+            print(('[%.3f] - Write to MO buffer reply: %s' % (elapsedTime,reply)))
             eventLog.info('[%.3f] - Write to MO buffer reply: %s' % (elapsedTime, reply))
             
             checksum = sum(bytearray(message))
-            print('[%.3f] - Checksum: %s, message: %s' % (elapsedTime,checksum,message))
+            print(('[%.3f] - Checksum: %s, message: %s' % (elapsedTime,checksum,message)))
             eventLog.info('[%.3f] - Checksum: %s, message: %s' % (elapsedTime,checksum,message))
 
             sbd.write(message)
             sleep(sleepTime)
-            print ('[%.3f] - wrote message: %s' % (elapsedTime,reply))
+            print(('[%.3f] - wrote message: %s' % (elapsedTime,reply)))
             
             sbd.write(chr(checksum >> 8))
             sbd.write(chr(checksum & 0xFF))
             
             reply = sbd.readlines()
-            print('[%.3f] - Wrote message and checksum to modem. Response: %s' % (elapsedTime, reply))
+            print(('[%.3f] - Wrote message and checksum to modem. Response: %s' % (elapsedTime, reply)))
             eventLog.info('[%.3f] - Wrote message and checksum to modem. Response: %s' % (elapsedTime, reply))
 
 
@@ -114,12 +114,12 @@ def send_sbd_msg(message,
             #send SBD message
                 sbd.write('AT+SBDIX\r'.encode())
                 eventLog.info('[%.3f] - Send SBD message' % elapsedTime)
-                print ('[%.3f] - Send SBD message' % elapsedTime)
+                print(('[%.3f] - Send SBD message' % elapsedTime))
                 
             sleep(10)
             reply = sbd.readlines()
             eventLog.info('[%.3f] - Reply to send SBD message: %s' %(elapsedTime, reply))
-            print('[%.3f] - Reply to send SBD message: %s' %(elapsedTime, reply))
+            print(('[%.3f] - Reply to send SBD message: %s' %(elapsedTime, reply)))
             #sleep(sleepTime)
 
         except Exception as e1:
@@ -171,12 +171,12 @@ def main(formatType,
     GPIO.output(modemGpio,GPIO.HIGH) #turn modem on
 
     print ("UNRECORDED VALUES")
-    print ("Pay load", PayLoadType)
-    print ("voltage", MeanVoltage)
-    print ("temp", MeanTemp)
-    print ("Hs", Hs)
-    print ("lon", lon)
-    print ("lat", lat)
+    print(("Pay load", PayLoadType))
+    print(("voltage", MeanVoltage))
+    print(("temp", MeanTemp))
+    print(("Hs", Hs))
+    print(("lon", lon))
+    print(("lat", lat))
     print ("============================")
     #time.sleep(1)
     #f = open("/home/pi/Desktop/newFile.txt","w+")
@@ -196,7 +196,7 @@ def main(formatType,
     packetTypeId = '1,' + decStr + ','
     eventLog.info('[%.3f] - PacketTypeId: %s' % (elapsedTime, packetTypeId))
 
-    print ('[%.3f] - SizeInBytes: %s' % (elapsedTime,str(SizeInBytes)))
+    print(('[%.3f] - SizeInBytes: %s' % (elapsedTime,str(SizeInBytes))))
     
     # 1st message sent 
     dataToSend0= (struct.pack('<5sss4sssbbhfff',
@@ -207,33 +207,33 @@ def main(formatType,
                                 struct.pack('42f',*WaveSpectra_Energy) +
                                 struct.pack('35f\r',*WaveSpectra_Freq[0:35]))
     
-    print (struct.unpack('<5sss4sssbbhfff42f35f',dataToSend0))
+    print((struct.unpack('<5sss4sssbbhfff42f35f',dataToSend0)))
     bytelen0  = struct.calcsize('sbbhfff42f35f') +9
-    print ('bytelen0',bytelen0)
+    print(('bytelen0',bytelen0))
 
     # 2nd message sent
     bytestart = struct.calcsize('sbbhfff42f35f')-3
-    print ('bytestart 1',bytestart)
+    print(('bytestart 1',bytestart))
     dataToSend1=(struct.pack('<5s3ss7f', packetTypeId,str(bytestart),':',
                  *WaveSpectra_Freq[35:42]) +
                  struct.pack('42f',*WaveSpectra_a1) +
                  struct.pack('33f\r',*WaveSpectra_b1[0:33]))
-    print (struct.unpack('<5s3ss7f42f33f', dataToSend1))
+    print((struct.unpack('<5s3ss7f42f33f', dataToSend1)))
     
     bytelen1 = struct.calcsize('7f42f33f') +9
-    print ('bytelen1',bytelen1)
+    print(('bytelen1',bytelen1))
 
     # 3rd message sent
     bytestart = struct.calcsize('sbbhfff42f42f42f33f')-3
-    print ('bytestart 2',bytestart)
+    print(('bytestart 2',bytestart))
     dataToSend2=(struct.pack('<5s3ss9f', packetTypeId,str(bytestart),':',
                  *WaveSpectra_b1[33:42])+
                  struct.pack('42f',*WaveSpectra_a2) +
                  struct.pack('31f\r',*WaveSpectra_b2[0:31]))
-    print (struct.unpack('<5s3ss9f42f31f', dataToSend2))
+    print((struct.unpack('<5s3ss9f42f31f', dataToSend2)))
     
     bytelen2 = struct.calcsize('9f42f31f') +9
-    print ('bytelen2',bytelen2)
+    print(('bytelen2',bytelen2))
     
     if PayLoadType==50:
         # 4th message sent
@@ -244,11 +244,11 @@ def main(formatType,
                  struct.pack('fffffffiiiiii\r',lat,lon,MeanTemp,MeanVoltage,u,v,z,
                  int(now.year),int(now.month),int(now.day),
                  int(now.hour),int(now.minute),int(now.second)))
-        print (struct.unpack('<5s3ss11f42ffffffffiiiiii', dataToSend3))
+        print((struct.unpack('<5s3ss11f42ffffffffiiiiii', dataToSend3)))
         bytelen3 = struct.calcsize('11f42ffffffffiiiiii') +9 
-        print ('bytelen3',bytelen3)
+        print(('bytelen3',bytelen3))
     else:
-        print ("[%.3f] - ERROR: Incorrect pay load type, try again" % elapsedTime)
+        print(("[%.3f] - ERROR: Incorrect pay load type, try again" % elapsedTime))
         eventLog.error('[%.3f] - ERROR: Incorrect pay load type, try again' % elapsedTime)
         sys.exit()
 

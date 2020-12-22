@@ -33,19 +33,19 @@ def main():
     while True:
                 
         data = mcp.read_adc(1)
-        print("Data: %f" % data)
+        print(("Data: %f" % data))
         
         volts = (data * 5)/float(1023) 
         volts = round(volts,4)
         
-        print ("volts", volts)
+        print(("volts", volts))
         
         psi = 50.0 * volts - 25.0
-        print ("Psi", psi)
+        print(("Psi", psi))
         water = 1/1.4233
         p = 14.7
         depth = ((psi-p)*water)
-        print ("depth" , depth)
+        print(("depth" , depth))
         time.sleep(0.5)
         
     

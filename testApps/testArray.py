@@ -36,7 +36,7 @@ def myRound2(value, N):
 for i in testArray:
     if i > 18446744073709551615:
         i = 999.0000
-    print i
+    print(i)
 
 testArray = np.where(testArray>=18446744073709551615, 999.00000, testArray)
 np.set_printoptions(formatter={'float_kind':'{:.5f}'.format})
@@ -46,4 +46,4 @@ np.set_printoptions(formatter={'float_kind':'{:.2e}'.format})
 
 #print ('Test Array', test)
 #print ('Saved', newThing)
-print ('Test Array 2', testArray)
+print(('Test Array 2', testArray))

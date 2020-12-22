@@ -56,23 +56,23 @@ def _getPayloadType(data):
 def processData(p_id, data):
     # Get Payload type, current valid types are 2 or 3
     (data_type, index) = _getPayloadType(data)
-    print("payload type: {}".format(data_type))
+    print(("payload type: {}".format(data_type)))
 
     index = 1
     if data_type != _4_0:
-        print("Invalid payload type: 0x{}".format(codecs.encode(data_type, 
-                                                                "hex")))
+        print(("Invalid payload type: 0x{}".format(codecs.encode(data_type, 
+                                                                "hex"))))
         sys.exit(1)
 
     data_len = len(data)
     while index < data_len:
-        print("Index: {}".format(index))
+        print(("Index: {}".format(index)))
         (sensor_type, index) = _getInt1(data, index)
         (com_port, index) = _getInt1(data, index)
-        print("Sensor: {}\tCom Port: {}".format(sensor_type, com_port))
+        print(("Sensor: {}\tCom Port: {}".format(sensor_type, com_port)))
 
         (size, index) = _getInt2(data, index)
-        print("Size: {}".format(size))
+        print(("Size: {}".format(size)))
 
         if sensor_type == 50:
             index = _processMicroSWIFT(p_id, data, index, size)
@@ -89,11 +89,11 @@ def _processMicroSWIFT(p_id, data, index, size):
         return index
 
     (hs, index) = _getFloat(data, index)
-    print("hs {}".format(hs))
+    print(("hs {}".format(hs)))
     (tp, index) = _getFloat(data, index)
-    print("tp {}".format(tp))
+    print(("tp {}".format(tp)))
     (dp, index) = _getFloat(data, index)
-    print("dp {}".format(dp))
+    print(("dp {}".format(dp)))
 
     arrays = [ 'e', 'f', 'a1', 'b1', 'a2', 'b2', 'cf']
 
@@ -102,34 +102,34 @@ def _processMicroSWIFT(p_id, data, index, size):
         # 0 - 41
         for a_index in range(0, 42):
             (val, index) = _getFloat(data, index)
-            print("{}{} {}".format(array, a_index, val))
+            print(("{}{} {}".format(array, a_index, val)))
 
     (lat, index) = _getFloat(data, index)
-    print("lat {}".format(lat))
+    print(("lat {}".format(lat)))
     (lon, index) = _getFloat(data, index)
-    print("lon {}".format(lon))
+    print(("lon {}".format(lon)))
     (mean_temp, index) = _getFloat(data, index)
-    print("mean_temp {}".format(mean_temp))
+    print(("mean_temp {}".format(mean_temp)))
     (mean_voltage, index) = _getFloat(data, index)
-    print("mean_voltage {}".format(mean_voltage))
+    print(("mean_voltage {}".format(mean_voltage)))
     (mean_u, index) = _getFloat(data, index)
-    print("mean_u {}".format(mean_u))
+    print(("mean_u {}".format(mean_u)))
     (mean_v, index) = _getFloat(data, index)
-    print("mean_v {}".format(mean_v))
+    print(("mean_v {}".format(mean_v)))
     (mean_z, index) = _getFloat(data, index)
-    print("mean_z {}".format(mean_z))
+    print(("mean_z {}".format(mean_z)))
     (year, index) = _getInt4(data, index)
-    print("year {}".format(year))
+    print(("year {}".format(year)))
     (month, index) = _getInt4(data, index)
-    print("month {}".format(month))
+    print(("month {}".format(month)))
     (day, index) = _getInt4(data, index)
-    print("day {}".format(day))
+    print(("day {}".format(day)))
     (hour, index) = _getInt4(data, index)
-    print("hour {}".format(hour))
+    print(("hour {}".format(hour)))
     (min, index) = _getInt4(data, index)
-    print("min {}".format(min))
+    print(("min {}".format(min)))
     (sec, index) = _getInt4(data, index)
-    print("sec {}".format(sec))
+    print(("sec {}".format(sec)))
 
     return index
 

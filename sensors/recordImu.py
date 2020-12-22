@@ -104,7 +104,7 @@ while True:
         fname = (dataDir + floatID +'_Imu_' + dname + '_' + tname +'UTC_burst_' +str(burstInterval) + '.dat')
         eventLog.info('[%.3f] - IMU file name: %s' % (elapsedTime,fname))
         fid=open(fname,'w')
-        print('filename = ',fname)
+        print(('filename = ',fname))
         
         #turn imu on
         GPIO.output(imuGpio,GPIO.HIGH)
@@ -129,7 +129,7 @@ while True:
                               ',' + str(fnow.hour) + ',' + str(fnow.minute) + ',' + str(fnow.second))
             fdname = fnow.strftime('%d%b%Y')
             ftname = fnow.strftime('%H:%M:%S')
-            print('TIME ',fdname,ftname)
+            print(('TIME ',fdname,ftname))
             fid.write('%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n' %(elapsed,accel_x,accel_y,accel_z,mag_x,mag_y,mag_z,gyro_x,gyro_y,gyro_z,roll,pitch,yaw))
             fid.flush()
             

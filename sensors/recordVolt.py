@@ -82,7 +82,7 @@ def main():
             eventLog.info('[%.3f] - Volt file: %s' % (elapsedTime, fname))
             
             fid=open(fname,'w')
-            print('filename = ',fname)
+            print(('filename = ',fname))
             
             for isample in range(voltNumSamples):
                 tNow = time.time()
@@ -99,7 +99,7 @@ def main():
                     ftname = now.strftime('%H:%M:%S')
                 
                     volt[isample] = ina.voltage()
-                    print('volt',volt[isample],isample, voltNumSamples)
+                    print(('volt',volt[isample],isample, voltNumSamples))
                     timestring = ("%d,%d,%d,%d,%d,%d" % (fnow.year,
                                                      fnow.month,
                                                      fnow.day,
@@ -107,7 +107,7 @@ def main():
                                                      fnow.minute,
                                                      fnow.second))
                     timestring = str(timestring)
-                    print('TIME ',timestring,fdname,ftname)
+                    print(('TIME ',timestring,fdname,ftname))
                     fid.write('%s,%15.10f\n' %(timestring,volt[isample]))
                     fid.flush()
                     tLastRead = tNow
@@ -116,7 +116,7 @@ def main():
             meanVolt = np.mean(volt)
             eventLog.info('[%.3f] - Mean Volt: %s' % (elapsedTime,meanVolt))
                 
-            print('mean volt ',meanVolt)
+            print(('mean volt ',meanVolt))
             fnameMean = ('microswift_' + floatID +'_' + projectName +'_VoltMean.dat')
             eventLog.info('[%.3f] - Mean volt file name: %s' % (elapsedTime,fnameMean))
             

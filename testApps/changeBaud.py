@@ -28,7 +28,7 @@ bootPort.write('$PMTK251,115200*1F\r\n'.encode())
 time.sleep(10)
 #bootPort.write(b'PMTK220,250')
 data = bootPort.readline()
-print data 
+print(data) 
 print ('test')
 
 bootPort.flush()
@@ -43,7 +43,7 @@ wantedPort = serial.Serial(addr, wantedBaud, timeout=1)
 wantedPort.write('$PMTK220,250*29\r\n'.encode())
 while True: 
     data = wantedPort.readline()
-    print data
+    print(data)
 '''wantedPort.readline()
 wantedPort.readline()
 wantedPort.readline()

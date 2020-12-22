@@ -55,17 +55,17 @@ def main():
             fname_dir = os.path.join(dataDir)
 
             fid=open(fname,'w')
-            print('filename = ',fname)
+            print(('filename = ',fname))
             for isample in range(tempNumSamples):
                 systime = time.gmtime()
                 if not sensor.read():
                     print("Error reading sensor")
                     exit(1)
                 temp[isample] = sensor.temperature()
-                print('temp',temp[isample],isample, tempNumSamples)
+                print(('temp',temp[isample],isample, tempNumSamples))
                 timestring = (str(now.year) + ',' + str(now.month) + ',' + str(now.day) +
                               ',' + str(now.hour) + ',' + str(now.minute) + ',' + str(now.second))
-                print('TIME ',timestring,dname,tname)
+                print(('TIME ',timestring,dname,tname))
                 fid.write('%s,%15.10f\n' %(timestring,temp[isample]))
                 fid.flush()
 
@@ -76,7 +76,7 @@ def main():
                 mean_temperature = np.mean(temp[idgood])
             else:
                 mean_temperature = bad
-            print('mean temp ',mean_temperature)
+            print(('mean temp ',mean_temperature))
             fnameMean = ('microswift_' + floatID +
                 '_' + projectName +'_TempMean.dat')
             fnameMeanNew = ('microswift_' + floatID +
@@ -89,7 +89,7 @@ def main():
             else:
                 fid = open(fnameMeanFile,'a')
             fidNew = open(fnameMeanNewFile,'w')
-            print fnameMean
+            print(fnameMean)
             fid.write('%s,%15.10f\n'%(timestring,mean_temperature))
             fidNew.write('%s,%15.10f\n'%(timestring,mean_temperature))
             fidNew.flush()

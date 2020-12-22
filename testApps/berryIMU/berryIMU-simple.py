@@ -93,7 +93,7 @@ while True:
     b = datetime.datetime.now() - a
     a = datetime.datetime.now()
     LP = b.microseconds/(1000000*1.0)
-    print "Loop Time | %5.2f|" % ( LP ),
+    print("Loop Time | %5.2f|" % ( LP ), end=' ')
 
 
     #Convert Gyro raw to degrees per second
@@ -170,21 +170,21 @@ while True:
 
 
     if 1:			#Change to '0' to stop showing the angles from the accelerometer
-        print ("\t# ACCX Angle %5.2f ACCY Angle %5.2f #  \n" % (AccXangle, AccYangle)),
+        print(("\t# ACCX Angle %5.2f ACCY Angle %5.2f #  \n" % (AccXangle, AccYangle)), end=' ')
 
     if 1:			#Change to '0' to stop  showing the angles from the gyro
-        print ("\t# GRYX Angle %5.2f  GYRY Angle %5.2f  GYRZ Angle %5.2f # \n" % (gyroXangle,gyroYangle,gyroZangle)),
+        print(("\t# GRYX Angle %5.2f  GYRY Angle %5.2f  GYRZ Angle %5.2f # \n" % (gyroXangle,gyroYangle,gyroZangle)), end=' ')
 
     if 1:			#Change to '0' to stop  showing the angles from the complementary filter
-        print ("\t# CFangleX Angle %5.2f   CFangleY Angle %5.2f # \n" % (CFangleX,CFangleY)),
+        print(("\t# CFangleX Angle %5.2f   CFangleY Angle %5.2f # \n" % (CFangleX,CFangleY)), end=' ')
         
     if 1:			#Change to '0' to stop  showing the heading
-        print ("\t# HEADING %5.2f  tiltCompensatedHeading %5.2f # \n" % (heading,tiltCompensatedHeading)),
+        print(("\t# HEADING %5.2f  tiltCompensatedHeading %5.2f # \n" % (heading,tiltCompensatedHeading)), end=' ')
     if 1:
-         print ("\t# Pitch %.2f   Roll %.2f # \n" % (pitch,roll)),
+         print(("\t# Pitch %.2f   Roll %.2f # \n" % (pitch,roll)), end=' ')
 
     #print a new line
-    print ""  
+    print("")  
 
 
 

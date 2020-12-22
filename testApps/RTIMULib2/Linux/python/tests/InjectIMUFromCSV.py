@@ -13,7 +13,7 @@ timestamp = 0
 
 SETTINGS_FILE = "RTIMULib"
 
-print("Using settings file " + SETTINGS_FILE + ".ini")
+print(("Using settings file " + SETTINGS_FILE + ".ini"))
 if not os.path.exists(SETTINGS_FILE + ".ini"):
   print("Settings file does not exist, will be created")
 
@@ -21,7 +21,7 @@ s = RTIMU.Settings(SETTINGS_FILE)
 imu = RTIMU.RTIMU(s)
 imu.IMUInit()
 
-print("IMU Name: " + imu.IMUName())
+print(("IMU Name: " + imu.IMUName()))
 
 with open('example_data.csv', 'rb') as f:
     reader = csv.reader(f)

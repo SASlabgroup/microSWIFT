@@ -29,7 +29,7 @@ SETTINGS_FILE = "RTIMULib"
 def computeHeight(pressure):
     return 44330.8 * (1 - pow(pressure / 1013.25, 0.190263));
     
-print("Using settings file " + SETTINGS_FILE + ".ini")
+print(("Using settings file " + SETTINGS_FILE + ".ini"))
 if not os.path.exists(SETTINGS_FILE + ".ini"):
   print("Settings file does not exist, will be created")
 
@@ -37,8 +37,8 @@ s = RTIMU.Settings(SETTINGS_FILE)
 imu = RTIMU.RTIMU(s)
 pressure = RTIMU.RTPressure(s)
 
-print("IMU Name: " + imu.IMUName())
-print("Pressure Name: " + pressure.pressureName())
+print(("IMU Name: " + imu.IMUName()))
+print(("Pressure Name: " + pressure.pressureName()))
 
 if (not imu.IMUInit()):
     print("IMU Init Failed")
@@ -59,7 +59,7 @@ else:
     print("Pressure sensor Init Succeeded")
 
 poll_interval = imu.IMUGetPollInterval()
-print("Recommended Poll Interval: %dmS\n" % poll_interval)
+print(("Recommended Poll Interval: %dmS\n" % poll_interval))
 
 while True:
   if imu.IMURead():
@@ -68,11 +68,11 @@ while True:
     data = imu.getIMUData()
     (data["pressureValid"], data["pressure"], data["temperatureValid"], data["temperature"]) = pressure.pressureRead()
     fusionPose = data["fusionPose"]
-    print("r: %f p: %f y: %f" % (math.degrees(fusionPose[0]), 
-        math.degrees(fusionPose[1]), math.degrees(fusionPose[2])))
+    print(("r: %f p: %f y: %f" % (math.degrees(fusionPose[0]), 
+        math.degrees(fusionPose[1]), math.degrees(fusionPose[2]))))
     if (data["pressureValid"]):
-        print("Pressure: %f, height above sea level: %f" % (data["pressure"], computeHeight(data["pressure"])))
+        print(("Pressure: %f, height above sea level: %f" % (data["pressure"], computeHeight(data["pressure"]))))
     if (data["temperatureValid"]):
-        print("Temperature: %f" % (data["temperature"]))
+        print(("Temperature: %f" % (data["temperature"])))
     time.sleep(poll_interval*1.0/1000.0)
 

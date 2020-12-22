@@ -45,11 +45,11 @@ recordingRate=float(sys.argv[3])
 
 # convert to time-between-recordings (sec)
 recordingInterval=1./recordingRate
-print "Interval: %.3f" % recordingInterval
+print("Interval: %.3f" % recordingInterval)
 
 # call utilities to set date as file name 
 SETTINGS_FILE = "RTIMULib"
-print("Using settings file " + SETTINGS_FILE + ".ini")
+print(("Using settings file " + SETTINGS_FILE + ".ini"))
 # if the file does not exits, create it 
 if not os.path.exists(SETTINGS_FILE + ".ini"):
     print("Settings file does not exist, will be created")
@@ -60,7 +60,7 @@ s = RTIMU.Settings(SETTINGS_FILE)
 imu = RTIMU.RTIMU(s)
 
 # ???????
-print("IMU Name: " + imu.IMUName())
+print(("IMU Name: " + imu.IMUName()))
 
 # what is IMUInit?
 if (not imu.IMUInit()):
@@ -84,11 +84,11 @@ float_poll_interval = float(poll_interval)
 float_sec_poll_interval = (float_poll_interval/1000.0)
 
 # print poll interval to 3 decimal places 
-print("SetPoll Interval: %.3dms\n" % float_sec_poll_interval)
+print(("SetPoll Interval: %.3dms\n" % float_sec_poll_interval))
  
 # get the start time of the app to 3 decimal places  
 tLastRecord=time.time() 
-print ("Start Time: %.3f") % tLastRecord
+print(("Start Time: %.3f") % tLastRecord)
 
 # grab start time of app in order to get the elapsed time, 
 tStart = time.time()
@@ -114,7 +114,7 @@ while True:
     tNow = time.time()
     # get the elapsed time since the beginning of the app
     elapsedTime = tNow-tStart
-    print "Elapsed time: %.3f" % elapsedTime
+    print("Elapsed time: %.3f" % elapsedTime)
     
     # the last read measurment 
     tSinceLastRead = tNow - tLastRead
@@ -132,7 +132,7 @@ while True:
     #-------------------------------------------------------------------------------------------------
     # get the elapsed time by comparing the time right now and the time from the last recorded measurment  
     tSinceLastIMURecorded = tNow - tLastRecord
-    print("Time since last IMU recorded:%.3f") % (tSinceLastIMURecorded)
+    print(("Time since last IMU recorded:%.3f") % (tSinceLastIMURecorded))
     # check that the command line duration has expired by comparing the time now to the start time
     if (tSinceLastIMURecorded) >= recordingInterval:
     # TIME TO RECORD 
@@ -141,7 +141,7 @@ while True:
         pitchDeg = math.degrees(fusionPose[1])
         yawDeg = math.degrees(fusionPose[2])
         # print the IMU measurements in degrees to 1 decimal place 
-        print("r: %.1f p: %.1f y: %.1f" % (rollDeg, pitchDeg, yawDeg))
+        print(("r: %.1f p: %.1f y: %.1f" % (rollDeg, pitchDeg, yawDeg)))
 	
 	# write timetaged IMU data to file 
 	f.write("%.3f %f %.1f %.1f %.1f \n" % (elapsedTime, tNow, rollDeg, pitchDeg, yawDeg))
@@ -155,4 +155,4 @@ while True:
 #=============================================================================
 # loop ends
 #=============================================================================
-print "Done!"
+print("Done!")

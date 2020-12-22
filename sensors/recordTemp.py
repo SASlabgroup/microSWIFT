@@ -90,7 +90,7 @@ def main():
             eventLog.info('[%.3f] - FileName: %s' % (elapsedTime,fname))
 
             fid=open(fname,'w')
-            print('filename = ',fname)
+            print(('filename = ',fname))
             for isample in range(tempNumSamples):
                 #time.sleep(1)
                 tNow = time.time()
@@ -100,7 +100,7 @@ def main():
                 output_volt = ConvertVolts(analog_output,2)
                 eventLog.info('[%.3f] - num sample: %d, num sample needed: %d' % (elapsedTime,isample,tempNumSamples))
                 temperature = ConvertTemp(output_volt,2)
-                print("Temp: %f" % temperature)
+                print(("Temp: %f" % temperature))
                 
                 time.sleep(recInterval)
                 tSinceLastRead = tNow - tLastRead
@@ -111,7 +111,7 @@ def main():
                 
                     temp[isample] = temperature
                 
-                    print('temp',temp[isample],isample, tempNumSamples)
+                    print(('temp',temp[isample],isample, tempNumSamples))
                     timestring = ("%d,%d,%d,%d,%d,%d" % (fnow.year,
                                                      fnow.month,
                                                      fnow.day,
@@ -119,7 +119,7 @@ def main():
                                                      fnow.minute,
                                                      fnow.second))
                     timestring = str(timestring)
-                    print('TIME ',timestring,fdname,ftname)
+                    print(('TIME ',timestring,fdname,ftname))
                     fid.write('%s,%15.10f\n' %(timestring,temp[isample]))
                     fid.flush()
                     #time.sleep(1)
@@ -130,7 +130,7 @@ def main():
 
             eventLog.info('[%.3f] - Mean temp: %s' % (elapsedTime,mean_temperature))
                 
-            print('mean temp ',mean_temperature)
+            print(('mean temp ',mean_temperature))
             fnameMean = ('microswift_' + floatID +'_' + projectName +'_TempMean.dat')
             eventLog.info('[%.3f] - Mean temp file: %s' % (elapsedTime,fnameMean))
             
@@ -152,8 +152,8 @@ def main():
             print (fnameMean)
             
             #set file permissions to write to 
-            os.chmod(fnameMeanFile, 0777)
-            os.chmod(fnameMeanNewFile, 0777)
+            os.chmod(fnameMeanFile, 0o777)
+            os.chmod(fnameMeanNewFile, 0o777)
             
             fid.write('%s,%15.10f\n'%(timestring,mean_temperature))
             fidNew.write('%s,%.10f\n'%(timestring,mean_temperature))
