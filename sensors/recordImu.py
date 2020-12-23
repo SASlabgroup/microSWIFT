@@ -137,7 +137,7 @@ while True:
                 sleep(0.25)
             
             logger.info('end burst')
-            logger.info('IMU samples ', imu_samples)  
+            logger.info('IMU samples %s' %imu_samples)  
             #turn imu off     
             GPIO.output(imu_gpio,GPIO.LOW)
             logger.info('power down IMU')
