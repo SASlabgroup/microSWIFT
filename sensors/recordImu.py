@@ -89,9 +89,10 @@ tStart = time.time()
 #-------------------------------------------------------------------------------
 #LOOP BEGINS
 #-------------------------------------------------------------------------------
+logger.info('---------------recordIMU.py------------------')
 while True:
     
-    logger.info('---------------recordIMU.py------------------')
+    
     now=datetime.utcnow()
     if  now.minute == burst_time or now.minute % burst_interval == 0 and now.second == 0:
         
@@ -145,4 +146,4 @@ while True:
 
     #exit script and let it be restarted by service
     #sys.exit(0)    
-    #time.sleep(.50)
+    sleep(.50)
