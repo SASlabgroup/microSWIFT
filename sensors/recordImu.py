@@ -50,10 +50,8 @@ burst_seconds=config.getInt('System', 'burst_seconds')
 
 bad = config.getInt('System', 'badValue')
 projectName = config.getString('System', 'projectName')
-numSamplesConst = config.getInt('System', 'numSamplesConst')
 
 #iridium parameters
-burstInterval = config.getInt('Iridium', 'burstInt')
 burstNum = config.getInt('Iridium', 'burstNum')
 
 #IMU parameters
@@ -120,7 +118,7 @@ while True:
 
                 roll = 180 * math.atan(accel_x/math.sqrt(accel_y*accel_y + accel_z*accel_z))/math.pi
                 pitch = 180 * math.atan(accel_y/math.sqrt(accel_x*accel_x + accel_z*accel_z))/math.pi
-                yaw = 180 * math.atan(accel_z/math.sqrt(accel_x*accel_x + accel_y*accel_y))/math.pi
+                yaw = 180 * math.atan(accel_z/math.sqrt(accel_x*accel_x + accel_y   *accel_y))/math.pi
          
                 timestamp="{:%Y-%m-%d %H:%M:%S}".format(datetime.utcnow())
 
