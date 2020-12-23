@@ -130,15 +130,17 @@ while True:
         
                 isample = isample + 1
                 
-                if time.time() >= t_end and 0 < imu_samples-isample <= 40:
+                if isample == imu_samples:
+                    break
+                elif time.time() >= t_end and 0 < imu_samples-isample <= 40:
                     continue
-                else:
+                elif time.time() > t_end and imu_samples-isample > 40:
                     break
                     
                 sleep(0.25)
             
             logger.info('end burst')
-            logger.info('IMU samples %s' %imu_samples)  
+            logger.info('IMU samples %s' %isample)  
             #turn imu off     
             GPIO.output(imu_gpio,GPIO.LOW)
             logger.info('power down IMU')
