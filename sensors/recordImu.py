@@ -90,21 +90,21 @@ tStart = time.time()
 #-------------------------------------------------------------------------------
 while True:
     
-    logger.info("---------------recordIMU.py------------------")
+    logger.info('---------------recordIMU.py------------------')
     now=datetime.utcnow()
     if  now.minute == burst_time or now.minute % burst_interval == 0 and now.second == 0:
         
         logger.info('starting burst')
         
         #create new file for new burst interval 
-        fname = dataDir + 'microSWIFT'+ floatID + '_IMU_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
-        logger.info("file name: ", fname)
+        fname = dataDir + 'microSWIFT'+ floatID + '_IMU_'+'{:%d%b%Y_%H%M%SUTC.dat}'.format(datetime.utcnow())
+        logger.info('file name: %s' %fname)
         #turn imu on
         GPIO.output(imu_gpio,GPIO.HIGH)
         logger.info('power on IMU')
         
         with open(fname, 'w',newline='\n') as imu_out:
-            logger.info('open file for writing: ', fname)
+            logger.info('open file for writing: %s' %fname)
             t_end = time.time() + burst_seconds #get end time for burst
             isample=0
             while time.time() <= t_end or isample < imu_samples:
@@ -121,7 +121,7 @@ while True:
                 pitch = 180 * math.atan(accel_y/math.sqrt(accel_x*accel_x + accel_z*accel_z))/math.pi
                 yaw = 180 * math.atan(accel_z/math.sqrt(accel_x*accel_x + accel_y   *accel_y))/math.pi
          
-                timestamp="{:%Y-%m-%d %H:%M:%S}".format(datetime.utcnow())
+                timestamp='{:%Y-%m-%d %H:%M:%S}'.format(datetime.utcnow())
 
                 imu_out.write('%s,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n' %(timestamp,accel_x,accel_y,accel_z,mag_x,mag_y,mag_z,gyro_x,gyro_y,gyro_z,roll,pitch,yaw))
                 imu_out.flush()
@@ -130,7 +130,7 @@ while True:
                 
                 if time.time() >= t_end and 0 < imu_samples-isample <= 10:
                         continue
-                elif isample == imu_sampless:
+                elif isample == imu_samples:
                         break
                     
                 sleep(0.25)
