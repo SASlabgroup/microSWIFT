@@ -143,5 +143,5 @@ while True:
             
 
     #exit script and let it be restarted by service
-    sys.exit(0)    
+    #sys.exit(0)    
     #time.sleep(.50)
