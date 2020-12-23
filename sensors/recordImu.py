@@ -131,7 +131,7 @@ while True:
                 
                 if time.time() >= t_end and 0 < imu_samples-isample <= 40:
                         continue
-                elif isample == imu_samples:
+                else:
                         break
                     
                 sleep(0.25)
