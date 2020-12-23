@@ -131,9 +131,9 @@ while True:
                 isample = isample + 1
                 
                 if time.time() >= t_end and 0 < imu_samples-isample <= 40:
-                        continue
+                    continue
                 else:
-                        break
+                    break
                     
                 sleep(0.25)
             
