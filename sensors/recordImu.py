@@ -92,8 +92,6 @@ tStart = time.time()
 #-------------------------------------------------------------------------------
 while True:
     
-    #changes
-    
     logger.info("---------------recordIMU.py------------------")
     if  now.minute == burst_time or now.minute % burst_int == 0 and now.second == 0:
         
@@ -122,19 +120,21 @@ while True:
 
                 roll = 180 * math.atan(accel_x/math.sqrt(accel_y*accel_y + accel_z*accel_z))/math.pi
                 pitch = 180 * math.atan(accel_y/math.sqrt(accel_x*accel_x + accel_z*accel_z))/math.pi
-                yaw = 180 * math.atan(accel_z/math.sqrt(accel_x*accel_x + accel_z*accel_z))/math.pi
+                yaw = 180 * math.atan(accel_z/math.sqrt(accel_x*accel_x + accel_y*accel_y))/math.pi
          
                 timestamp="{:%Y-%m-%d %H:%M:%S}".format(datetime.utcnow())
 
                 imu_out.write('%s,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n' %(timestamp,accel_x,accel_y,accel_z,mag_x,mag_y,mag_z,gyro_x,gyro_y,gyro_z,roll,pitch,yaw))
                 imu_out.flush()
         
+                isample = isample + 1
+                
                 if time.time() >= t_end and 0 < imu_samples-isample <= 10:
                         continue
                 elif isample == imu_sampless:
                         break
-        
-                isample = isample + 1
+                    
+                sleep(0.25)
             
             logger.info('end burst')
             logger.info('IMU samples ', imu_samples)  
