@@ -7,6 +7,7 @@ from datetime import datetime
 import numpy as np
 import logging
 from logging import *
+from time import sleep
 
 #third party imports
 import RPi.GPIO as GPIO
@@ -128,7 +129,7 @@ while True:
         
                 isample = isample + 1
                 
-                if time.time() >= t_end and 0 < imu_samples-isample <= 10:
+                if time.time() >= t_end and 0 < imu_samples-isample <= 40:
                         continue
                 elif isample == imu_samples:
                         break
