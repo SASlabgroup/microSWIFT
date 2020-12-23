@@ -91,6 +91,7 @@ tStart = time.time()
 while True:
     
     logger.info("---------------recordIMU.py------------------")
+    now=datetime.utcnow()
     if  now.minute == burst_time or now.minute % burst_int == 0 and now.second == 0:
         
         logger.info('starting burst')
