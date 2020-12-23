@@ -11,11 +11,12 @@ from time import sleep
 
 #third party imports
 import RPi.GPIO as GPIO
-import adafruit_fxos8700
+#import adafruit_fxos8700
 import adafruit_fxas21002c
 
 #my imports 
 from config3 import Config
+import adafruit_fxos8700_microSWIFT
 
 #---------------------------------------------------------------
 configDat = sys.argv[1]
@@ -71,7 +72,7 @@ GPIO.setup(imu_gpio,GPIO.OUT)
 GPIO.output(imu_gpio,GPIO.HIGH)
 
 i2c = busio.I2C(board.SCL, board.SDA)
-fxos = adafruit_fxos8700.FXOS8700(i2c)
+fxos = adafruit_fxos8700_microSWIFT.FXOS8700(i2c)
 fxas = adafruit_fxas21002c.FXAS21002C(i2c)
 
 # Optionally create the sensor with a different accelerometer range (the
@@ -137,7 +138,7 @@ while True:
                 elif time.time() > t_end and imu_samples-isample > 40:
                     break
                     
-                sleep(0.25)
+                sleep(0.23)
             
             logger.info('end burst')
             logger.info('IMU samples %s' %isample)  

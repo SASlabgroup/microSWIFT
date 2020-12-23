@@ -3,9 +3,9 @@
 #-------------------------------------------------------------------------------
 
 #directories and files needed 
-imuDir=/home/pi/microSWIFT/sensors
+imuDir=home/pi/microSWIFT/sensors
 config=/home/pi/microSWIFT/utils/Config.dat
-utilsDir=/home/pi/microSWIFT/utils
+utilsDir=home/pi/microSWIFT/utils
 
 #get PIDs  
 #imuPID=$(ps -ef | grep "recordImu.py" | grep -v grep | awk '{ print $2 }')
