@@ -239,6 +239,7 @@ def main():
 	
 	logger.info("---------------recordGPS.py------------------")
 	logger.info(sys.version)
+	
 	#call function to initialize GPS
 	ser, gps_initialized, time, date = init_gps()
 	
