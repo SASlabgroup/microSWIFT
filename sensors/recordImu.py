@@ -53,17 +53,11 @@ burst_seconds=config.getInt('System', 'burst_seconds')
 bad = config.getInt('System', 'badValue')
 projectName = config.getString('System', 'projectName')
 
-#iridium parameters
-burstNum = config.getInt('Iridium', 'burstNum')
-
 #IMU parameters
 imuFreq=config.getInt('IMU', 'imuFreq')
 imu_samples = imuFreq*burst_seconds
 maxHours=config.getInt('IMU', 'maxHours')
 imu_gpio=config.getInt('IMU', 'imu_gpio')
-recRate = config.getInt('IMU', 'recRate')
-recRate = 1./recRate
-
 
 #initialize IMU GPIO pin as modem on/off control
 GPIO.setmode(GPIO.BCM)
@@ -137,7 +131,8 @@ while True:
                     continue
                 elif time.time() > t_end and imu_samples-isample > 40:
                     break
-                    
+                
+                #hard coded sleep to control recording rate. NOT ideal but works for now    
                 sleep(0.23)
             
             logger.info('end burst')
@@ -147,6 +142,5 @@ while True:
             logger.info('power down IMU')
             
 
-    #exit script and let it be restarted by service
-    #sys.exit(0)    
+    
     sleep(.50)

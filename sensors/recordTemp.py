@@ -16,7 +16,7 @@ import Adafruit_MCP3008
 
 #my imports
 from utils import *
-from config2 import Config
+from config3     import Config
 #---------------------------------------------------------------
 configDat = sys.argv[1]
 configFilename = configDat #Load config file/parameters needed
@@ -26,6 +26,37 @@ ok = config.loadFile( configFilename )
 if( not ok ):
     sys.exit(0)
 
+#set up logging
+logDir = config.getString('Loggers', 'logDir')
+LOG_LEVEL = config.getString('Loggers', 'DefaultLogLevel')
+#format log messages (example: 2020-11-23 14:31:00,578, recordTemp - info - this is a log message)
+#NOTE: TIME IS SYSTEM TIME
+LOG_FORMAT = ('%(asctime)s, %(filename)s - [%(levelname)s] - %(message)s')
+#log file name (example: home/pi/microSWIFT/recordGPS_23Nov2020.log)
+LOG_FILE = (logDir + '/' + 'recordTemp' + '_' + datetime.strftime(datetime.now(), '%d%b%Y') + '.log')
+logger = getLogger('system_logger')
+logger.setLevel(LOG_LEVEL)
+logFileHandler = FileHandler(LOG_FILE)
+logFileHandler.setLevel(LOG_LEVEL)
+logFileHandler.setFormatter(Formatter(LOG_FORMAT))
+logger.addHandler(logFileHandler)
+
+#system parameters
+dataDir = config.getString('System', 'dataDir')
+floatID = config.getString('System', 'floatID') 
+projectName = config.getString('System', 'projectName')
+payLoadType = config.getInt('System', 'payLoadType')
+badValue = config.getInt('System', 'badValue')
+numCoef = config.getInt('System', 'numCoef')
+Port = config.getInt('System', 'port')
+payloadVersion = config.getInt('System', 'payloadVersion')
+burst_seconds = config.getInt('System', 'burst_seconds')
+burst_time = config.getInt('System', 'burst_time')
+burst_int = config.getInt('System', 'burst_interval')
+
+#temp configuration
+rec_interval = config.getFloat('Temp', 'rec_interval')
+temp_samples = busrt_seconds/rec_interval
 # Software SPI configuration:
 CLK  = config.getInt('Temp', 'CLK')
 MISO = config.getInt('Temp', 'MISO')
@@ -33,48 +64,17 @@ MOSI = config.getInt('Temp', 'MOSI')
 CS   = config.getInt('Temp', 'CS')
 mcp = Adafruit_MCP3008.MCP3008(clk=CLK, cs=CS, miso=MISO, mosi=MOSI)
 
-#temp configuration 
-tempFreq=config.getInt('Temp', 'tempFreq')
-numSamplesConst=config.getInt('System', 'numSamplesConst')
-tempNumSamples = tempFreq*numSamplesConst
-
-recRate = config.getInt('Temp', 'recRate')
-recInterval = 1./recRate
-
-#when to record according to burst interval
-burstInterval = config.getInt('Iridium', 'burstInt')
-burstNum = config.getInt('Iridium', 'burstNum')
-
-#logging params
-dataDir = config.getString('LogLocation', 'dataDir')
-logDir = config.getString('LogLocation', 'logDir')
-floatID = config.getString('System', 'floatID')
-bad = config.getInt('System', 'badValue')
-projectName = config.getString('System', 'projectName')
-
-##LOGGING
-dataFile = str(currentTimeString()) #file name
-#EVENT Log
-LOG_FORMAT = ('[%(levelname)s] %(message)s')
-LOG_LEVEL = logging.INFO 
-EVENT_LOG_FILE = (logDir + '/' + 'tempEvent' + dataFile + '.log')
-eventLog = logging.getLogger("Event")
-eventLog.setLevel(LOG_LEVEL)
-eventLogFileHandler = FileHandler(EVENT_LOG_FILE)
-eventLogFileHandler.setLevel(LOG_LEVEL)
-eventLogFileHandler.setFormatter(Formatter(LOG_FORMAT))
-eventLog.addHandler(eventLogFileHandler)
-
 #-------------------------------------------------------------------
 #Loop Begins
 #-------------------------------------------------------------------
 def main():
-    temp = np.empty(tempNumSamples) #make empty numpy array to write to
-    #eventLog.info('[%.3f] - Start new burst interval' % elapsedTime)
-    tStart = time.time()
-    tLastRead = time.time()
+     #make empty numpy array to write to
+    temp = np.empty(tempNumSamples)
+
+    logger.info("---------------recordTemp.py------------------")
+    logger.info(sys.version)
+
     while True:
-        #time.sleep(1)
         # at burst time interval
         now = datetime.utcnow()
         if (now.minute % burstInterval == 0 and now.second == 0):
@@ -162,7 +162,8 @@ def main():
             fidNew.close()
             eventLog.info('[%.3f] - End burst interval' % elapsedTime)
             fid.close()
-        time.sleep(1)
+            
+        time.sleep(0.5)
         
     
 #run main function unless importing as a module

@@ -222,10 +222,9 @@ def record_gps(ser,fname):
 					continue
 				elif ipos == gps_samples and ivel == gps_samples:
 					break
-					
-			logger.info('gps_samples ', gps_samples)	
-			logger.info('number of GPGGA samples = ', ipos)
-			logger.info('number of GPVTG samples = ', ivel)
+						
+		logger.info('number of GPGGA samples = ', ipos)
+		logger.info('number of GPVTG samples = ', ivel)
 						
 		return u,v,z,lat,lon
 	except Exception as e:

@@ -122,14 +122,12 @@ timeout=60
 [IMU]
 imuFreq=4
 imu_gpio=20
-recRate=4
 maxHours=3
 
 #===================== Temperature Parameters =====================
 [Temp]
-tempfreq=1
 maxHours=3
-recRate=1
+rec_interval=1
 
 #SPI pins for ADC
 CLK=11
