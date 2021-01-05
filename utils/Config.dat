@@ -56,7 +56,7 @@ microSWIFTHandler=INFO
 dataDir=/home/pi/microSWIFT/data/
 
 #where to send data 
-shipIP=10.19.59.89
+shipIP=192.168.0.178
 shipUser=apl
 shipPass='1013ne40th'
 shipDir=/home/Documents/microSWIFT_Test_Data
