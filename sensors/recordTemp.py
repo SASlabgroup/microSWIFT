@@ -121,7 +121,7 @@ def main():
                     time.sleep(rec_interval/4)
                     logger.info('end of burst')   
                     logger.info('number of samples expected = %d' % temp_samples)   
-                    logger.info('number of samples recorded = %d' % isample+1)   
+                    logger.info('number of samples recorded = %d' % (isample+1))   
                     
 
             mean_temperature = np.mean(temp)
