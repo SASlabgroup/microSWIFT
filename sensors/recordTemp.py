@@ -3,7 +3,7 @@
 #Read and record temp from sensors
 #--------------------------------------------------------------
 #standard imports
-import time,spidev,sys,socket, os
+import time, spidev, sys
 from datetime import datetime
 import numpy as np
 import logging
@@ -14,8 +14,7 @@ import Adafruit_GPIO.SPI as SPI
 import Adafruit_MCP3008
 
 #my imports
-from utils import *
-from config3     import Config
+from config3 import Config
 #---------------------------------------------------------------
 configDat = sys.argv[1]
 configFilename = configDat #Load config file/parameters needed
@@ -64,9 +63,20 @@ MOSI = config.getInt('Temp', 'MOSI')
 CS   = config.getInt('Temp', 'CS')
 mcp = Adafruit_MCP3008.MCP3008(clk=CLK, cs=CS, miso=MISO, mosi=MOSI)
 
-#-------------------------------------------------------------------
-#Loop Begins
-#-------------------------------------------------------------------
+
+def get_temp():
+
+    try:
+       adc_0 = mcp.read_adc(0) #read output from ADC channel 0
+    except Exception as e:
+        logger.info(e)
+        logger.info('error reading temperature data')
+    #temp calculation. see TMP36 data sheet for calculation.
+    raw_temp = (330*adc_0/1024)-50
+    raw_temp = round(raw_temp,2)
+
+    return raw_temp
+
 def main():
      #make empty numpy array to write to
     temp = np.empty(temp_samples)
@@ -86,87 +96,38 @@ def main():
             with open(fname, 'w',newline='\n') as temp_out:
                 
                 logger.info('open file for writing: %s' %fname)
+                
+                #get first sample at time zero
+                temp_sample = get_temp()
+                timestamp='{:%Y-%m-%d %H:%M:%S}'.format(datetime.utcnow())
+                temp_out.write('%s,%f\n' % (timestamp, temp_sample))
+                temp_out.flush()
+                temp[0] = temp_sample
+                isample = 1
+                t_start = time.time()
                 t_end = time.time() + burst_seconds #get end time for burst
-                isample=0
-                while time.time() <= t_end or isample < temp_samples:
-                    try:
-                       analog_output = mcp.read_adc(0) #read output from ADC channel 0
-                    except Exception as e:
-                        logger.info(e)
-                        logger.info('error reading temperature data')
-                
-                    #temp calculation. see TMP36 data sheet for calculation.
-                    raw_temp = (330*analog_output/1024)-50
-                    raw_temp = round(temp,2)
-                    temp[isample] = raw_temp
-                
-                
-                    timestamp='{:%Y-%m-%d %H:%M:%S}'.format(datetime.utcnow())
-           
-                
-                time.sleep(recInterval)
-                tSinceLastRead = tNow - tLastRead
-                if (tSinceLastRead >= recInterval):
-                    fnow = datetime.utcnow()
-                    fdname = fnow.strftime('%d%b%Y')
-                    ftname = fnow.strftime('%H:%M:%S')
-                
-                    temp[isample] = temperature
-                
-                    print('temp',temp[isample],isample, tempNumSamples)
-                    timestring = ("%d,%d,%d,%d,%d,%d" % (fnow.year,
-                                                     fnow.month,
-                                                     fnow.day,
-                                                     fnow.hour,
-                                                     fnow.minute,
-                                                     fnow.second))
-                    timestring = str(timestring)
-                    print('TIME ',timestring,fdname,ftname)
-                    fid.write('%s,%15.10f\n' %(timestring,temp[isample]))
-                    fid.flush()
-                    #time.sleep(1)
-                    tLastRead = tNow
+                while time.time() <= t_end:
+                    
+                    temp_sample = get_temp()
+                    
+                    #if at a rec_interval, record temp and add to np array
+                    if (time.time()-t_start) % rec_interval == 0:
+                        timestamp='{:%Y-%m-%d %H:%M:%S}'.format(datetime.utcnow())
+                        temp_out.write('%s,%15.10f\n' % (timestamp, temp_sample))
+                        temp_out.flush()
+                        temp[isample] = temp_sample
+                        isample += 1
 
-                #fid.close()
+                    time.sleep(rec_interval/4)
+                    logger.info('end of burst')   
+                    logger.info('number of samples expected = %d' % temp_samples)   
+                    logger.info('number of samples recorded = %d' % isample+1)   
+                    
+
             mean_temperature = np.mean(temp)
+            logger.info('mean temperature = %f' % mean_temperature)
 
-            eventLog.info('[%.3f] - Mean temp: %s' % (elapsedTime,mean_temperature))
-                
-            print('mean temp ',mean_temperature)
-            fnameMean = ('microswift_' + floatID +'_' + projectName +'_TempMean.dat')
-            eventLog.info('[%.3f] - Mean temp file: %s' % (elapsedTime,fnameMean))
-            
-            fnameMeanNew = ('microswift_' + floatID +'_' + projectName +'_TempMean_New.dat')
-            eventLog.info('[%.3f] - New mean temp file: %s' % (elapsedTime,fnameMeanNew))
-
-            #go to 
-            fnameMean_dir = os.path.join(dataDir)
-            fnameMeanFile = os.path.join(fnameMean_dir,fnameMean)
-            fnameMeanNewFile = os.path.join(fnameMean_dir,fnameMeanNew)
-            
-            if not (os.path.exists(fnameMeanFile)):
-                fid = open(fnameMeanFile,'w')
-            else:
-                fid = open(fnameMeanFile,'a')
-                
-
-            fidNew = open(fnameMeanNewFile,'w')
-            print (fnameMean)
-            
-            #set file permissions to write to 
-            os.chmod(fnameMeanFile, 0777)
-            os.chmod(fnameMeanNewFile, 0777)
-            
-            fid.write('%s,%15.10f\n'%(timestring,mean_temperature))
-            fidNew.write('%s,%.10f\n'%(timestring,mean_temperature))
-            fid.flush()
-            fidNew.flush()
-            fidNew.close()
-            eventLog.info('[%.3f] - End burst interval' % elapsedTime)
-            fid.close()
-            
-        time.sleep(0.5)
-        
+        time.sleep(0.25) 
     
 #run main function unless importing as a module
 if __name__ == "__main__":
