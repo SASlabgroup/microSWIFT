@@ -54,7 +54,7 @@ burst_int = config.getInt('System', 'burst_interval')
 
 #temp configuration
 rec_interval = config.getFloat('Temp', 'rec_interval')
-temp_samples = int(busrt_seconds/rec_interval)
+temp_samples = int(burst_seconds/rec_interval)
 
 # Software SPI configuration:
 CLK  = config.getInt('Temp', 'CLK')
