@@ -1,7 +1,6 @@
-#! /usr/bin/python2.7
+#! /usr/bin/python3
 
 #Read and record temp from sensors
-# Partial code by Author: Tony DiCola
 #--------------------------------------------------------------
 #standard imports
 import time,spidev,sys,socket, os
@@ -56,7 +55,8 @@ burst_int = config.getInt('System', 'burst_interval')
 
 #temp configuration
 rec_interval = config.getFloat('Temp', 'rec_interval')
-temp_samples = busrt_seconds/rec_interval
+temp_samples = int(busrt_seconds/rec_interval)
+
 # Software SPI configuration:
 CLK  = config.getInt('Temp', 'CLK')
 MISO = config.getInt('Temp', 'MISO')
@@ -69,7 +69,7 @@ mcp = Adafruit_MCP3008.MCP3008(clk=CLK, cs=CS, miso=MISO, mosi=MOSI)
 #-------------------------------------------------------------------
 def main():
      #make empty numpy array to write to
-    temp = np.empty(tempNumSamples)
+    temp = np.empty(temp_samples)
 
     logger.info("---------------recordTemp.py------------------")
     logger.info(sys.version)
@@ -77,30 +77,32 @@ def main():
     while True:
         # at burst time interval
         now = datetime.utcnow()
-        if (now.minute % burstInterval == 0 and now.second == 0):
-            #time.sleep(1)
-            tNow = time.time()
-            elapsedTime = tNow - tStart
-
-            dname = now.strftime('%d%b%Y')
-            tname = now.strftime('%H:%M:%S')
-            fname = (dataDir + floatID +
-                '_Temp_' + dname + '_' + tname +'UTC_burst_' + str(burstInterval) + '.dat')
-            fname_dir = os.path.join(dataDir)
-            eventLog.info('[%.3f] - FileName: %s' % (elapsedTime,fname))
-
-            fid=open(fname,'w')
-            print('filename = ',fname)
-            for isample in range(tempNumSamples):
-                #time.sleep(1)
-                tNow = time.time()
-                elapsedTime = tNow - tStart
+        if  now.minute == burst_time or now.minute % burst_int == 0 and now.second == 0:
+            logger.info("starting burst")
+            #create new file for burst interval
+            fname = dataDir + 'microSWIFT'+floatID + '_Temp_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
+            logger.info("file name: %s" %fname)
+            
+            with open(fname, 'w',newline='\n') as temp_out:
                 
-                analog_output = mcp.read_adc(0)
-                output_volt = ConvertVolts(analog_output,2)
-                eventLog.info('[%.3f] - num sample: %d, num sample needed: %d' % (elapsedTime,isample,tempNumSamples))
-                temperature = ConvertTemp(output_volt,2)
-                print("Temp: %f" % temperature)
+                logger.info('open file for writing: %s' %fname)
+                t_end = time.time() + burst_seconds #get end time for burst
+                isample=0
+                while time.time() <= t_end or isample < temp_samples:
+                    try:
+                       analog_output = mcp.read_adc(0) #read output from ADC channel 0
+                    except Exception as e:
+                        logger.info(e)
+                        logger.info('error reading temperature data')
+                
+                    #temp calculation. see TMP36 data sheet for calculation.
+                    raw_temp = (330*analog_output/1024)-50
+                    raw_temp = round(temp,2)
+                    temp[isample] = raw_temp
+                
+                
+                    timestamp='{:%Y-%m-%d %H:%M:%S}'.format(datetime.utcnow())
+           
                 
                 time.sleep(recInterval)
                 tSinceLastRead = tNow - tLastRead

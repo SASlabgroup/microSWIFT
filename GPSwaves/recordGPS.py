@@ -223,8 +223,8 @@ def record_gps(ser,fname):
 				elif ipos == gps_samples and ivel == gps_samples:
 					break
 						
-		logger.info('number of GPGGA samples = ', ipos)
-		logger.info('number of GPVTG samples = ', ivel)
+		logger.info('number of GPGGA samples = %s' %ipos)
+		logger.info('number of GPVTG samples = %s' %ivel)
 						
 		return u,v,z,lat,lon
 	except Exception as e:
@@ -364,6 +364,12 @@ def main():
 
 #run main function unless importing as a module
 if __name__ == "__main__":
+	
+	
+	
+	
+	
+	
     main()
 
 
