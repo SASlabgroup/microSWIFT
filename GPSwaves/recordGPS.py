@@ -222,7 +222,8 @@ def record_gps(ser,fname):
 					continue
 				elif ipos == gps_samples and ivel == gps_samples:
 					break
-						
+				
+				sleep(0.150)		
 		logger.info('number of GPGGA samples = %s' %ipos)
 		logger.info('number of GPVTG samples = %s' %ivel)
 						
