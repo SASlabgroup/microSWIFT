@@ -56,13 +56,13 @@ microSWIFTHandler=INFO
 dataDir=/home/pi/microSWIFT/data/
 
 #where to send data 
-shipIP=192.168.0.28
-shipUser=pi
-shipPass='apluw'
-shipDir=/home/pi/Desktop
+shipIP=192.168.0.178
+shipUser=apl
+shipPass='1013ne40th'
+shipDir=Documents/microSWIFT_Test_Data
 
 # 4 digit string for float id
-floatID=002
+floatID=035
 # 2 digit string for project id
 projectName=TX
 #PayLoadType either 7 or the new type 50
