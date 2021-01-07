@@ -106,19 +106,18 @@ def main():
                 isample = 1
                 t_start = time.time()
                 t_end = time.time() + burst_seconds #get end time for burst
-                while time.time() <= t_end:
-                    
-                    temp_sample = get_temp()
+                while time.time() <= t_end and isample < temp_samples:
                     
                     #if at a rec_interval, record temp and add to np array
                     if (int(time.time())-int(t_start)) % rec_interval == 0:
+                        temp_sample = get_temp()
                         timestamp='{:%Y-%m-%d %H:%M:%S}'.format(datetime.utcnow())
                         temp_out.write('%s,%15.10f\n' % (timestamp, temp_sample))
                         temp_out.flush()
                         temp[isample] = temp_sample
                         isample += 1
-
-                    time.sleep(rec_interval/4)
+                        time.sleep(0.9*rec_interval)
+                
                 logger.info('end of burst')   
                 logger.info('number of samples expected = %d' % temp_samples)   
                 logger.info('number of samples recorded = %d' % (isample+1))   
