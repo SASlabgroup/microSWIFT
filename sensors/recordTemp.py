@@ -98,12 +98,7 @@ def main():
                 logger.info('open file for writing: %s' %fname)
                 
                 #get first sample at time zero
-                temp_sample = get_temp()
-                timestamp='{:%Y-%m-%d %H:%M:%S}'.format(datetime.utcnow())
-                temp_out.write('%s,%f\n' % (timestamp, temp_sample))
-                temp_out.flush()
-                temp[0] = temp_sample
-                isample = 1
+                isample = 0
                 t_start = time.time()
                 t_end = time.time() + burst_seconds #get end time for burst
                 while time.time() <= t_end and isample < temp_samples:
