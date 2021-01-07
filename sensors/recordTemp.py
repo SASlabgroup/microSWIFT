@@ -116,7 +116,7 @@ def main():
                         temp_out.flush()
                         temp[isample] = temp_sample
                         isample += 1
-                        time.sleep(0.9*rec_interval)
+                        time.sleep(0.95*rec_interval)
                 
                 logger.info('end of burst')   
                 logger.info('number of samples expected = %d' % temp_samples)   
