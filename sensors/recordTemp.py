@@ -111,7 +111,7 @@ def main():
                     temp_sample = get_temp()
                     
                     #if at a rec_interval, record temp and add to np array
-                    if (time.time()-t_start) % rec_interval == 0:
+                    if (int(time.time())-int(t_start)) % rec_interval == 0:
                         timestamp='{:%Y-%m-%d %H:%M:%S}'.format(datetime.utcnow())
                         temp_out.write('%s,%15.10f\n' % (timestamp, temp_sample))
                         temp_out.flush()
@@ -119,9 +119,9 @@ def main():
                         isample += 1
 
                     time.sleep(rec_interval/4)
-                    logger.info('end of burst')   
-                    logger.info('number of samples expected = %d' % temp_samples)   
-                    logger.info('number of samples recorded = %d' % (isample+1))   
+                logger.info('end of burst')   
+                logger.info('number of samples expected = %d' % temp_samples)   
+                logger.info('number of samples recorded = %d' % (isample+1))   
                     
 
             mean_temperature = np.mean(temp)
