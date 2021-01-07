@@ -74,8 +74,12 @@ def get_temp():
     #temp calculation. see TMP36 data sheet for calculation.
     raw_temp = (330*adc_0/1024)-50
     raw_temp = round(raw_temp,2)
-
     return raw_temp
+
+def get_mean_temp(temp_array):
+    
+    mean_temp = np.mean(temp_array)
+    return mean_temp
 
 def main():
      #make empty numpy array to write to
@@ -117,9 +121,9 @@ def main():
                 logger.info('number of samples expected = %d' % temp_samples)   
                 logger.info('number of samples recorded = %d' % (isample))   
                     
-
-            mean_temperature = np.mean(temp)
-            logger.info('mean temperature = %f' % mean_temperature)
+            mean_temp = get_mean_temp(temp)
+            logger.info('mean temperature = %f' % mean_temp)
+            sys.exit(0)
 
         time.sleep(0.25) 
     
