@@ -10,8 +10,10 @@ HOST=$shipIP
 #data and log directories in this pi
 DATAPATH=$dataDir
 LOGPATH=$logDir
+#use date to organize data and logs within floadID folder
+CURRENTDATE= date + "%d%b%Y"
 #create new directory with floatID in config file 
-REMOTEPATH=$shipDir/microSWIFT$floatID
+REMOTEPATH=$shipDir/microSWIFT$floatID/CURRENTDATE
 #host password to send data to
 PASSWORD=$shipPass
 
