@@ -11,9 +11,10 @@ HOST=$shipIP
 DATAPATH=$dataDir
 LOGPATH=$logDir
 #use date to organize data and logs within floadID folder
-CURRENTDATE= date + "%d%b%Y"
+DATE="$(date +"%d%b%Y")"
+DATESTRING=${DATE}
 #create new directory with floatID in config file 
-REMOTEPATH=$shipDir/microSWIFT$floatID/CURRENTDATE
+REMOTEPATH=$shipDir/microSWIFT$floatID/$DATESTRING
 #host password to send data to
 PASSWORD=$shipPass
 
