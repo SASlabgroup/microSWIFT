@@ -222,10 +222,10 @@ def record_gps(ser,fname):
 					continue
 				elif ipos == gps_samples and ivel == gps_samples:
 					break
-					
-			logger.info('gps_samples ' + str(gps_samples))	
-			logger.info('number of GPGGA samples = %d' %ipos)
-			logger.info('number of GPVTG samples = %d' %ivel)
+				
+			
+		logger.info('number of GPGGA samples = %s' %ipos)
+		logger.info('number of GPVTG samples = %s' %ivel)
 						
 		return u,v,z,lat,lon
 	except Exception as e:
@@ -239,6 +239,7 @@ def main():
 	
 	logger.info("---------------recordGPS.py------------------")
 	logger.info(sys.version)
+	
 	#call function to initialize GPS
 	ser, gps_initialized, time, date = init_gps()
 	
@@ -354,16 +355,22 @@ def main():
 				#fbinary.write(struct.pack('<i', int(now.second)))
 				#fbinary.flush()
 				#fbinary.close()
-			sleep(1)
+			sleep(0.5)
 
 				
 	else:
-		logger.info("GPS not initialized, no data will be logged")
+		logger.info("GPS not init ialized, no data will be logged")
 		
 	sys.exit(0)
 
 #run main function unless importing as a module
 if __name__ == "__main__":
+	
+	
+	
+	
+	
+	
     main()
 
 

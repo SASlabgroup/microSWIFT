@@ -7,18 +7,17 @@ from datetime import datetime
 import numpy as np
 import logging
 from logging import *
+from time import sleep
 
 #third party imports
 import RPi.GPIO as GPIO
-import adafruit_fxos8700
+#import adafruit_fxos8700
 import adafruit_fxas21002c
 
 #my imports 
 from config3 import Config
-from utils import *
+import adafruit_fxos8700_microSWIFT
 
-#initialize gpio pin 21 as modem on/off control
-GPIO.setmode(GPIO.BCM)
 #---------------------------------------------------------------
 configDat = sys.argv[1]
 configFilename = configDat #Load config file/parameters needed
@@ -43,37 +42,30 @@ logFileHandler.setLevel(LOG_LEVEL)
 logFileHandler.setFormatter(Formatter(LOG_FORMAT))
 logger.addHandler(logFileHandler)
 
-
-dataFile = str(currentTimeString()) #file name
-
-
-#set parameters 
-burstInterval = config.getInt('Iridium', 'burstInt')
-burstNum = config.getInt('Iridium', 'burstNum')
-dataDir = config.getString('System', 'dataDir')
-logDir = config.getString('Loggers', 'logDir')
+#load parameters from Config.dat
+#system parameters 
 floatID = config.getString('System', 'floatID')
+dataDir = config.getString('System', 'dataDir')
+burst_interval=config.getInt('System', 'burst_interval')
+burst_time=config.getInt('System', 'burst_time')
+burst_seconds=config.getInt('System', 'burst_seconds')
+
 bad = config.getInt('System', 'badValue')
 projectName = config.getString('System', 'projectName')
 
+#IMU parameters
 imuFreq=config.getInt('IMU', 'imuFreq')
-numSamplesConst = config.getInt('System', 'numSamplesConst')
-
-imuNumSamples = imuFreq*numSamplesConst
+imu_samples = imuFreq*burst_seconds
 maxHours=config.getInt('IMU', 'maxHours')
-imuGpio=config.getInt('IMU', 'imuGpio')
-recRate = config.getInt('IMU', 'recRate')
-recRate = 1./recRate
+imu_gpio=config.getInt('IMU', 'imu_gpio')
 
-#turn imu on for script recognizes i2c address
-GPIO.setup(imuGpio,GPIO.OUT)
-GPIO.output(imuGpio,GPIO.HIGH)
+#initialize IMU GPIO pin as modem on/off control
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(imu_gpio,GPIO.OUT)
+#turn IMU on for script recognizes i2c address
+GPIO.output(imu_gpio,GPIO.HIGH)
 
 i2c = busio.I2C(board.SCL, board.SDA)
-fxos = adafruit_fxos8700.FXOS8700(i2c)
-fxas = adafruit_fxas21002c.FXAS21002C(i2c)
-sensor = adafruit_fxos8700.FXOS8700(i2c)
-sensor2 = adafruit_fxas21002c.FXAS21002C(i2c)
 
 # Optionally create the sensor with a different accelerometer range (the
 # default is 2G, but you can use 4G or 8G values):
@@ -82,7 +74,7 @@ sensor2 = adafruit_fxas21002c.FXAS21002C(i2c)
  
 # Main loop will read the acceleration and magnetometer values every second
 # and print them out.
-imu = np.empty(imuNumSamples)
+imu = np.empty(imu_samples)
 isample = 0
 
 
@@ -90,55 +82,67 @@ tStart = time.time()
 #-------------------------------------------------------------------------------
 #LOOP BEGINS
 #-------------------------------------------------------------------------------
+logger.info('---------------recordIMU.py------------------')
 while True:
-    now = datetime.utcnow()
-    tNow = time.time()
-    elapsedTime = tNow - tStart
     
-    if now.minute % burstInterval == 0 and now.second == 0:
-        eventLog.info('[%.3f] - Start new burst interval' % elapsedTime)
+    
+    now=datetime.utcnow()
+    if  now.minute == burst_time or now.minute % burst_interval == 0 and now.second == 0:
+
+        logger.info('starting burst')
+        #initialize fxos and fxas devices (required after turning off device)
+        fxos = adafruit_fxos8700_microSWIFT.FXOS8700(i2c)
+        fxas = adafruit_fxas21002c.FXAS21002C(i2c)
         
         #create new file for new burst interval 
-        dname = now.strftime('%d%b%Y')
-        tname = now.strftime('%H:%M:%S')
-        fname = (dataDir + floatID +'_Imu_' + dname + '_' + tname +'UTC_burst_' +str(burstInterval) + '.dat')
-        eventLog.info('[%.3f] - IMU file name: %s' % (elapsedTime,fname))
-        fid=open(fname,'w')
-        print(('filename = ',fname))
-        
+        fname = dataDir + 'microSWIFT'+ floatID + '_IMU_'+'{:%d%b%Y_%H%M%SUTC.dat}'.format(datetime.utcnow())
+        logger.info('file name: %s' %fname)
         #turn imu on
-        GPIO.output(imuGpio,GPIO.HIGH)
-        eventLog.info('[%.3f] - IMU ON' % elapsedTime)
+        GPIO.output(imu_gpio,GPIO.HIGH)
+        logger.info('power on IMU')
+        
+        with open(fname, 'w',newline='\n') as imu_out:
+            logger.info('open file for writing: %s' %fname)
+            t_end = time.time() + burst_seconds #get end time for burst
+            isample=0
+            while time.time() <= t_end or isample < imu_samples:
+        
+                try:
+                    accel_x, accel_y, accel_z = fxos.accelerometer
+                    mag_x, mag_y, mag_z = fxos.magnetometer
+                    gyro_x, gyro_y, gyro_z = fxas.gyroscope
+                except Exception as e:
+                    logger.info(e)
+                    logger.info('error reading IMU data')
 
-        for isample in range(imuNumSamples):
-            time.sleep(recRate)
-            tHere = time.time()
-            elapsed = tHere - tStart
-            fnow = datetime.utcnow()
-            isample = isample + 1
-            eventLog.info('[%.3f] - Num of samples: %d, Wanted samples: %d' % (elapsed,isample,imuNumSamples))
+                roll = 180 * math.atan(accel_x/math.sqrt(accel_y*accel_y + accel_z*accel_z))/math.pi
+                pitch = 180 * math.atan(accel_y/math.sqrt(accel_x*accel_x + accel_z*accel_z))/math.pi
+                yaw = 180 * math.atan(accel_z/math.sqrt(accel_x*accel_x + accel_y   *accel_y))/math.pi
+         
+                timestamp='{:%Y-%m-%d %H:%M:%S}'.format(datetime.utcnow())
 
-            accel_x, accel_y, accel_z = sensor.accelerometer
-            mag_x, mag_y, mag_z = sensor.magnetometer
-            gyro_x, gyro_y, gyro_z = sensor2.gyroscope
-            roll = 180 * math.atan(accel_x/math.sqrt(accel_y*accel_y + accel_z*accel_z))/math.pi
-            pitch = 180 * math.atan(accel_y/math.sqrt(accel_x*accel_x + accel_z*accel_z))/math.pi
-            yaw = 180 * math.atan(accel_z/math.sqrt(accel_x*accel_x + accel_z*accel_z))/math.pi
+                imu_out.write('%s,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n' %(timestamp,accel_x,accel_y,accel_z,mag_x,mag_y,mag_z,gyro_x,gyro_y,gyro_z,roll,pitch,yaw))
+                imu_out.flush()
+        
+                isample = isample + 1
+                
+                if isample == imu_samples:
+                    break
+                elif time.time() >= t_end and 0 < imu_samples-isample <= 40:
+                    continue
+                elif time.time() > t_end and imu_samples-isample > 40:
+                    break
+                
+                #hard coded sleep to control recording rate. NOT ideal but works for now    
+                sleep(0.23)
+
+            logger.info('end burst')
+            logger.info('IMU samples %s' %isample)  
+            #turn imu off     
+            GPIO.output(imu_gpio,GPIO.LOW)
+            logger.info('power down IMU')
+>>>>>>> merge-recompiled-GPSwaves
             
-            timestring = (str(fnow.year) + ',' + str(fnow.month) + ',' + str(fnow.day) +
-                              ',' + str(fnow.hour) + ',' + str(fnow.minute) + ',' + str(fnow.second))
-            fdname = fnow.strftime('%d%b%Y')
-            ftname = fnow.strftime('%H:%M:%S')
-            print(('TIME ',fdname,ftname))
-            fid.write('%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n' %(elapsed,accel_x,accel_y,accel_z,mag_x,mag_y,mag_z,gyro_x,gyro_y,gyro_z,roll,pitch,yaw))
-            fid.flush()
-            
-        #turn imu off/ stop writing to file      
-        fid.close()
-        GPIO.output(imuGpio,GPIO.LOW)
-        eventLog.info('[%.3f] - IMU OFF' % elapsedTime)
-        eventLog.info('[%.3f] - End of burst interval' % elapsedTime)
-
 
     
-    time.sleep(.50)
+    sleep(.50)

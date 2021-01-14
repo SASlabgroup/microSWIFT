@@ -21,4 +21,4 @@ export PYTHONPATH=$PYTHONPATH/$tempDir:/$utilsDir
 #=================================================================================
 echo ""
 echo " --- RUN TEMP RECORDER ---"
-python2 recordTemp.py $config &
+python3 recordTemp.py $config &
