@@ -141,8 +141,6 @@ while True:
             #turn imu off     
             GPIO.output(imu_gpio,GPIO.LOW)
             logger.info('power down IMU')
->>>>>>> merge-recompiled-GPSwaves
-            
 
     
     sleep(.50)
