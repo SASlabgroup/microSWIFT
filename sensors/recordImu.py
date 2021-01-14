@@ -71,6 +71,8 @@ def init_imu():
     i2c = busio.I2C(board.SCL, board.SDA)
     fxos = adafruit_fxos8700_microSWIFT.FXOS8700(i2c)
     fxas = adafruit_fxas21002c.FXAS21002C(i2c)
+    
+return fxos, fxas
 
 # Optionally create the sensor with a different accelerometer range (the
 # default is 2G, but you can use 4G or 8G values):
@@ -95,7 +97,7 @@ while True:
     if  now.minute == burst_time or now.minute % burst_interval == 0 and now.second == 0:
         
         logger.info('initializing IMU')
-        init_imu()
+        fxos, fxas = init_imu()
         logger.info('IMU initialized')
         
         logger.info('starting burst')
