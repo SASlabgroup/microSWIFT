@@ -1,4 +1,4 @@
-#! /usr/bin/python2.7
+#! /usr/bin/python3
 #
 # This program contains all necessary functions used in record_send_gps.py
 # in order to perform fully.
