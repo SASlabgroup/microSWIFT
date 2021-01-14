@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 #
 # Opens a serial connection with a RockBlock 9603 SBD modem and
 # transmits binary data that is passed to the main function
