@@ -129,7 +129,7 @@ class FXOS8700:
         elif accel_range == ACCEL_RANGE_8G:
             self._write_u8(_FXOS8700_REGISTER_XYZ_DATA_CFG, 0x02)
             
-            
+        #MICROSWIFT SETUP    
         # High resolution
         self._write_u8(_FXOS8700_REGISTER_CTRL_REG2, 0x02)
         # Active, Normal Mode, Low Noise, 6.25Hz in Hybrid Mode
