@@ -72,7 +72,7 @@ def init_imu():
     fxos = adafruit_fxos8700_microSWIFT.FXOS8700(i2c)
     fxas = adafruit_fxas21002c.FXAS21002C(i2c)
     
-return fxos, fxas
+    return fxos, fxas
 
 # Optionally create the sensor with a different accelerometer range (the
 # default is 2G, but you can use 4G or 8G values):
