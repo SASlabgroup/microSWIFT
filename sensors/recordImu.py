@@ -65,7 +65,12 @@ GPIO.setup(imu_gpio,GPIO.OUT)
 #turn IMU on for script recognizes i2c address
 GPIO.output(imu_gpio,GPIO.HIGH)
 
-i2c = busio.I2C(board.SCL, board.SDA)
+
+def init_imu():
+    #initialize fxos and fxas devices (required after turning off device)
+    i2c = busio.I2C(board.SCL, board.SDA)
+    fxos = adafruit_fxos8700_microSWIFT.FXOS8700(i2c)
+    fxas = adafruit_fxas21002c.FXAS21002C(i2c)
 
 # Optionally create the sensor with a different accelerometer range (the
 # default is 2G, but you can use 4G or 8G values):
@@ -89,11 +94,11 @@ while True:
     now=datetime.utcnow()
     if  now.minute == burst_time or now.minute % burst_interval == 0 and now.second == 0:
         
-        logger.info('starting burst')
+        logger.info('initializing IMU')
+        init_imu()
+        logger.info('IMU initialized')
         
-        #initialize fxos and fxas devices (required after turning off device)
-        fxos = adafruit_fxos8700_microSWIFT.FXOS8700(i2c)
-        fxas = adafruit_fxas21002c.FXAS21002C(i2c)
+        logger.info('starting burst')
         
         #create new file for new burst interval 
         fname = dataDir + 'microSWIFT'+ floatID + '_IMU_'+'{:%d%b%Y_%H%M%SUTC.dat}'.format(datetime.utcnow())
