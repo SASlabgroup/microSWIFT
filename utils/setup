@@ -1,0 +1,35 @@
+#!/bin/bash
+
+#script to automatically download libraries and configure microSWIFT
+#takes float ID as an argument
+#takes git username and email as arguments
+
+$floatID=$1
+$user.name=$2
+$user.email=$3
+
+#download python libraries
+sudo apt-get install build-essential python-dev python-smbus python-pip
+sudo pip3 install adafruit-mcp3008
+sudo pip3 install adafruit-mcp3008
+sudo pip3 install Adafruit-GPIO
+sudo pip3 install spidev
+sudo pip3 install pynmea2
+sudo pip3 install adafruit-blinka
+sudo pip3 install adafruit-circuitpython-busdevice
+sudo pip3 install git+git://github.com/chrisb2/pi_ina219.git 
+
+#login to git
+git config --global user.name "$user.name"
+git config --global user.email $user.email
+
+#pull latest from git
+cd microSWIFT
+git checkout main
+git pull
+
+#configure Config.dat
+
+
+#make executable
+chmod u+x setup.sh
