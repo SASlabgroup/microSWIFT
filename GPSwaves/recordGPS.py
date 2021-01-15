@@ -154,18 +154,32 @@ def init_gps():
 						for i in range(8):
 							newline=ser.readline().decode('utf-8')
 							if 'GPRMC' in newline:
+								logger.info('found GPRMC sentence')
 								try:
 									gprmc=pynmea2.parse(newline)
 									nmea_time=gprmc.timestamp
 									nmea_date=gprmc.datestamp
 									logger.info("nmea time: %s" %nmea_time)
 									logger.info("nmea date: %s" %nmea_date)
-									return ser, True, nmea_time, nmea_date		
+									
+									#set system time
+									try:
+										logger.info("setting system time from GPS: %s %s" %(nmea_date, nmea_time))
+										os.system('sudo timedatectl set-timezone UTC')
+										os.system('sudo date -s "%s %s"' %(nmea_date, nmea_time))
+										os.system('sudo hwclock -w')
+										
+										return ser, True, nmea_time, nmea_date
+									except Exception as e:
+										logger.info(e)
+										logger.info('error setting system time')
+										continue	
 								except Exception as e:
 									logger.info(e)
+									logger.info('error parsing nmea sentence')
 									continue
-							
-						return ser, True, nmea_time, nmea_date
+						#return False if gps fix but time not set	
+						return ser, False, nmea_time, nmea_date
 			sleep(1)
 		#return False if loop is allowed to timeout
 		return ser, False, nmea_time, nmea_date
@@ -245,17 +259,7 @@ def main():
 	
 	if gps_initialized:
 		logger.info("GPS initialized")
-		#set system time
-		if time != '' and date != '':
-			try:
-				logger.info("setting system time from GPS: %s %s" %(date, time))
-				os.system('sudo timedatectl set-timezone UTC')
-				os.system('sudo date -s "%s %s"' %(date, time))
-				os.system('sudo hwclock -w')
-			except Exception as e:
-				logger.info(e)
-				logger.info('error setting system time')
-		
+
 		while True:
 			#burst start conditions
 			now=datetime.utcnow()
