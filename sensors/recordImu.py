@@ -68,6 +68,8 @@ GPIO.output(imu_gpio,GPIO.HIGH)
 
 def init_imu():
     #initialize fxos and fxas devices (required after turning off device)
+    logger.info('power on IMU')
+    GPIO.output(imu_gpio,GPIO.HIGH)
     i2c = busio.I2C(board.SCL, board.SDA)
     fxos = adafruit_fxos8700_microSWIFT.FXOS8700(i2c)
     fxas = adafruit_fxas21002c.FXAS21002C(i2c)
@@ -105,10 +107,7 @@ while True:
         #create new file for new burst interval 
         fname = dataDir + 'microSWIFT'+ floatID + '_IMU_'+'{:%d%b%Y_%H%M%SUTC.dat}'.format(datetime.utcnow())
         logger.info('file name: %s' %fname)
-        #turn imu on
-        GPIO.output(imu_gpio,GPIO.HIGH)
-        logger.info('power on IMU')
-        
+             
         with open(fname, 'w',newline='\n') as imu_out:
             logger.info('open file for writing: %s' %fname)
             t_end = time.time() + burst_seconds #get end time for burst
