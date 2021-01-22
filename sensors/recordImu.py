@@ -124,7 +124,7 @@ while True:
          
                 timestamp='{:%Y-%m-%d %H:%M:%S}'.format(datetime.utcnow())
 
-                imu_out.write('%s,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n' %(timestamp,accel_x,accel_y,accel_z,mag_x,mag_y,mag_z,gyro_x,gyro_y,gyro_z,roll,pitch,yaw))
+                imu_out.write('%s,%f,%f,%f,%f,%f,%f,%f,%f,%f\n' %(timestamp,accel_x,accel_y,accel_z,mag_x,mag_y,mag_z,gyro_x,gyro_y,gyro_z))
                 imu_out.flush()
         
                 isample = isample + 1
