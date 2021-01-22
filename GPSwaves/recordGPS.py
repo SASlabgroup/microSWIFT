@@ -285,7 +285,7 @@ def main():
 				else:
 					logger.info('insufficient samples for wave processing')	
 					
-						
+				#unpack wave processing results		
 				SigwaveHeight = GPS_waves_results[0]
 				Peakwave_Period = GPS_waves_results[1]
 				Peakwave_dirT = GPS_waves_results[2]
@@ -301,29 +301,23 @@ def main():
 				WaveSpectra_a2 = np.where(WaveSpectra_a2>=18446744073709551615, 999.00000, WaveSpectra_a2)
 				WaveSpectra_b2 = np.squeeze(GPS_waves_results[8])
 				WaveSpectra_b2 = np.where(WaveSpectra_b2>=18446744073709551615, 999.00000, WaveSpectra_b2)
-				
-				
-				logger.info ('WAVEHEIGHT: %f' %SigwaveHeight)
-				
 				checkdata = np.full(numCoef,1)
 				
 				np.set_printoptions(formatter={'float_kind':'{:.5f}'.format})
 				np.set_printoptions(formatter={'float_kind':'{:.2e}'.format})
-			
+				
+			#########################################
 				uMean = getuvzMean(badValue,u)
 				vMean = getuvzMean(badValue,v)
 				zMean = getuvzMean(badValue,z)
-				
-				dname = now.strftime('%d%b%Y')
-				tname = now.strftime('%H:%M:%S') 
-				
+			#########################################	
 				fbinary = dataDir+'microSWIFT'+floatID+'_TX_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
-				eventLog.info('[%.3f] - SBD file: %s' %(elapsedTime, fbinary ))
+				logger.info('telemetry file = %s' % fbinary)
 			
 				if payLoadType == 50:
 					payLoadSize = (16 + 7*42)*4
-					#eventLog.info('[%.3f] - Payload type: %d' % (elapsedTime, payLoadType))
-					#eventLog.info('[%.3f] - payLoadSize: %d' % (elapsedTime, payLoadSize))
+					logger.info('payload type = %d' % payLoadType)
+					logger
 				else:
 					payLoadSize =  (5 + 7*42)*4
 					#eventLog.info('[%.3f] - Payload type: %d' % (elapsedTime, payLoadType))
