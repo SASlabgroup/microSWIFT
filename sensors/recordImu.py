@@ -121,10 +121,6 @@ while True:
                 except Exception as e:
                     logger.info(e)
                     logger.info('error reading IMU data')
-
-                roll = 180 * math.atan(accel_x/math.sqrt(accel_y*accel_y + accel_z*accel_z))/math.pi
-                pitch = 180 * math.atan(accel_y/math.sqrt(accel_x*accel_x + accel_z*accel_z))/math.pi
-                yaw = 180 * math.atan(accel_z/math.sqrt(accel_x*accel_x + accel_y   *accel_y))/math.pi
          
                 timestamp='{:%Y-%m-%d %H:%M:%S}'.format(datetime.utcnow())
 
