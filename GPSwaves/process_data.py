@@ -12,6 +12,7 @@ import pynmea2
 import struct
 import time
 from time import sleep
+
 #my imports
 import GPSwavesC
 
