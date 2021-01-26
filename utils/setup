@@ -22,10 +22,10 @@ read -p "Enter your Github email: " useremail
 
 #remove extraneous programs
 echo "Removing extraneous programs"
-sudo apt purge libreoffice*
-sudo apt purge wolfram-engine minecraft-pi sonic
-sudo apt clean
-sudo apt autoremove
+#sudo apt purge libreoffice*
+#sudo apt purge wolfram-engine minecraft-pi sonic
+#sudo apt clean
+#sudo apt autoremove
 
 #log in to git
 echo "Pulling latest build from Github"
@@ -39,11 +39,11 @@ git pull
 
 #configure Config.dat
 file= Config.dat
-/bin/sed -i "s/^\)floatID=\).*/\1$floatID/" ${file}
+/bin/sed -i "s/^\(floatID=\).*/\1$floatID/" ${file}
 
 #reboot
 echo "rebooting"
 #sudo reboot
 
 #make executable
-chmod u+x setup.sh
+chmod u+x setup
