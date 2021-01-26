@@ -4,9 +4,10 @@
 #takes float ID as an argument
 #takes git username and email as arguments
 
-$floatID=$1
-$user.name=$2
-$user.email=$3
+#ask user for input
+read -p "Enter the three digit microSWIFT floatID: " floatID
+read -p "Enter your Github username: " username
+read -p "Enter your Github email: " useremail
 
 #download python libraries
 sudo apt-get install build-essential python-dev python-smbus python-pip
@@ -19,9 +20,17 @@ sudo pip3 install adafruit-blinka
 sudo pip3 install adafruit-circuitpython-busdevice
 sudo pip3 install git+git://github.com/chrisb2/pi_ina219.git 
 
-#login to git
-git config --global user.name "$user.name"
-git config --global user.email $user.email
+#remove extraneous programs
+echo "Removing extraneous programs"
+sudo apt purge libreoffice*
+sudo apt purge wolfram-engine minecraft-pi sonic
+sudo apt clean
+sudo apt autoremove
+
+#log in to git
+echo "Pulling latest build from Github"
+git config --global user.name "$username"
+git config --global user.email $useremail
 
 #pull latest from git
 cd microSWIFT
@@ -30,6 +39,9 @@ git pull
 
 #configure Config.dat
 
+#reboot
+echo "rebooting"
+sudo reboot
 
 #make executable
 chmod u+x setup.sh
