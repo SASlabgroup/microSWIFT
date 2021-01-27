@@ -41,16 +41,11 @@ git pull
 #configure Config.dat
 file=Config.dat
 /bin/sed -i "s/^\(floatID=\).*/\1${floatID}/" ${file}
-<<<<<<< HEAD
-=======
 
 #setup static IP address with floatID
 
-<<<<<<< HEAD
 #have Raspberry pi run headless
 #sudo raspi-config
->>>>>>> 8c4c23a074f9c7e27c078244ec2e6f73c0445051
-=======
 
 #change Raspberry Pi's Config.txt file
 FIL=boot/config.txt
@@ -61,8 +56,9 @@ sudo sed -i "s/^\(outer_voltage=\).*/\12/" ${FIL}
 sudo sed -i "s/^\(core_freq=\).*/\1515/" ${FIL}
 sudo sed -i "s/^\(sdram_freq=\).*/\1533/" ${FIL}
 sudo sed -i "s/^\(outer_voltage_sdram=\).*/\11/" ${FIL}
-
->>>>>>> df97a95c804a8b2929c65ed8aef2264874c58612
+#enable i2c and spi
+sudo sed -i "s/^\(i2c_arm=\).*/\1on/" ${FIL}
+sudo sed -i "s/^\(spi=\).*/\1on/" ${FIL}
 
 #reboot
 echo "rebooting"
