@@ -53,14 +53,14 @@ file=Config.dat
 =======
 
 #change Raspberry Pi's Config.txt file
-FIL=config.txt
+FIL=boot/config.txt
 #overclock pi
-/bin/sed -i "s/^\(arm_freq=\).*/\11085/" ${FIL}
-/bin/sed -i "s/^\(gpu_freq=\).*/\1530/" ${FIL}
-/bin/sed -i "s/^\(outer_voltage=\).*/\12/" ${FIL}
-/bin/sed -i "s/^\(core_freq=\).*/\1515/" ${FIL}
-/bin/sed -i "s/^\(sdram_freq=\).*/\1533/" ${FIL}
-/bin/sed -i "s/^\(outer_voltage_sdram=\).*/\11/" ${FIL}
+sudo sed -i "s/^\(arm_freq=\).*/\11085/" ${FIL}
+sudo sed -i "s/^\(gpu_freq=\).*/\1530/" ${FIL}
+sudo sed -i "s/^\(outer_voltage=\).*/\12/" ${FIL}
+sudo sed -i "s/^\(core_freq=\).*/\1515/" ${FIL}
+sudo sed -i "s/^\(sdram_freq=\).*/\1533/" ${FIL}
+sudo sed -i "s/^\(outer_voltage_sdram=\).*/\11/" ${FIL}
 
 >>>>>>> df97a95c804a8b2929c65ed8aef2264874c58612
 
