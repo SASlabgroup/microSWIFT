@@ -38,8 +38,8 @@ git checkout main
 git pull
 
 #configure Config.dat
-file= Config.dat
-/bin/sed -i "s/^\(floatID=\).*/\1$floatID/" ${file}
+file=Config.dat
+/bin/sed -i "s/^\(floatID=\).*/\1${floatID}/" ${file}
 
 #reboot
 echo "rebooting"
