@@ -45,20 +45,24 @@ file=Config.dat
 =======
 
 #setup static IP address with floatID
-sudo nano /etc/dhcpcd.conf
-sudo cat >> /etc/network/interfaces << EOF
-auto enp0s3
-iface enp0s3 inet static
-    address 192.168.0.85
-    gateway 192.168.1.1
-    netmask 255.255.255.0
-    network 192.168.1.0
-    broadcast 192.168.1.255
-EOF
 
+<<<<<<< HEAD
 #have Raspberry pi run headless
 #sudo raspi-config
 >>>>>>> 8c4c23a074f9c7e27c078244ec2e6f73c0445051
+=======
+
+#change Raspberry Pi's Config.txt file
+FIL=config.txt
+#overclock pi
+/bin/sed -i "s/^\(arm_freq=\).*/\11085/" ${FIL}
+/bin/sed -i "s/^\(gpu_freq=\).*/\1530/" ${FIL}
+/bin/sed -i "s/^\(outer_voltage=\).*/\12/" ${FIL}
+/bin/sed -i "s/^\(core_freq=\).*/\1515/" ${FIL}
+/bin/sed -i "s/^\(sdram_freq=\).*/\1533/" ${FIL}
+/bin/sed -i "s/^\(outer_voltage_sdram=\).*/\11/" ${FIL}
+
+>>>>>>> df97a95c804a8b2929c65ed8aef2264874c58612
 
 #reboot
 echo "rebooting"
