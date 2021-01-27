@@ -42,6 +42,21 @@ git pull
 file=Config.dat
 /bin/sed -i "s/^\(floatID=\).*/\1${floatID}/" ${file}
 
+#setup static IP address with floatID
+sudo nano /etc/dhcpcd.conf
+sudo cat >> /etc/network/interfaces << EOF
+auto enp0s3
+iface enp0s3 inet static
+    address 192.168.0.85
+    gateway 192.168.1.1
+    netmask 255.255.255.0
+    network 192.168.1.0
+    broadcast 192.168.1.255
+EOF
+
+#have Raspberry pi run headless
+#sudo raspi-config
+
 #reboot
 echo "rebooting"
 #sudo reboot
