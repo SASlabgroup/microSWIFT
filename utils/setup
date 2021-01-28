@@ -91,6 +91,7 @@ echo "Hostname changed to $NEW_HOSTNAME"
 
 #send user to boot options to change to console auto console login from boot options
 echo "Select Console Autologin from boot options"
+sudo raspi-config
 
 
 #make executable
