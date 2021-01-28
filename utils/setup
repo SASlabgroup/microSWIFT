@@ -93,6 +93,9 @@ echo "Hostname changed to $NEW_HOSTNAME"
 echo "Select Console Autologin from boot options"
 sudo raspi-config
 
+#if already in console then will exit and reboot
+echo "Rebooting"
+sudo reboot
 
 #make executable
 chmod u+x /home/pi/microSWIFT/utils/setup
