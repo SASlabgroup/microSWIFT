@@ -62,7 +62,7 @@ shipPass='1013ne40th'
 shipDir=Documents/microSWIFT_Test_Data
 
 # 4 digit string for float id
-floatID=085
+floatID=086
 # 2 digit string for project id
 projectName=TX
 #PayLoadType either 7 or the new type 50
