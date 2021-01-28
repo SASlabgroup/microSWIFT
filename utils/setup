@@ -99,4 +99,4 @@ echo "Rebooting"
 #sudo reboot
 
 #make executable
-chmod u+x setup
+chmod u+x /home/pi/microSWIFT/utils/setup
