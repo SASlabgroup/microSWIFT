@@ -6,8 +6,8 @@
 
 #ask user for input
 read -p "Enter the three digit microSWIFT floatID: " floatID
-read -p "Enter your Github username: " username
-read -p "Enter your Github email: " useremail
+#read -p "Enter your Github username: " username
+#read -p "Enter your Github email: " useremail
 
 #download python libraries
 #sudo apt-get install build-essential python-dev python-smbus python-pip
@@ -42,13 +42,22 @@ git pull
 file=Config.dat
 /bin/sed -i "s/^\(floatID=\).*/\1${floatID}/" ${file}
 
+#set up hostname
+CUR_HOSTNAME=$(cat /etc/hostname)
+NEW_HOSTNAME=microSWIFT$floatID
+hostnamectl set-hostname $NEW_HOSTNAME
+hostname $NEW_HOSTNAME
+sudo sed -i "s/$CUR_HOSTNMAE/$NEW_HOSTNAME/g" /etc/hosts
+sudo sed -i "s/$CUR_HOSTNMAE/$NEW_HOSTNAME/g" /etc/hostname
+echo "Hostname changed to $NEW_HOSTNAME"
+
 #setup static IP address with floatID
 
 #have Raspberry pi run headless
-#sudo raspi-config
+
 
 #change Raspberry Pi's Config.txt file
-FIL=boot/config.txt
+FIL=/boot/config.txt
 #overclock pi
 sudo sed -i "s/^\(arm_freq=\).*/\11085/" ${FIL}
 sudo sed -i "s/^\(gpu_freq=\).*/\1530/" ${FIL}
@@ -56,6 +65,7 @@ sudo sed -i "s/^\(outer_voltage=\).*/\12/" ${FIL}
 sudo sed -i "s/^\(core_freq=\).*/\1515/" ${FIL}
 sudo sed -i "s/^\(sdram_freq=\).*/\1533/" ${FIL}
 sudo sed -i "s/^\(outer_voltage_sdram=\).*/\11/" ${FIL}
+
 #enable i2c and spi
 sudo sed -i "s/^\(i2c_arm=\).*/\1on/" ${FIL}
 sudo sed -i "s/^\(spi=\).*/\1on/" ${FIL}
