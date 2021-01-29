@@ -6,38 +6,38 @@
 
 #ask user for input and stores as variables
 read -p "Enter the three digit microSWIFT floatID: " floatID
-#read -p "Enter your Github username: " username
-#read -p "Enter your Github email: " useremail
+read -p "Enter your Github username: " username
+read -p "Enter your Github email: " useremail
 
 #download python libraries
 echo "Downloading python libraries"
-#sudo apt-get install build-essential python-dev python-smbus python-pip
-#sudo pip3 install adafruit-mcp3008
-#sudo pip3 install adafruit-mcp3008
-#sudo pip3 install Adafruit-GPIO
-#sudo pip3 install spidev
-#sudo pip3 install pynmea2
-#sudo pip3 install adafruit-blinka
-#sudo pip3 install adafruit-circuitpython-busdevice
-#sudo pip3 install git+git://github.com/chrisb2/pi_ina219.git 
+sudo apt-get install build-essential python-dev python-smbus python-pip
+sudo pip3 install adafruit-mcp3008
+sudo pip3 install adafruit-mcp3008
+sudo pip3 install Adafruit-GPIO
+sudo pip3 install spidev
+sudo pip3 install pynmea2
+sudo pip3 install adafruit-blinka
+sudo pip3 install adafruit-circuitpython-busdevice
+sudo pip3 install git+git://github.com/chrisb2/pi_ina219.git 
 
 #remove extraneous programs
 echo "Removing extraneous programs"
-#sudo apt purge libreoffice*
-#sudo apt purge wolfram-engine minecraft-pi sonic
-#sudo apt clean
-#sudo apt autoremove
+sudo apt purge libreoffice*
+sudo apt purge wolfram-engine minecraft-pi sonic
+sudo apt clean
+sudo apt autoremove
 
 #log in to git
 echo "Pulling latest build from Github"
-#git config --global user.name "$username"
-#git config --global user.email $useremail
+git config --global user.name "$username"
+git config --global user.email $useremail
 
 #pull latest from git
 cd /home/pi/microSWIFT
-#git reset --hard
-#git checkout main
-#git pull
+git reset --hard
+git checkout main
+git pull
 
 
 #change Raspberry Pi's Config.txt file
@@ -51,33 +51,44 @@ sudo sed -i "s/^\(core_freq=\).*/\1515/" ${file1}
 sudo sed -i "s/^\(sdram_freq=\).*/\1533/" ${file1}
 sudo sed -i "s/^\(outer_voltage_sdram=\).*/\11/" ${file1}
 
+
 #enable i2c and spi
 echo "Enabling I2C and SPI"
 sudo sed -i "s/^\(i2c_arm=\).*/\1on/" ${file1}
-sudo sed -i "s/^\(spi=\).*/\1on/" ${file1}
+sudo sed -i "s/^\(spi=\).*/\1on/" ${file1}\
+
+
+#Edit SSH Config file"
+echo "Changing SSH Config file to allow for send data script to run at boot"
+file2=/etc/ssh/ssh_config
+#searches for line in file and adds if not present"
+grep -qF "Host *" "${file2}" || echo "Host *" | sudo tee --append "${file2}"
+grep -qF "StrictHostKeyChecking no" "${file2}" || echo "StrictHostKeyChecking no" | sudo tee --append "${file2}"
+grep -qF "UserKnownHostsFile=/dev/null" "${file2}" || echo "UserKnownHostsFile=/dev/null" | sudo tee --append "${file2}"
+grep -qF "IPQoS cs0 cs0" "${file2}" || echo "IPQoS cs0 cs0" | sudo tee --append "${file2}"
 
 
 #configure Config.dat
-file2=/home/pi/microSWIFT/utils/Config.dat
-/bin/sed -i "s/^\(floatID=\).*/\1${floatID}/" ${file2}
+echo "Changing Config.dat with floatID"
+file3=/home/pi/microSWIFT/utils/Config.dat
+/bin/sed -i "s/^\(floatID=\).*/\1${floatID}/" ${file3}
 
 
 #setup static IP address with floatID
 cd /etc/
-file3=dhcpcd.conf
+file4=dhcpcd.conf
 echo "Setting up static IP address with floatID"
 IPfloatID=$(sed 's/.\{2\}$/.&/' <<< "${floatID}")
-#IPfloatID=192.168.$IPfloatID\/24
 #search for commented out lines that need to be changed
-sudo sed -i '/^#.*interface wlan0/s/^#//' ${file3}
-sudo sed -i '/^#.*static ip_address/s/^#//' ${file3}
-sudo sed -i '/^#.*static routers/s/^#//' ${file3}
-sudo sed -i '/^#.*static domain_name_servers/s/^#//' ${file3}
+sudo sed -i '/^#.*interface wlan0/s/^#//' ${file4}
+sudo sed -i '/^#.*static ip_address/s/^#//' ${file4}
+sudo sed -i '/^#.*static routers/s/^#//' ${file4}
+sudo sed -i '/^#.*static domain_name_servers/s/^#//' ${file4}
 #replace static IP address using floatID as last three digits of the address
-sudo sed -i "s/^\(static ip_address=\).*/\1192.168.$IPfloatID\/24/" ${file3}
+sudo sed -i "s/^\(static ip_address=\).*/\1192.168.$IPfloatID\/24/" ${file4}
 echo "The new static IP address is 192.168.$IPfloatID/24"
-sudo sed -i "s/^\(static routers=\).*/\1192.168.0.1/" ${file3}
-sudo sed -i "s/^\(static domain_name_servers=\).*/\1192.168.0.1/" ${file3}
+sudo sed -i "s/^\(static routers=\).*/\1192.168.0.1/" ${file4}
+sudo sed -i "s/^\(static domain_name_servers=\).*/\1192.168.0.1/" ${file4}
 
 
 #set up hostname
@@ -91,12 +102,15 @@ sudo sed -i "s/$CUR_HOSTNAME/$NEW_HOSTNAME/g" /etc/hostname
 echo "Hostname changed to $NEW_HOSTNAME"
 
 
-#have Raspberry pi run in command line
+#send user to boot options to change to console auto console login from boot options
+echo "Select Console Autologin from boot options"
+sudo raspi-config
 
 
-#reboot
+#if already in console then will exit and reboot
 echo "Rebooting"
-#sudo reboot
+sudo reboot
+
 
 #make executable
-chmod u+x setup
+chmod u+x /home/pi/microSWIFT/utils/setup
