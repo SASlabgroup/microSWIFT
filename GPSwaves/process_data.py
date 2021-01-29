@@ -1,129 +1,133 @@
 #! usr/bin/python3
 
+#This program takes in the results from recordGPS.py and uses Jim Thomson's GPSwaves processing 
+#algorithm to produce wave statistics (Hs, PP, Dir, frequency spectra, energy spectra, and directional
+#moments a1 b1 a2 b2).  It also get mean temperature from recordTemp.py, a battery voltage, and the 
+#current time and date. Inputs are 1x2048 arrays of u, v, z, lat, lon from recordGPS.py, sampling
+#rate (Hz), burst duration (seconds), bad value (999), and payload type (int).  Output is a binary file 
+#that can be sent over Iridium telemetry as a series of 340 byte messages according to the microSWIFT
+#payload telemetry type 50 (default)
+
 #imports
-import serial, sys, os
+import sys, os
 import numpy as np
 from struct import *
 from logging import *
 from datetime import datetime
 import time
-import RPi.GPIO as GPIO
-import pynmea2
 import struct
-import time
 from time import sleep
 
 #my imports
-import GPSwavesC
-
-
+try:
+    import GPSwavesC
+except Exception as e:
+    logger.info('error importing GPSwavesC')
+    logger.info(e)
+    
 #inputs are u,v,z arrays, last lat/lon, sampling rate (Hz), and burst duration (secs) from recordGPS.py
-def wavestats(u,v,z,lat,lon,fs=4,busrt_seconds=512):
+def main(u,v,z,lat,lon,fs=4,burst_seconds=512,badValue,payloadType=50):
 
-    #check for # of u,v,z samples and sampling rate
+    #check the number of u,v,z samples matches expected and 1 Hz minimum
     if len(z) >= fs*burst_seconds and fs >= 1:          
         try:
             #note gps_freq is assumed to be 4Hz
-            wave_stats = GPSwavesC.main_GPSwaves(len(z),u,v,z,fs)    
+            wavestats = GPSwavesC.main_GPSwaves(len(z),u,v,z,fs)    
                     
         except Exception as e:
-            logger.info(e)
             logger.info('error running GPSwavesC processing')
+            logger.info(e)
+           
     else:
-        logger.info('insufficient samples for wave processing')  
-        logger.info('samples expected = %d, samples received = %d' % (minpts))  
+        logger.info('insufficient samples or sampling rate for wave processing')  
+        logger.info('samples expected = %d, samples received = %d' % (fs*burst_seconds, len(z))  
         
     #unpack wave processing results        
-    SigwaveHeight = GPS_waves_results[0]
-    Peakwave_Period = GPS_waves_results[1]
-    Peakwave_dirT = GPS_waves_results[2]
-    WaveSpectra_Energy = np.squeeze(GPS_waves_results[3])
+    hs = wavestats[0]
+    pp = wavestats[1]
+    dir = wavestats[2]
+    WaveSpectra_Energy = np.squeeze(wavestats[3])
     WaveSpectra_Energy = np.where(WaveSpectra_Energy>=18446744073709551615, 999.00000, WaveSpectra_Energy)
-    WaveSpectra_Freq = np.squeeze(GPS_waves_results[4])
+    WaveSpectra_Freq = np.squeeze(wavestats[4])
     WaveSpectra_Freq = np.where(WaveSpectra_Freq>=18446744073709551615, 999.00000, WaveSpectra_Freq)
-    WaveSpectra_a1 = np.squeeze(GPS_waves_results[5])
+    WaveSpectra_a1 = np.squeeze(wavestats[5])
     WaveSpectra_a1 = np.where(WaveSpectra_a1>=18446744073709551615, 999.00000, WaveSpectra_a1)
-    WaveSpectra_b1 = np.squeeze(GPS_waves_results[6])
+    WaveSpectra_b1 = np.squeeze(wavestats[6])
     WaveSpectra_b1 = np.where(WaveSpectra_b1>=18446744073709551615, 999.00000, WaveSpectra_b1)
-    WaveSpectra_a2 = np.squeeze(GPS_waves_results[7])
+    WaveSpectra_a2 = np.squeeze(wavestats[7])
     WaveSpectra_a2 = np.where(WaveSpectra_a2>=18446744073709551615, 999.00000, WaveSpectra_a2)
-    WaveSpectra_b2 = np.squeeze(GPS_waves_results[8])
+    WaveSpectra_b2 = np.squeeze(wavestats[8])
     WaveSpectra_b2 = np.where(WaveSpectra_b2>=18446744073709551615, 999.00000, WaveSpectra_b2)
     checkdata = np.full(numCoef,1)
     
     np.set_printoptions(formatter={'float_kind':'{:.5f}'.format})
     np.set_printoptions(formatter={'float_kind':'{:.2e}'.format})
     
-#########################################
-    uMean = getuvzMean(badValue,u)
-    vMean = getuvzMean(badValue,v)
-    zMean = getuvzMean(badValue,z)
-#########################################    
+    uMean = _getuvzMean(badValue,u)
+    vMean = _getuvzMean(badValue,v)
+    zMean = _getuvzMean(badValue,z)
+    
+    #file name for telemetry file (e.g. '/home/pi/microSWIFT/data/microSWIFT001_TX_01Jan2021_080000UTC.dat')
     fbinary = dataDir+'microSWIFT'+floatID+'_TX_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
     logger.info('telemetry file = %s' % fbinary)
 
-    if payLoadType == 50:
-        payLoadSize = (16 + 7*42)*4
-        logger.info('payload type = %d' % payLoadType)
-        logger
-    else:
-        payLoadSize =  (5 + 7*42)*4
-        #eventLog.info('[%.3f] - Payload type: %d' % (elapsedTime, payLoadType))
-        #eventLog.info('[%.3f] - payLoadSize: %d' % (elapsedTime, payLoadSize))
+    with open(fbinary, 'wb') as fb:
 
-    try:
-        fbinary = open(fbinary, 'wb')
+        if payloadType == 50:
+            payloadSize = (16 + 7*42)*4
+            logger.info('payload type = %d' % payloadType)
+            logger.info('payload size = %d' %payloadSize)
+        elif payloadType == 7:
+            payloadSize =  (5 + 7*42)*4
+            logger.info('payload type = %d' % payloadType)
+            logger.info('payloadSize: %d' % (payloadSize)
+        else:
+            logger.info('invalid payload type %d' % payloadType)
+            sys.exit(1)
+    
+        hs = round(hs,6)
+        pp = round(pp,6)
+        dir = round(dir,6)
         
-    except:
-        logger.info ('[%.3f] - To write binary file is already open' % elapsedTime)
+        lat[0] = round(lat[0],6)
+        lon[0] = round(lon[0],6)
+        uMean= round(uMean,6)
+        vMean= round(vMean,6)
+        zMean= round(zMean,6)
+        
+        fbinary.write(struct.pack('<sbbhfff', str(payloadVersion),payloadType,Port, payloadSize,hs,pp,dir))
     
-    SigwaveHeight = round(SigwaveHeight,6)
-    Peakwave_Period = round(Peakwave_Period,6)
-    Peakwave_dirT = round(Peakwave_dirT,6)
-    
-    lat[0] = round(lat[0],6)
-    lon[0] = round(lon[0],6)
-    uMean= round(uMean,6)
-    vMean= round(vMean,6)
-    zMean= round(zMean,6)
-    
-    fbinary.write(struct.pack('<sbbhfff', 
-                             str(payloadVersion),payLoadType,Port,
-                             payLoadSize,SigwaveHeight,Peakwave_Period,Peakwave_dirT))
+        fbinary.write(struct.pack('<42f', *WaveSpectra_Energy))
+        fbinary.write(struct.pack('<42f', *WaveSpectra_Freq))
+        fbinary.write(struct.pack('<42f', *WaveSpectra_a1))
+        fbinary.write(struct.pack('<42f', *WaveSpectra_b1))
+        fbinary.write(struct.pack('<42f', *WaveSpectra_a2))
+        fbinary.write(struct.pack('<42f', *WaveSpectra_b2))
+        fbinary.write(struct.pack('<42f', *checkdata))
+        fbinary.write(struct.pack('<f', lat[0]))
+        fbinary.write(struct.pack('<f', lon[0]))
+        fbinary.write(struct.pack('<f', temp))
+        fbinary.write(struct.pack('<f', volt))
+        fbinary.write(struct.pack('<f', uMean))
+        fbinary.write(struct.pack('<f', vMean))
+        fbinary.write(struct.pack('<f', zMean))
+        fbinary.write(struct.pack('<i', int(now.year)))
+        fbinary.write(struct.pack('<i', int(now.month)))
+        fbinary.write(struct.pack('<i', int(now.day)))
+        fbinary.write(struct.pack('<i', int(now.hour)))
+        fbinary.write(struct.pack('<i', int(now.minute)))
+        fbinary.write(struct.pack('<i', int(now.second)))
+        fbinary.flush()
+        fbinary.close()
 
-    fbinary.write(struct.pack('<42f', *WaveSpectra_Energy))
-    fbinary.write(struct.pack('<42f', *WaveSpectra_Freq))
-    fbinary.write(struct.pack('<42f', *WaveSpectra_a1))
-    fbinary.write(struct.pack('<42f', *WaveSpectra_b1))
-    fbinary.write(struct.pack('<42f', *WaveSpectra_a2))
-    fbinary.write(struct.pack('<42f', *WaveSpectra_b2))
-    fbinary.write(struct.pack('<42f', *checkdata))
-    fbinary.write(struct.pack('<f', lat[0]))
-    fbinary.write(struct.pack('<f', lon[0]))
-    fbinary.write(struct.pack('<f', temp))
-    fbinary.write(struct.pack('<f', volt))
-    fbinary.write(struct.pack('<f', uMean))
-    fbinary.write(struct.pack('<f', vMean))
-    fbinary.write(struct.pack('<f', zMean))
-    fbinary.write(struct.pack('<i', int(now.year)))
-    fbinary.write(struct.pack('<i', int(now.month)))
-    fbinary.write(struct.pack('<i', int(now.day)))
-    fbinary.write(struct.pack('<i', int(now.hour)))
-    fbinary.write(struct.pack('<i', int(now.minute)))
-    fbinary.write(struct.pack('<i', int(now.second)))
-    fbinary.flush()
-    fbinary.close()
-sleep(0.5)
 
-def getuvzMean(badValue,resultType):
+def _getuvzMean(badValue, uvzarray):
     mean = badValue     #set values to 999 initially and fill if valid values  
-    nan = float('nan')  #account for nan values
-    idgood = np.where(resultType != badValue)[0]
-    idgoodnan = np.where(resultType != nan)[0]
+    index = np.where(resultType != badValue)[0]
             
-    if(len(idgood) > 0):
-        mean = np.mean(resultType[idgood])
-    elif(len(idgoodnan) > 0):
-        mean = np.mean(resultType[idgoodnan])
-        
+    if(len(index) > 0):
+        mean = np.mean(uvzarray[index])
+ 
     return mean
+
+
