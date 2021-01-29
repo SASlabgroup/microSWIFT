@@ -55,7 +55,7 @@ sudo sed -i "s/^\(outer_voltage_sdram=\).*/\11/" ${file1}
 #enable i2c and spi
 echo "Enabling I2C and SPI"
 sudo sed -i "s/^\(i2c_arm=\).*/\1on/" ${file1}
-sudo sed -i "s/^\(spi=\).*/\1on/" ${file1}\
+sudo sed -i "s/^\(spi=\).*/\1on/" ${file1}
 
 
 #Edit SSH Config file"
