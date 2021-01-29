@@ -62,10 +62,10 @@ echo "Enabling I2C and SPI"
 echo "Changing SSH Config file to allow for send data script to run at boot"
 file2=/etc/ssh/ssh_config
 #searches for line in file and adds if not present"
-sudo grep -qxF "Host *" "${file2}" || echo "Host *" >> "${file2}" 
-sudo grep -qxF "StrictHostKeyChecking no" "${file2}" || echo "StrictHostKeyChecking no" >> "${file2}"
-sudo grep -qxF "UserKnownHosts=dev/null" "${file2}" || echo "UserKnownHosts=dev/null" >> "${file2}"
-sudo grep -qxF "IPQoS cs0 cs0" "${file2}" || echo "IPQoS cs0 cs0" >> "${file2}"
+grep -qF "Host *" "${file2}" || echo "Host *" | sudo tee --append "${file2}"
+grep -qF "StrictHostKeyChecking no" "${file2}" || echo "StrictHostKeyChecking no" | sudo tee --append "${file2}"
+grep -qF "UserKnownHostsFile=/dev/null" "${file2}" || echo "UserKnownHostsFile=/dev/null" | sudo tee --append "${file2}"
+grep -qF "IPQoS cs0 cs0" "${file2}" || echo "IPQoS cs0 cs0" | sudo tee --append "${file2}"
 
 
 #configure Config.dat
