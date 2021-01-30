@@ -70,8 +70,8 @@ def main(u,v,z,lat,lon,fs=4,burst_seconds=512,badValue,payloadType=50):
     vMean = _getuvzMean(badValue,v)
     zMean = _getuvzMean(badValue,z)
     #get last good lattitude and longitude value from burst
-    lat = getlast(lat)
-    lon = getlast(lon)
+    lat = get_final_latlon(lat)
+    lon = get_final_latlon(lon)
     
     #file name for telemetry file (e.g. '/home/pi/microSWIFT/data/microSWIFT001_TX_01Jan2021_080000UTC.dat')
     now=datetime.utcnow()
@@ -141,7 +141,7 @@ def _getuvzMean(badValue, pts):
  
     return mean
 
-def getlast(badValue,a):
+def get_final_latlon(badValue,a):
     for i in range(1, len(a)): #loop over entire lat/lon array, s
         if a[-i] != badValue: #count back from last point looking for a real position
             return a[-i]
