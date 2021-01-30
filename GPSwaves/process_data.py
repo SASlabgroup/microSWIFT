@@ -17,6 +17,7 @@ from datetime import datetime
 import time
 import struct
 from time import sleep
+from Tools.scripts.highlight import latex_highlight
 
 #my imports
 try:
@@ -37,10 +38,12 @@ def main(u,v,z,lat,lon,fs=4,burst_seconds=512,badValue,payloadType=50):
         except Exception as e:
             logger.info('error running GPSwavesC processing')
             logger.info(e)
+            sys.exit(1)
            
     else:
         logger.info('insufficient samples or sampling rate for wave processing')  
-        logger.info('samples expected = %d, samples received = %d' % (fs*burst_seconds, len(z))  
+        logger.info('samples expected = %d, samples received = %d' % (fs*burst_seconds, len(z)))
+        sys.exit(1)
         
     #unpack wave processing results        
     hs = wavestats[0]
@@ -62,13 +65,17 @@ def main(u,v,z,lat,lon,fs=4,burst_seconds=512,badValue,payloadType=50):
     
     np.set_printoptions(formatter={'float_kind':'{:.5f}'.format})
     np.set_printoptions(formatter={'float_kind':'{:.2e}'.format})
-    
+    #calculate mean value of good points only
     uMean = _getuvzMean(badValue,u)
     vMean = _getuvzMean(badValue,v)
     zMean = _getuvzMean(badValue,z)
+    #get last good lattitude and longitude value from burst
+    lat = getlast(lat)
+    lon = getlast(lon)
     
     #file name for telemetry file (e.g. '/home/pi/microSWIFT/data/microSWIFT001_TX_01Jan2021_080000UTC.dat')
-    fbinary = dataDir+'microSWIFT'+floatID+'_TX_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
+    now=datetime.utcnow()
+    fbinary = dataDir+'microSWIFT'+floatID+'_TX_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(now)
     logger.info('telemetry file = %s' % fbinary)
 
     with open(fbinary, 'wb') as fb:
@@ -80,7 +87,7 @@ def main(u,v,z,lat,lon,fs=4,burst_seconds=512,badValue,payloadType=50):
         elif payloadType == 7:
             payloadSize =  (5 + 7*42)*4
             logger.info('payload type = %d' % payloadType)
-            logger.info('payloadSize: %d' % (payloadSize)
+            logger.info('payloadSize: %d' % (payloadSize))
         else:
             logger.info('invalid payload type %d' % payloadType)
             sys.exit(1)
@@ -88,12 +95,15 @@ def main(u,v,z,lat,lon,fs=4,burst_seconds=512,badValue,payloadType=50):
         hs = round(hs,6)
         pp = round(pp,6)
         dir = round(dir,6)
+        lat = round(lat,6)
+        lon = round(lon,6)
+        uMean = round(uMean,6)
+        vMean = round(vMean,6)
+        zMean = round(zMean,6)
         
-        lat[0] = round(lat[0],6)
-        lon[0] = round(lon[0],6)
-        uMean= round(uMean,6)
-        vMean= round(vMean,6)
-        zMean= round(zMean,6)
+        #ignore temp and voltage for now
+        temp = 0.0
+        volt = 0.0
         
         fbinary.write(struct.pack('<sbbhfff', str(payloadVersion),payloadType,Port, payloadSize,hs,pp,dir))
     
@@ -104,8 +114,8 @@ def main(u,v,z,lat,lon,fs=4,burst_seconds=512,badValue,payloadType=50):
         fbinary.write(struct.pack('<42f', *WaveSpectra_a2))
         fbinary.write(struct.pack('<42f', *WaveSpectra_b2))
         fbinary.write(struct.pack('<42f', *checkdata))
-        fbinary.write(struct.pack('<f', lat[0]))
-        fbinary.write(struct.pack('<f', lon[0]))
+        fbinary.write(struct.pack('<f', lat))
+        fbinary.write(struct.pack('<f', lon))
         fbinary.write(struct.pack('<f', temp))
         fbinary.write(struct.pack('<f', volt))
         fbinary.write(struct.pack('<f', uMean))
@@ -122,31 +132,25 @@ def main(u,v,z,lat,lon,fs=4,burst_seconds=512,badValue,payloadType=50):
 
 
 def _getuvzMean(badValue, pts):
-    mean = badValue     #set values to 999 initially and fill if valid values 
-    nan = float('nan') 
-    index = np.where(pts != badValue)[0] #get index of bad values
-    pts=pts[index] #remove bad values from array
-    index = np.where(pts != nan)
+    mean = badValue     #set values to 999 initially and fill if valid values
+    index = np.where(pts != badValue)[0] #get index of non bad values
+    pts=pts[index] #take subset of data without bad values in it
     
-            
     if(len(index) > 0):
-        mean = np.mean(uvzarray[index])
+        mean = np.mean(pts)
  
     return mean
 
-def getuvzMean(badValue,resultType):
-    mean = badValue     #set values to 999 initially and fill if valid values  
-    nan = float('nan')  #account for nan values if invalid GPS data
-    idgood = np.where(resultType != badValue)[0]
-    
-    
-    idgoodnan = np.where(resultType != nan)[0]
-            
-    if(len(idgood) > 0):
-        mean = np.mean(resultType[idgood])
-    elif(len(idgoodnan) > 0):
-        mean = np.mean(resultType[idgoodnan])
+def getlast(badValue,a):
+    for i in range(1, len(a)): #loop over entire lat/lon array, s
+        if a[-i] != badValue: #count back from last point looking for a real position
+            return a[-i]
         
-    return mean
-
+    return [a-i] #returns badValue if no real position exists
+    
+    
+    
+    
+    
+    
 
