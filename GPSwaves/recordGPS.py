@@ -46,7 +46,7 @@ logger.addHandler(logFileHandler)
 dataDir = config.getString('System', 'dataDir')
 floatID = config.getString('System', 'floatID') 
 projectName = config.getString('System', 'projectName')
-payLoadType = config.getInt('System', 'payLoadType')
+payloadType = config.getInt('System', 'payLoadType')
 badValue = config.getInt('System', 'badValue')
 numCoef = config.getInt('System', 'numCoef')
 Port = config.getInt('System', 'port')
@@ -145,7 +145,7 @@ def init_gps():
 					logger.info('found GPGGA sentence')
 					logger.info(newline)
 					gpgga=pynmea2.parse(newline,check=True)
-					logger.info('GPS quality= ' + str(gpgga.gps_qual))
+					logger.info('GPS quality= %d' % gpgga.gps_qual)
 					#check gps_qual value from GPGGS sentence. 0=invalid,1=GPS fix,2=DGPS fix
 					if gpgga.gps_qual > 0:
 						logger.info('GPS fix acquired')
@@ -217,12 +217,20 @@ def record_gps(ser,fname):
 				gps_out.flush()
 		
 				if "GPGGA" in newline:
-					gpgga = pynmea2.parse(newline,check=True)   #grab gpgga sentence to return
+					gpgga = pynmea2.parse(newline,check=True)   #grab gpgga sentence and parse
+					#check to see if we have lost GPS fix, and if so, continue to loop start. a badValue will remain at this index
+					if gpgga.gps_qual < 1:
+						logger.info('lost GPS fix, sample not recorded. Waiting 10 seconds')
+						sleep(10)
+						ipos+=1
+						continue
 					z[ipos] = gpgga.altitude
 					lat[ipos] = gpgga.latitude
 					lon[ipos] = gpgga.longitude
 					ipos+=1
 				elif "GPVTG" in newline:
+					if gpgga.gps_qual < 1:
+						continue
 					gpvtg = pynmea2.parse(newline,check=True)   #grab gpvtg sentence
 					u[ivel] = gpvtg.spd_over_grnd_kmph*np.cos(gpvtg.true_track) #units are kmph
 					v[ivel] = gpvtg.spd_over_grnd_kmph*np.sin(gpvtg.true_track) #units are kmph
@@ -237,9 +245,11 @@ def record_gps(ser,fname):
 				elif ipos == gps_samples and ivel == gps_samples:
 					break
 				
-			
+		badpts = len(np.where(z == 999)) #index of bad values if lost GPS fix. Should be same for u and v
+	
 		logger.info('number of GPGGA samples = %s' %ipos)
 		logger.info('number of GPVTG samples = %s' %ivel)
+		logger.info('number of bad samples %d' %badpts)
 						
 		return u,v,z,lat,lon
 	except Exception as e:
@@ -281,11 +291,7 @@ def main():
 
 #run main function unless importing as a module
 if __name__ == "__main__":
-	
-	
-	
-	
-	
+
 	
     main()
 
