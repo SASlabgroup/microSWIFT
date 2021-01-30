@@ -121,13 +121,32 @@ def main(u,v,z,lat,lon,fs=4,burst_seconds=512,badValue,payloadType=50):
         fbinary.close()
 
 
-def _getuvzMean(badValue, uvzarray):
-    mean = badValue     #set values to 999 initially and fill if valid values  
-    index = np.where(resultType != badValue)[0]
+def _getuvzMean(badValue, pts):
+    mean = badValue     #set values to 999 initially and fill if valid values 
+    nan = float('nan') 
+    index = np.where(pts != badValue)[0] #get index of bad values
+    pts=pts[index] #remove bad values from array
+    index = np.where(pts != nan)
+    
             
     if(len(index) > 0):
         mean = np.mean(uvzarray[index])
  
+    return mean
+
+def getuvzMean(badValue,resultType):
+    mean = badValue     #set values to 999 initially and fill if valid values  
+    nan = float('nan')  #account for nan values if invalid GPS data
+    idgood = np.where(resultType != badValue)[0]
+    
+    
+    idgoodnan = np.where(resultType != nan)[0]
+            
+    if(len(idgood) > 0):
+        mean = np.mean(resultType[idgood])
+    elif(len(idgoodnan) > 0):
+        mean = np.mean(resultType[idgoodnan])
+        
     return mean
 
 
