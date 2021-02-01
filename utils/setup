@@ -6,8 +6,14 @@
 
 #ask user for input and stores as variables
 read -p "Enter the three digit microSWIFT floatID: " floatID
+read -p "Enter the UTC military time in HH:MM:SS format: " date 
+read -p "Enter the current date in format YYYY-MM-DD. Remember to account for UTC timechange: " time
 read -p "Enter your Github username: " username
 read -p "Enter your Github email: " useremail
+
+#set time and date so that pi will be able to use the internet and github etc
+sudo timedatectl set-time $time
+sudo timedatectl set-time $date
 
 #download python libraries
 echo "Downloading python libraries"
