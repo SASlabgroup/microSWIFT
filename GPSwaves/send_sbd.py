@@ -4,27 +4,82 @@
 # transmits binary data that is passed to the main function
 # Data is converted into binary in this script and then seperated
 # into 4 messages send out through iridium in  specified format.
-#
-# Data include GPS GPGGA,GPVTG sentences, temp and voltage 
-#
-#------------------------------------------------------------------------
 
 # standard imports 
 import serial, sys
-from time import sleep
 from logging import *
 import struct
 import numpy as np
 import time
 import datetime
 import RPi.GPIO as GPIO
+from time import sleep
+from email import message
 
-# my imports
-from rec_send_funcs import *
+#from config3 import Config
 
-#initialize gpio pins
+#load config file and get parameters
+#configFilename = sys.argv[1] #Load config file/parameters needed
+#config = Config() # Create object and load file
+#ok = config.loadFile( configFilename )
+#if( not ok ):
+    #logger.info ('Error loading config file: "%s"' % configFilename)
+    #sys.exit(1)
+
+#Iridium parameters - fixed for now
+modemPort = '/dev/tty/USB0' #config.getString('Iridium', 'port')
+modemBaud = 19200 #config.getInt('Iridium', 'baud')
+modemGPIO =  16 #config.getInt('Iridium', 'modemGPIO')
+formatType = 10 #config.getInt('Iridium', 'formatType')
+call_interval = 60 #config.getInt('Iridium', 'call_interval')
+call_time = 10 #config.getInt('Iridium', 'call_time')
+
+#set up GPIO and turn on modem
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
+GPIO.setup(modemGpio,GPIO.OUT)
+
+#open serial port with modem
+
+
+
+#read in file
+
+
+
+
+
+#split up file into multiple message packets with headers
+
+
+
+
+#send messages to modem buffer and then send out
+
+def send_text(message, ser):    
+   
+
+#check for text data rathen than binary
+
+    ser.write(('AT+SBDWT='+message + '\r').encode()) #command to write text to modem buffer
+    
+    ser.write('AT+SBDIX\r').encode())
+   
+    
+def send_binary(message, ser):
+    
+    ser.write(('AT+SBDWB='+message + '\r').encode())
+     
+    ser.write('AT+SBDIX\r').encode())
+
+
+
+
+
+
+
+
+
 #------------------------------------------------------------------------
 
 # Takes in message created from GPS, IMU, TEMP, VOLT. Complete message i s
@@ -39,7 +94,7 @@ def send_sbd_msg(message,
                  elapsed,
                  modemGpio):
     
-    GPIO.setup(modemGpio,GPIO.OUT)
+ 
     tStart = time.time()
     sleepTime = 6
     GPIO.output(modemGpio,GPIO.HIGH) #turn modem on

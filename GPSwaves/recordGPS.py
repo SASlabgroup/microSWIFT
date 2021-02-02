@@ -13,10 +13,8 @@ import struct
 from time import sleep
 
 #my imports
-#import send_sbd_binary_data
-#from rec_send_funcs import *
-#import GPSwavesC
 from config3 import Config
+import process_data
 
 
 #load config file and get parameters
@@ -70,14 +68,6 @@ gps_timeout = config.getInt('GPS','timeout')
 #temp and volt params 
 #maxHoursTemp = config.getInt('Temp', 'maxHours')
 #maxHoursVolt = config.getInt('Voltage', 'maxHours')
-
-#Iridium parameters
-#modemPort = config.getString('Iridium', 'port')
-#modemBaud = config.getInt('Iridium', 'baud')
-#modemGPIO = config.getInt('Iridium', 'modemGPIO')
-#formatType = config.getInt('Iridium', 'formatType')
-#callInt = config.getInt('Iridium', 'callInt')
-#burst_num = config.getInt('Iridium', 'burstNum')
 
 #hard coded parameters to change 
 #IfHourlyCall = config.getString('Iridium', 'IfHourlyCall')
@@ -287,6 +277,7 @@ def main():
 	else:
 		logger.info("GPS not init ialized, no data will be logged")
 		
+	process_data.main(u,v,z,lat,lon,gps_freq,burst_seconds,badValue,payloadType)	
 	sys.exit(0)
 
 #run main function unless importing as a module

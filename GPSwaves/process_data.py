@@ -9,7 +9,7 @@
 #payload telemetry type 50 (default)
 
 #imports
-import sys, os
+import sys
 import numpy as np
 from struct import *
 from logging import *
@@ -17,9 +17,9 @@ from datetime import datetime
 import time
 import struct
 from time import sleep
-from Tools.scripts.highlight import latex_highlight
 
 #my imports
+import send_sbd
 try:
     import GPSwavesC
 except Exception as e:
@@ -30,7 +30,8 @@ except Exception as e:
 def main(u,v,z,lat,lon,fs=4,burst_seconds=512,badValue,payloadType=50):
 
     #check the number of u,v,z samples matches expected and 1 Hz minimum
-    if len(z) >= fs*burst_seconds and fs >= 1:          
+    pts_expected
+    if len(z) >= pts_expected and fs >= 1:          
         try:
             #note gps_freq is assumed to be 4Hz
             wavestats = GPSwavesC.main_GPSwaves(len(z),u,v,z,fs)    
@@ -42,7 +43,7 @@ def main(u,v,z,lat,lon,fs=4,burst_seconds=512,badValue,payloadType=50):
            
     else:
         logger.info('insufficient samples or sampling rate for wave processing')  
-        logger.info('samples expected = %d, samples received = %d' % (fs*burst_seconds, len(z)))
+        logger.info('samples expected = %d, samples received = %d' % (pts_expected, len(z)))
         sys.exit(1)
         
     #unpack wave processing results        
@@ -70,8 +71,8 @@ def main(u,v,z,lat,lon,fs=4,burst_seconds=512,badValue,payloadType=50):
     vMean = _getuvzMean(badValue,v)
     zMean = _getuvzMean(badValue,z)
     #get last good lattitude and longitude value from burst
-    lat = get_final_latlon(lat)
-    lon = get_final_latlon(lon)
+    lat = _get_last(lat)
+    lon = _get_last(lon)
     
     #file name for telemetry file (e.g. '/home/pi/microSWIFT/data/microSWIFT001_TX_01Jan2021_080000UTC.dat')
     now=datetime.utcnow()
@@ -105,31 +106,34 @@ def main(u,v,z,lat,lon,fs=4,burst_seconds=512,badValue,payloadType=50):
         temp = 0.0
         volt = 0.0
         
-        fbinary.write(struct.pack('<sbbhfff', str(payloadVersion),payloadType,Port, payloadSize,hs,pp,dir))
+        fb.write(struct.pack('<sbbhfff', str(payloadVersion),payloadType,Port, payloadSize,hs,pp,dir))
     
-        fbinary.write(struct.pack('<42f', *WaveSpectra_Energy))
-        fbinary.write(struct.pack('<42f', *WaveSpectra_Freq))
-        fbinary.write(struct.pack('<42f', *WaveSpectra_a1))
-        fbinary.write(struct.pack('<42f', *WaveSpectra_b1))
-        fbinary.write(struct.pack('<42f', *WaveSpectra_a2))
-        fbinary.write(struct.pack('<42f', *WaveSpectra_b2))
-        fbinary.write(struct.pack('<42f', *checkdata))
-        fbinary.write(struct.pack('<f', lat))
-        fbinary.write(struct.pack('<f', lon))
-        fbinary.write(struct.pack('<f', temp))
-        fbinary.write(struct.pack('<f', volt))
-        fbinary.write(struct.pack('<f', uMean))
-        fbinary.write(struct.pack('<f', vMean))
-        fbinary.write(struct.pack('<f', zMean))
-        fbinary.write(struct.pack('<i', int(now.year)))
-        fbinary.write(struct.pack('<i', int(now.month)))
-        fbinary.write(struct.pack('<i', int(now.day)))
-        fbinary.write(struct.pack('<i', int(now.hour)))
-        fbinary.write(struct.pack('<i', int(now.minute)))
-        fbinary.write(struct.pack('<i', int(now.second)))
-        fbinary.flush()
-        fbinary.close()
-
+        fb.write(struct.pack('<42f', *WaveSpectra_Energy))
+        fb.write(struct.pack('<42f', *WaveSpectra_Freq))
+        fb.write(struct.pack('<42f', *WaveSpectra_a1))
+        fb.write(struct.pack('<42f', *WaveSpectra_b1))
+        fb.write(struct.pack('<42f', *WaveSpectra_a2))
+        fb.write(struct.pack('<42f', *WaveSpectra_b2))
+        fb.write(struct.pack('<42f', *checkdata))
+        fb.write(struct.pack('<f', lat))
+        fb.write(struct.pack('<f', lon))
+        fb.write(struct.pack('<f', temp))
+        fb.write(struct.pack('<f', volt))
+        fb.write(struct.pack('<f', uMean))
+        fb.write(struct.pack('<f', vMean))
+        fb.write(struct.pack('<f', zMean))
+        fb.write(struct.pack('<i', int(now.year)))
+        fb.write(struct.pack('<i', int(now.month)))
+        fb.write(struct.pack('<i', int(now.day)))
+        fb.write(struct.pack('<i', int(now.hour)))
+        fb.write(struct.pack('<i', int(now.minute)))
+        fb.write(struct.pack('<i', int(now.second)))
+        fb.flush()
+    
+    #run send_sbd script to send telemetry file
+    send_sbd(fbinary)    
+    
+    return fbinary
 
 def _getuvzMean(badValue, pts):
     mean = badValue     #set values to 999 initially and fill if valid values
@@ -141,13 +145,16 @@ def _getuvzMean(badValue, pts):
  
     return mean
 
-def get_final_latlon(badValue,a):
-    for i in range(1, len(a)): #loop over entire lat/lon array, s
+def _get_last(badValue,a):
+    for i in range(1, len(a)): #loop over entire lat/lon array
         if a[-i] != badValue: #count back from last point looking for a real position
             return a[-i]
         
     return [a-i] #returns badValue if no real position exists
     
+if __name__== '__main__':
+    
+    telem_file = main()
     
     
     
