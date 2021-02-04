@@ -14,6 +14,7 @@ import time
 import datetime
 import RPi.GPIO as GPIO
 from time import sleep
+from builtins import False
 
 #Iridium parameters - fixed for now
 modemPort = '/dev/tty/USB0' #config.getString('Iridium', 'port')
@@ -22,15 +23,12 @@ modemGPIO =  16 #config.getInt('Iridium', 'modemGPIO')
 formatType = 10 #config.getInt('Iridium', 'formatType')
 call_interval = 60 #config.getInt('Iridium', 'call_interval')
 call_time = 10 #config.getInt('Iridium', 'call_time')
+timeout=60 #some commands can take a long time to complete
 
 #set up GPIO and turn on modem
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.setup(modemGpio,GPIO.OUT)
-
-
-
-
 
 #open file and read bytes
 try:
@@ -45,49 +43,85 @@ except Exception as e:
 #split up file into multiple message packets with headers
 
 
+
+
+
+
 #open serial port with modem
 #power on
-print('power on modem')
+print('power on modem...',end='')
 GPIO.output(modemGPIO,GPIO.HIGH)
+sleep(3)
 print('done')
 #open serial port
-print('opening serial port with modem at {0} on port {1}'.format(baud,modemPort))
-ser=serial.Serial()
-ser.port=modemPort
-ser.baudrate=modemBaud
-ser.timeout=10
-ser.open()
+print('opening serial port with modem at {0} on port {1}...'.format(baud,modemPort),end='')
+ser=serial.Serial(modemPort,modemBaud,timeout)
 print('done')
 
-#test with AT command
-ser.write('AT\r')
-response=ser.readlines()
-
-
-def send_AT(ser):
-
+#test with AT command, should return 'OK'
+def status():
+    ser.flushInput()
     ser.write('AT\r'.encode())
-    ser.flushOutput()
-    ser.read_until('OK'.encode())
-
-
-def _get_response():
+    print('command = AT, ',end='')
     while ser.in_waiting > 0:
         r=ser.readline().decode().strip('\r\n')
-        print(r)
-        if 'OK' in r:
-            return True, r
-        elif 'ERROR' in r:
+        if r == 'OK':
+            print('response = {}'.format(r))
+            return True
+        elif r == 'ERROR':
+            print('response = {}'.format(r))
             return False
-        else:
-            return False
-        
+    return False
+
+#Get signal quality using AT+CSQF command (see AT command reference).
+#Returns signal quality, default range is 0-5. Returns -1 for an error or no response
+#Example modem output: AT+CSQF +CSQF:0 OK    
+def sig_qual():
+    ser.flushInput()
+    ser.write('AT+CSQF'.encode())
+    print('command = AT+CSQF, ',end='')
+    while ser.in_waiting > 0:
+        r=ser.readline().decode().strip('\r\n')
+        if 'CSQF:' in r:
+            print('response = {}'.format(r))
+            qual = r.split(':')[1]
+            return qual
+        elif r == 'ERROR':
+            print('response = {}'.format(r))
+            return -1
+    return -1
+
+#Send binary message to modem buffer and transmit       
+def transmit_bin(msg,bytelen):
+    ser.flushInput()
+    ser.write(('AT+SBDWB='+str(bytelen)+'\r').encode()) 
+    print('command = AT+SBDWB, ',end='')
+    r = ser.read_until('READY'.encode()) #block until READY message is received
+    if 'READY'.encode() in r: #only pass bytes if modem is ready, otherwise it has timed out
+        ser.write(msg) #pass bytes to modem. Must include 2 byte checksum
+    else:
+        return -1
+    ser.write('AT+SBDIX\r').encode()) #start extended Iridium session (transmit)
+    print('command = AT+SBDIX, ',end='')
 
 
+def transmit_ascii(message):
+    
+    
+
+
+def write_binary(cmd):
+   ser.flushInput() 
+   ser.write(cmd)
+   
+def write_ascii(cmd):
+    cmd = cmd.encode()
+    ser.flushInput()
+    ser.write(cmd)
 
 #send messages to modem buffer and then send out
 
-def send_text(message, ser):    
+def send_ascii(message):    
    
 
 #check for text data rathen than binary
@@ -97,12 +131,9 @@ def send_text(message, ser):
     ser.write('AT+SBDIX\r').encode())
    
     
-def send_binary(message, ser):
+def send_binary(message):
     
-    ser.write(('AT+SBDWB='+message + '\r').encode())
-     
-    ser.write('AT+SBDIX\r').encode())
-
+    
 
 
 
