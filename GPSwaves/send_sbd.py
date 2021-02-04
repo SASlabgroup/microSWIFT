@@ -14,17 +14,6 @@ import time
 import datetime
 import RPi.GPIO as GPIO
 from time import sleep
-from email import message
-
-#from config3 import Config
-
-#load config file and get parameters
-#configFilename = sys.argv[1] #Load config file/parameters needed
-#config = Config() # Create object and load file
-#ok = config.loadFile( configFilename )
-#if( not ok ):
-    #logger.info ('Error loading config file: "%s"' % configFilename)
-    #sys.exit(1)
 
 #Iridium parameters - fixed for now
 modemPort = '/dev/tty/USB0' #config.getString('Iridium', 'port')
@@ -39,18 +28,60 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.setup(modemGpio,GPIO.OUT)
 
-#open serial port with modem
-
-
-
-#read in file
 
 
 
 
+#open file and read bytes
+try:
+    with open(telem_file, 'rb') as f:
+        bytes=f.read()
+except FileNotFoundError:
+    print('file not found: {}'.format(telem_file))   
+except Exception as e:
+    print('error opening file: {}'.format(e))
+    
 
 #split up file into multiple message packets with headers
 
+
+#open serial port with modem
+#power on
+print('power on modem')
+GPIO.output(modemGPIO,GPIO.HIGH)
+print('done')
+#open serial port
+print('opening serial port with modem at {0} on port {1}'.format(baud,modemPort))
+ser=serial.Serial()
+ser.port=modemPort
+ser.baudrate=modemBaud
+ser.timeout=10
+ser.open()
+print('done')
+
+#test with AT command
+ser.write('AT\r')
+response=ser.readlines()
+
+
+def send_AT(ser):
+
+    ser.write('AT\r'.encode())
+    ser.flushOutput()
+    ser.read_until('OK'.encode())
+
+
+def _get_response():
+    while ser.in_waiting > 0:
+        r=ser.readline().decode().strip('\r\n')
+        print(r)
+        if 'OK' in r:
+            return True, r
+        elif 'ERROR' in r:
+            return False
+        else:
+            return False
+        
 
 
 
