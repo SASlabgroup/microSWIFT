@@ -58,6 +58,14 @@ print('opening serial port with modem at {0} on port {1}...'.format(baud,modemPo
 ser=serial.Serial(modemPort,modemBaud,timeout)
 print('done')
 
+#Set default parameters with AT&F command
+ser.write('AT&F\r'.encode())
+print('command = ',end='')
+
+ser.write('AT&K=0\r'
+
+
+
 #test with AT command, should return 'OK'
 def status():
     ser.flushInput()
@@ -78,7 +86,7 @@ def status():
 #Example modem output: AT+CSQF +CSQF:0 OK    
 def sig_qual():
     ser.flushInput()
-    ser.write('AT+CSQF'.encode())
+    ser.write('AT+CSQF\r'.encode())
     print('command = AT+CSQF, ',end='')
     while ser.in_waiting > 0:
         r=ser.readline().decode().strip('\r\n')
@@ -91,19 +99,31 @@ def sig_qual():
             return -1
     return -1
 
-#Send binary message to modem buffer and transmit       
+#Send binary message to modem buffer and transmit
+#Returns true if trasmit command is sent, but does not mean a successful transmission
+#Returns false if anything goes wrong.
 def transmit_bin(msg,bytelen):
     ser.flushInput()
-    ser.write(('AT+SBDWB='+str(bytelen)+'\r').encode()) 
+    ser.write(('AT+SBDWB='+str(bytelen)+'\r').encode()) #command to write bytes, followed by number of bytes to write
     print('command = AT+SBDWB, ',end='')
-    r = ser.read_until('READY'.encode()) #block until READY message is received
-    if 'READY'.encode() in r: #only pass bytes if modem is ready, otherwise it has timed out
+    r = ser.read_until('READY'.encode()).decode() #block until READY message is received
+    if 'READY' in r: #only pass bytes if modem is ready, otherwise it has timed out
         ser.write(msg) #pass bytes to modem. Must include 2 byte checksum
     else:
-        return -1
+        return False
+    ser.flushInput()
     ser.write('AT+SBDIX\r').encode()) #start extended Iridium session (transmit)
     print('command = AT+SBDIX, ',end='')
-
+    r=ser.read_until('SBDIX: '.encode()).decode()
+    if '+SBDIX: ' in r:
+        r=ser.read_until('\r'.encode()) #get command response 
+        r=r.decode().strip('\r') #remove carriage return and convert to string
+        print('response = {}'.format(r))
+        r=r.split(',')
+        return True
+    else:
+        return False
+        
 
 def transmit_ascii(message):
     
