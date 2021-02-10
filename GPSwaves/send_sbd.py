@@ -14,6 +14,7 @@ import time
 import datetime
 import RPi.GPIO as GPIO
 from time import sleep
+from numpy import msg
 
 #Iridium parameters - fixed for now
 modemPort = '/dev/tty/USB0' #config.getString('Iridium', 'port')
@@ -32,16 +33,137 @@ GPIO.setup(modemGpio,GPIO.OUT)
 #open file and read bytes
 try:
     with open(telem_file, 'rb') as f:
-        payload_data=bytearray(f.read())
+        telem_file=bytearray(f.read())
 except FileNotFoundError:
     print('file not found: {}'.format(telem_file))   
 except Exception as e:
     print('error opening file: {}'.format(e))
     
+#parse telemetry file
+#-----------------------------------------------------------------------------------------------
+def _checkSize(size, expected, name, p_id):
+    if size != expected:
+        raise Exception("Payload {} {} size {} expected {}".format(p_id,
+                                                                   name,
+                                                                   size,
+                                                                   expected))
 
-#split up file into multiple message packets with headers
+
+def _getDouble(data, index):
+    end = index + 8
+    return (unpack_from('d', data[index:end])[0], end)
 
 
+def _getFloat(data, index):
+    end = index + 4
+    if end > len(data):
+        print('Reached end of data unexpectedly')
+    return (unpack_from('f', data[index:end])[0], end)
+
+
+def _getInt1(data, index):
+    end = index + 1
+    return (ord(data[index:end]), end)
+
+
+def _getInt2(data, index):
+    end = index + 2
+    return (unpack_from('h', data[index:end])[0], end)
+
+
+def _getInt4(data, index):
+    end = index + 4
+    return (unpack_from('i', data[index:end])[0], end)
+
+
+# Get Payload type, current valid types are 2 or 3
+def _getPayloadType(data):
+    (data_type,) = unpack_from('c', buffer(data[0:1]))
+    return (data_type, 1)
+
+
+def processData(p_id, data):
+    # Get Payload type, current valid types are 2 or 3
+    (data_type, index) = _getPayloadType(data)
+    print("payload type: {}".format(data_type))
+
+    index = 1
+    if data_type != _4_0:
+        print("Invalid payload type: 0x{}".format(codecs.encode(data_type, 
+                                                                "hex")))
+        sys.exit(1)
+
+    data_len = len(data)
+    while index < data_len:
+        print("Index: {}".format(index))
+        (sensor_type, index) = _getInt1(data, index)
+        (com_port, index) = _getInt1(data, index)
+        print("Sensor: {}\tCom Port: {}".format(sensor_type, com_port))
+
+        (size, index) = _getInt2(data, index)
+        print("Size: {}".format(size))
+
+        if sensor_type == 50:
+            index = _processMicroSWIFT(p_id, data, index, size)
+
+        else:
+            raise Exception(
+                "Payload {} has unknown sensor type {} at index {}".format(
+                    p_id, sensor_type, index))
+
+
+def _processMicroSWIFT(p_id, data, index, size):
+    if size == 0:
+        print("MicroSWIFT empty")
+        return index
+
+    (hs, index) = _getFloat(data, index)
+    print("hs {}".format(hs))
+    (tp, index) = _getFloat(data, index)
+    print("tp {}".format(tp))
+    (dp, index) = _getFloat(data, index)
+    print("dp {}".format(dp))
+
+    arrays = [ 'e', 'f', 'a1', 'b1', 'a2', 'b2', 'cf']
+
+    # TODO Get the array data
+    for array in arrays:
+        # 0 - 41
+        for a_index in range(0, 42):
+            (val, index) = _getFloat(data, index)
+            print("{}{} {}".format(array, a_index, val))
+
+    (lat, index) = _getFloat(data, index)
+    print("lat {}".format(lat))
+    (lon, index) = _getFloat(data, index)
+    print("lon {}".format(lon))
+    (mean_temp, index) = _getFloat(data, index)
+    print("mean_temp {}".format(mean_temp))
+    (mean_voltage, index) = _getFloat(data, index)
+    print("mean_voltage {}".format(mean_voltage))
+    (mean_u, index) = _getFloat(data, index)
+    print("mean_u {}".format(mean_u))
+    (mean_v, index) = _getFloat(data, index)
+    print("mean_v {}".format(mean_v))
+    (mean_z, index) = _getFloat(data, index)
+    print("mean_z {}".format(mean_z))
+    (year, index) = _getInt4(data, index)
+    print("year {}".format(year))
+    (month, index) = _getInt4(data, index)
+    print("month {}".format(month))
+    (day, index) = _getInt4(data, index)
+    print("day {}".format(day))
+    (hour, index) = _getInt4(data, index)
+    print("hour {}".format(hour))
+    (min, index) = _getInt4(data, index)
+    print("min {}".format(min))
+    (sec, index) = _getInt4(data, index)
+    print("sec {}".format(sec))
+
+    return index
+
+
+#-----------------------------------------------------------------------------------------------
 #open serial port with modem
 #power on
 print('power on modem...',end='')
@@ -50,8 +172,12 @@ sleep(3)
 print('done')
 #open serial port
 print('opening serial port with modem at {0} on port {1}...'.format(baud,modemPort),end='')
-ser=serial.Serial(modemPort,modemBaud,timeout)
-print('done')
+try:
+    ser=serial.Serial(modemPort,modemBaud,timeout)
+    print('done')
+except SerialException:
+    print('unable to open serial port')
+    sys.exit(1)
 
 #send AT command
 ser.write(b'AT\r')
@@ -102,9 +228,9 @@ def sig_qual(command='AT+CSQ'):
         print('unexpected response: {}'.format(r))  
         return -1
 
-#Send binary message to modem buffer and transmit
-#Returns true if trasmit command is sent, but does not mean a successful transmission
-#Returns false if anything goes wrong.
+#send binary message to modem buffer and transmit
+#returns true if trasmit command is sent, but does not mean a successful transmission
+#returns false if anything goes wrong
 def transmit_bin(msg,bytelen,wb='AT+SBDWB',ix='AT+SBDIX'):
     ser.flushInput()
     ser.write('AT+SBDWB='+str(bytelen)+'\r').encode() #command to write bytes, followed by number of bytes to write
@@ -136,7 +262,8 @@ def transmit_bin(msg,bytelen,wb='AT+SBDWB',ix='AT+SBDIX'):
             return False
     else:
         return False
-
+    
+#same as transmit_bin but sends ascii text using SBDWT command instead of bytes
 def transmit_ascii(msg):
     msg_len=len(msg)
     if msg_len < 340: #check message length
@@ -181,88 +308,18 @@ def transmit_ascii(msg):
 # split up into 4 different messages, all converted into binary form
 # messages are sent out through iridium modem 
 def send_sbd_msg
-
-    tStart = time.time()
-    sleepTime = 6
-    GPIO.output(modemGpio,GPIO.HIGH) #turn modem on
-    
-    #create serial object and open port
-    sbd = serial.Serial(modemPort, modemBaud, timeout=1)
-    try: 
-        sbd.open() # Open port 
-    except:
-        print ("port already open")
-        
     if sbd.isOpen():
         try:
-            
-            sbd.flushInput()  # clear inpupt buffer
-            sbd.flushOutput() # clean output buffer
-            
-            #sys.stdout.flush()
-            #sys.stdin.flush()
-            sleep(2)
-            #issue AT command and check for OK response
-            sbd.write('AT\r'.encode())
-            status = sbd.readlines()
-            print('[%.3f] - Iridium modem status: %s' % (elapsedTime,status))
-            
-            #get signal strength
-            sbd.write('AT+CSQ\r'.encode())
-            signal_strength = sbd.readlines()
-            print('[%.3f] - Iridium modem signal strength: %s' % (elapsedTime,signal_strength))
-            eventLog.info('[%.3f] - Send AT and AT+CSQ. Response: %s, %s' % (elapsedTime,status,signal_strength))
-
-            #write data to MO buffer
-            sleep(sleepTime)
-            eventLog.info('[%.3f] - Write data to MO buffer' % elapsedTime)
-
-            print ('[%.3f] - Length in bytes: %d' % (elapsedTime, bytelen))
-            eventLog.info('[%.3f] - Length in bytes: %d' % (elapsedTime, bytelen))
-            
-            sbd.write(('AT+SBDWB='+str(bytelen) + '\r').encode())
-            sleep(sleepTime)
-            reply = sbd.readlines()
-            print('[%.3f] - Write to MO buffer reply: %s' % (elapsedTime,reply))
-            eventLog.info('[%.3f] - Write to MO buffer reply: %s' % (elapsedTime, reply))
             
             checksum = sum(bytearray(message))
             print('[%.3f] - Checksum: %s, message: %s' % (elapsedTime,checksum,message))
             eventLog.info('[%.3f] - Checksum: %s, message: %s' % (elapsedTime,checksum,message))
 
-            sbd.write(message)
-            sleep(sleepTime)
-            print ('[%.3f] - wrote message: %s' % (elapsedTime,reply))
+
             
             sbd.write(chr(checksum >> 8))
             sbd.write(chr(checksum & 0xFF))
             
-            reply = sbd.readlines()
-            print('[%.3f] - Wrote message and checksum to modem. Response: %s' % (elapsedTime, reply))
-            eventLog.info('[%.3f] - Wrote message and checksum to modem. Response: %s' % (elapsedTime, reply))
-
-
-            if (MakeCall):
-            #send SBD message
-                sbd.write('AT+SBDIX\r'.encode())
-                eventLog.info('[%.3f] - Send SBD message' % elapsedTime)
-                print ('[%.3f] - Send SBD message' % elapsedTime)
-                
-            sleep(10)
-            reply = sbd.readlines()
-            eventLog.info('[%.3f] - Reply to send SBD message: %s' %(elapsedTime, reply))
-            print('[%.3f] - Reply to send SBD message: %s' %(elapsedTime, reply))
-            #sleep(sleepTime)
-
-        except Exception as e1:
-            eventLog.error("Error communicating...: " + str(e1))
-            
-    eventLog.info('[%.3f] - Powering down SBD modem and closing port' % elapsedTime)
-    GPIO.output(modemGpio,GPIO.LOW)
-    print ("Closing modem port")
-    sbd.flushInput()  # clear inpupt buffer
-    sbd.flushOutput() # clean output buffer
-    sbd.close()
 #--------------------------------------------------------------------------------------------
 #MAIN
 #
@@ -366,5 +423,16 @@ def main():
 
 #run main function unless importing as a module
 if __name__ == "__main__":
-    main()
+
+#turn on modem and initalize serial port
+
+#get argument passed for message
+
+#send 
+if len(sys.argv) != 2:
+        print('provide an ascii text message to send')
+        sys.exit(1)
+
+    sys.argv[1] = msg
+    transmit_ascii(msg)
 
