@@ -25,175 +25,53 @@ call_interval = 60 #config.getInt('Iridium', 'call_interval')
 call_time = 10 #config.getInt('Iridium', 'call_time')
 timeout=60 #some commands can take a long time to complete
 
+payloadVersion=7
+payloadType=50
+
 #set up GPIO pins for modem control
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.setup(modemGpio,GPIO.OUT)
 
-#open file and read bytes
-try:
-    with open(telem_file, 'rb') as f:
-        telem_file=bytearray(f.read())
-except FileNotFoundError:
-    print('file not found: {}'.format(telem_file))   
-except Exception as e:
-    print('error opening file: {}'.format(e))
-    
-#parse telemetry file
-#-----------------------------------------------------------------------------------------------
-def _checkSize(size, expected, name, p_id):
-    if size != expected:
-        raise Exception("Payload {} {} size {} expected {}".format(p_id,
-                                                                   name,
-                                                                   size,
-                                                                   expected))
+#open binary data and return bytes
+def open_bin(binfile):
+    try:
+        with open(binfile, 'rb') as f:
+            bytes=bytearray(f.read())
+    except FileNotFoundError:
+        print('file not found: {}'.format(binfile))   
+    except Exception as e:
+        print('error opening file: {}'.format(e))
+    return bytes
 
-
-def _getDouble(data, index):
-    end = index + 8
-    return (unpack_from('d', data[index:end])[0], end)
-
-
-def _getFloat(data, index):
-    end = index + 4
-    if end > len(data):
-        print('Reached end of data unexpectedly')
-    return (unpack_from('f', data[index:end])[0], end)
-
-
-def _getInt1(data, index):
-    end = index + 1
-    return (ord(data[index:end]), end)
-
-
-def _getInt2(data, index):
-    end = index + 2
-    return (unpack_from('h', data[index:end])[0], end)
-
-
-def _getInt4(data, index):
-    end = index + 4
-    return (unpack_from('i', data[index:end])[0], end)
-
-
-# Get Payload type, current valid types are 2 or 3
-def _getPayloadType(data):
-    (data_type,) = unpack_from('c', buffer(data[0:1]))
-    return (data_type, 1)
-
-
-def processData(p_id, data):
-    # Get Payload type, current valid types are 2 or 3
-    (data_type, index) = _getPayloadType(data)
-    print("payload type: {}".format(data_type))
-
-    index = 1
-    if data_type != _4_0:
-        print("Invalid payload type: 0x{}".format(codecs.encode(data_type, 
-                                                                "hex")))
-        sys.exit(1)
-
-    data_len = len(data)
-    while index < data_len:
-        print("Index: {}".format(index))
-        (sensor_type, index) = _getInt1(data, index)
-        (com_port, index) = _getInt1(data, index)
-        print("Sensor: {}\tCom Port: {}".format(sensor_type, com_port))
-
-        (size, index) = _getInt2(data, index)
-        print("Size: {}".format(size))
-
-        if sensor_type == 50:
-            index = _processMicroSWIFT(p_id, data, index, size)
-
-        else:
-            raise Exception(
-                "Payload {} has unknown sensor type {} at index {}".format(
-                    p_id, sensor_type, index))
-
-
-def _processMicroSWIFT(p_id, data, index, size):
-    if size == 0:
-        print("MicroSWIFT empty")
-        return index
-
-    (hs, index) = _getFloat(data, index)
-    print("hs {}".format(hs))
-    (tp, index) = _getFloat(data, index)
-    print("tp {}".format(tp))
-    (dp, index) = _getFloat(data, index)
-    print("dp {}".format(dp))
-
-    arrays = [ 'e', 'f', 'a1', 'b1', 'a2', 'b2', 'cf']
-
-    # TODO Get the array data
-    for array in arrays:
-        # 0 - 41
-        for a_index in range(0, 42):
-            (val, index) = _getFloat(data, index)
-            print("{}{} {}".format(array, a_index, val))
-
-    (lat, index) = _getFloat(data, index)
-    print("lat {}".format(lat))
-    (lon, index) = _getFloat(data, index)
-    print("lon {}".format(lon))
-    (mean_temp, index) = _getFloat(data, index)
-    print("mean_temp {}".format(mean_temp))
-    (mean_voltage, index) = _getFloat(data, index)
-    print("mean_voltage {}".format(mean_voltage))
-    (mean_u, index) = _getFloat(data, index)
-    print("mean_u {}".format(mean_u))
-    (mean_v, index) = _getFloat(data, index)
-    print("mean_v {}".format(mean_v))
-    (mean_z, index) = _getFloat(data, index)
-    print("mean_z {}".format(mean_z))
-    (year, index) = _getInt4(data, index)
-    print("year {}".format(year))
-    (month, index) = _getInt4(data, index)
-    print("month {}".format(month))
-    (day, index) = _getInt4(data, index)
-    print("day {}".format(day))
-    (hour, index) = _getInt4(data, index)
-    print("hour {}".format(hour))
-    (min, index) = _getInt4(data, index)
-    print("min {}".format(min))
-    (sec, index) = _getInt4(data, index)
-    print("sec {}".format(sec))
-
-    return index
-
-
-#-----------------------------------------------------------------------------------------------
-#open serial port with modem
-#power on
-print('power on modem...',end='')
-GPIO.output(modemGPIO,GPIO.HIGH)
-sleep(3)
-print('done')
-#open serial port
-print('opening serial port with modem at {0} on port {1}...'.format(baud,modemPort),end='')
-try:
-    ser=serial.Serial(modemPort,modemBaud,timeout)
+def init_modem():
+    #power on GPIO enable pin
+    GPIO.output(modemGPIO,GPIO.HIGH)
+    print('power on modem...',end='')
+    sleep(3)
     print('done')
-except SerialException:
-    print('unable to open serial port')
-    sys.exit(1)
-
-#send AT command
-ser.write(b'AT\r')
-print('command = AT, ',end='')
-get_response()
-
-#set default parameters with AT&F command
-ser.write(b'AT&F\r')
-print('command = AT&F, ',end='')
-get_response()
-
-#important, disable flow control
-ser.flushInput()
-ser.write(b'AT&K=0\r')
-print('command = AT&K=0, ',end='')
-get_response()
+    #open serial port
+    print('opening serial port with modem at {0} on port {1}...'.format(baud,modemPort),end='')
+    try:
+        ser=serial.Serial(modemPort,modemBaud,timeout)
+        print('done')
+    except SerialException:
+        print('unable to open serial port')
+        sys.exit(1)
+    ser.flushInput()    
+    ser.write(b'AT\r') #send AT command
+    print('command = AT, ',end='')
+    get_response()
+    ser.flushInput()
+    ser.write(b'AT&F\r') #set default parameters with AT&F command
+    print('command = AT&F, ',end='')
+    get_response()
+    ser.flushInput()
+    ser.write(b'AT&K=0\r') #important, disable flow control
+    print('command = AT&K=0, ',end='')
+    get_response()
+    
+    print('modem initialized')
 
 def get_response(response='OK'):
     try:
@@ -230,8 +108,9 @@ def sig_qual(command='AT+CSQ'):
 
 #send binary message to modem buffer and transmit
 #returns true if trasmit command is sent, but does not mean a successful transmission
+#checksum is least significant 2 bytes of sum of message, with hgiher order byte sent first
 #returns false if anything goes wrong
-def transmit_bin(msg,bytelen,wb='AT+SBDWB',ix='AT+SBDIX'):
+def transmit_bin(msg,bytelen,checksum):
     ser.flushInput()
     ser.write('AT+SBDWB='+str(bytelen)+'\r').encode() #command to write bytes, followed by number of bytes to write
     print('command = AT+SBDWB, ',end='')
@@ -239,7 +118,11 @@ def transmit_bin(msg,bytelen,wb='AT+SBDWB',ix='AT+SBDIX'):
     if b'READY' in r: #only pass bytes if modem is ready, otherwise it has timed out
         print('response = READY')
         ser.flushInput()
-        ser.write(msg) #pass bytes to modem. Must include 2 byte checksum
+        ser.write(msg) #pass bytes to modem
+        checksum=sum(msg) #calculate checksum value
+        ser.write(chr(checksum >> 8)) #first byte of 2-byte checksum (shift bytes right by 8 bits)
+        ser.write(chr(checksum & 0xFF)) #second byte of checksum
+    
         print('passing message to modem buffer')
         r=ser.read(3).decode() #read response to get result code from SBDWB command (0-4)
         try:
@@ -302,25 +185,6 @@ def transmit_ascii(msg):
     
     
 
-#------------------------------------------------------------------------
-
-# Takes in message created from GPS, IMU, TEMP, VOLT. Complete message i s
-# split up into 4 different messages, all converted into binary form
-# messages are sent out through iridium modem 
-def send_sbd_msg
-    if sbd.isOpen():
-        try:
-            
-            checksum = sum(bytearray(message))
-            print('[%.3f] - Checksum: %s, message: %s' % (elapsedTime,checksum,message))
-            eventLog.info('[%.3f] - Checksum: %s, message: %s' % (elapsedTime,checksum,message))
-
-
-            
-            sbd.write(chr(checksum >> 8))
-            sbd.write(chr(checksum & 0xFF))
-            
-#--------------------------------------------------------------------------------------------
 #MAIN
 #
 #Packet Structure
@@ -346,14 +210,14 @@ def main():
         SizeInBytes = struct.calcsize('sbbhfff42f42f42f42f42f42f42ffff') -3
 
     packetType = 1
-    packetTypeId = '1,' + decStr + ','
-    eventLog.info('[%.3f] - PacketTypeId: %s' % (elapsedTime, packetTypeId))
+    id=0
+    
 
-    print ('[%.3f] - SizeInBytes: %s' % (elapsedTime,str(SizeInBytes)))
+
     
     # 1st message sent 
     dataToSend0= (struct.pack('<5sss4sssbbhfff',
-                                packetTypeId, str(0),',',str(SizeInBytes),':',
+                                str(packetType),',',str(id),',',str(0),',',str(SizeInBytes),':',
                                 str(payloadVersion),
                                 PayLoadType,Port,PayLoadSize,
                                 Hs,Peakwave_Period,Peakwave_dirT) +
@@ -363,6 +227,9 @@ def main():
     print (struct.unpack('<5sss4sssbbhfff42f35f',dataToSend0))
     bytelen0  = struct.calcsize('sbbhfff42f35f') +9
     print ('bytelen0',bytelen0)
+    
+    
+    
 
     # 2nd message sent
     bytestart = struct.calcsize('sbbhfff42f35f')-3
@@ -376,6 +243,9 @@ def main():
     bytelen1 = struct.calcsize('7f42f33f') +9
     print ('bytelen1',bytelen1)
 
+
+
+
     # 3rd message sent
     bytestart = struct.calcsize('sbbhfff42f42f42f33f')-3
     print ('bytestart 2',bytestart)
@@ -387,6 +257,9 @@ def main():
     
     bytelen2 = struct.calcsize('9f42f31f') +9
     print ('bytelen2',bytelen2)
+    
+    
+    
     
     if PayLoadType==50:
         # 4th message sent
@@ -404,6 +277,10 @@ def main():
         print ("[%.3f] - ERROR: Incorrect pay load type, try again" % elapsedTime)
         eventLog.error('[%.3f] - ERROR: Incorrect pay load type, try again' % elapsedTime)
         sys.exit()
+        
+        
+        
+        
 
     print ('----- dataToSend0 =')
     print (dataToSend0)
@@ -420,6 +297,10 @@ def main():
     print ('----- dataToSend3 =')
     print (dataToSend3)
     send_sbd_msg(dataToSend3,bytelen3,modemPort,modemBaud,MakeCall,eventLog,elapsedTime,modemGpio)
+    
+ 
+    
+    
 
 #run main function unless importing as a module
 if __name__ == "__main__":

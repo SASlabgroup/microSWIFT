@@ -76,10 +76,10 @@ def main(u,v,z,lat,lon,fs=4,burst_seconds=512,badValue,payloadType=50):
     
     #file name for telemetry file (e.g. '/home/pi/microSWIFT/data/microSWIFT001_TX_01Jan2021_080000UTC.dat')
     now=datetime.utcnow()
-    fbinary = dataDir+'microSWIFT'+floatID+'_TX_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(now)
-    logger.info('telemetry file = %s' % fbinary)
+    telem_file = dataDir+'microSWIFT'+floatID+'_TX_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(now)
+    logger.info('telemetry file = %s' % telem_file)
 
-    with open(fbinary, 'wb') as fb:
+    with open(telem_file, 'wb') as f:
 
         if payloadType == 50:
             payloadSize = (16 + 7*42)*4
@@ -106,34 +106,34 @@ def main(u,v,z,lat,lon,fs=4,burst_seconds=512,badValue,payloadType=50):
         temp = 0.0
         volt = 0.0
         
-        fb.write(struct.pack('<sbbhfff', str(payloadVersion),payloadType,Port, payloadSize,hs,pp,dir))
+        f.write(struct.pack('<sbbhfff', str(payloadVersion),payloadType,Port, payloadSize,hs,pp,dir))
     
-        fb.write(struct.pack('<42f', *WaveSpectra_Energy))
-        fb.write(struct.pack('<42f', *WaveSpectra_Freq))
-        fb.write(struct.pack('<42f', *WaveSpectra_a1))
-        fb.write(struct.pack('<42f', *WaveSpectra_b1))
-        fb.write(struct.pack('<42f', *WaveSpectra_a2))
-        fb.write(struct.pack('<42f', *WaveSpectra_b2))
-        fb.write(struct.pack('<42f', *checkdata))
-        fb.write(struct.pack('<f', lat))
-        fb.write(struct.pack('<f', lon))
-        fb.write(struct.pack('<f', temp))
-        fb.write(struct.pack('<f', volt))
-        fb.write(struct.pack('<f', uMean))
-        fb.write(struct.pack('<f', vMean))
-        fb.write(struct.pack('<f', zMean))
-        fb.write(struct.pack('<i', int(now.year)))
-        fb.write(struct.pack('<i', int(now.month)))
-        fb.write(struct.pack('<i', int(now.day)))
-        fb.write(struct.pack('<i', int(now.hour)))
-        fb.write(struct.pack('<i', int(now.minute)))
-        fb.write(struct.pack('<i', int(now.second)))
-        fb.flush()
+        f.write(struct.pack('<42f', *WaveSpectra_Energy))
+        f.write(struct.pack('<42f', *WaveSpectra_Freq))
+        f.write(struct.pack('<42f', *WaveSpectra_a1))
+        f.write(struct.pack('<42f', *WaveSpectra_b1))
+        f.write(struct.pack('<42f', *WaveSpectra_a2))
+        f.write(struct.pack('<42f', *WaveSpectra_b2))
+        f.write(struct.pack('<42f', *checkdata))
+        f.write(struct.pack('<f', lat))
+        f.write(struct.pack('<f', lon))
+        f.write(struct.pack('<f', temp))
+        f.write(struct.pack('<f', volt))
+        f.write(struct.pack('<f', uMean))
+        f.write(struct.pack('<f', vMean))
+        f.write(struct.pack('<f', zMean))
+        f.write(struct.pack('<i', int(now.year)))
+        f.write(struct.pack('<i', int(now.month)))
+        f.write(struct.pack('<i', int(now.day)))
+        f.write(struct.pack('<i', int(now.hour)))
+        f.write(struct.pack('<i', int(now.minute)))
+        f.write(struct.pack('<i', int(now.second)))
+        f.flush()
     
     #run send_sbd script to send telemetry file
-    send_sbd(fbinary)    
+    send_sbd(telem_file)    
     
-    return fbinary
+    return telem_file
 
 def _getuvzMean(badValue, pts):
     mean = badValue     #set values to 999 initially and fill if valid values
