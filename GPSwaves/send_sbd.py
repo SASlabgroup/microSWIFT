@@ -25,8 +25,11 @@ call_interval = 60 #config.getInt('Iridium', 'call_interval')
 call_time = 10 #config.getInt('Iridium', 'call_time')
 timeout=60 #some commands can take a long time to complete
 
-payloadVersion=7
-payloadType=50
+payloadType='7'.encode('ascii')
+sensorType=50
+packetType = 1
+id=0
+port=1
 
 #set up GPIO pins for modem control
 GPIO.setmode(GPIO.BCM)
@@ -200,26 +203,24 @@ def main():
     
     #-------------------------------------------------------
     if PayLoadType == 50:
-        PayLoadSize =  (16 + 7*42)*4 
+        payloadSize =  (16 + 7*42)*4 
         eventLog.info('[%.3f] - Payload type: %d' % (elapsedTime, PayLoadType))
-        SizeInBytes = struct.calcsize('sbbhfff42f42f42f42f42f42f42ffffffffiiiiii') -3
+        total_bytes = struct.calcsize('sbbhfff42f42f42f42f42f42f42ffffffffiiiiii') -3
 
     else:
-        PayLoadSize =  (5 + 7*42)*4
+        payloadSize =  (5 + 7*42)*4
         eventLog.info('[%.3f] - Payload type: %d' % (elapsedTime, PayLoadType))
-        SizeInBytes = struct.calcsize('sbbhfff42f42f42f42f42f42f42ffff') -3
+        total_bytes = struct.calcsize('sbbhfff42f42f42f42f42f42f42ffff') -3
 
-    packetType = 1
-    id=0
-    
-
-
+    #create header and first sub header according to SWIFT payload spec. see 'UW-APL v4.0.1.pdf'
+    header = str(packetType).encode('ascii')
+    sub_header_0 = str(','+str(id)+','+str(0)+','+str(total_bytes)+':').encode('ascii')
     
     # 1st message sent 
-    dataToSend0= (struct.pack('<5sss4sssbbhfff',
-                                str(packetType),',',str(id),',',str(0),',',str(SizeInBytes),':',
-                                str(payloadVersion),
-                                PayLoadType,Port,PayLoadSize,
+    dataToSend0= (struct.pack('<ss2ssss4sssbbhfff',
+                                header,sub_header_0,
+                                payloadType,
+                                sensorType,port,payloadSize,
                                 Hs,Peakwave_Period,Peakwave_dirT) +
                                 struct.pack('42f',*WaveSpectra_Energy) +
                                 struct.pack('35f\r',*WaveSpectra_Freq[0:35]))
@@ -258,7 +259,7 @@ def main():
     bytelen2 = struct.calcsize('9f42f31f') +9
     print ('bytelen2',bytelen2)
     
-    
+    id+=1
     
     
     if PayLoadType==50:
