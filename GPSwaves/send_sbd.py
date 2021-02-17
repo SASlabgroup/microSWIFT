@@ -14,7 +14,7 @@ import time
 import datetime
 import RPi.GPIO as GPIO
 from time import sleep
-from numpy import msg
+
 
 #Iridium parameters - fixed for now
 modemPort = '/dev/tty/USB0' #config.getString('Iridium', 'port')
@@ -36,7 +36,7 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.setup(modemGpio,GPIO.OUT)
 
-#open binary data and return bytes
+#open binary data file and return bytes
 def open_bin(binfile):
     try:
         with open(binfile, 'rb') as f:
@@ -60,21 +60,24 @@ def init_modem():
         print('done')
     except SerialException:
         print('unable to open serial port')
+        return False
         sys.exit(1)
     ser.flushInput()    
     ser.write(b'AT\r') #send AT command
     print('command = AT, ',end='')
-    get_response()
-    ser.flushInput()
-    ser.write(b'AT&F\r') #set default parameters with AT&F command
-    print('command = AT&F, ',end='')
-    get_response()
-    ser.flushInput()
-    ser.write(b'AT&K=0\r') #important, disable flow control
-    print('command = AT&K=0, ',end='')
-    get_response()
-    
-    print('modem initialized')
+    if get_response():
+        ser.flushInput()
+        ser.write(b'AT&F\r') #set default parameters with AT&F command
+        print('command = AT&F, ',end='')
+        if get_response():
+            ser.flushInput()
+            ser.write(b'AT&K=0\r') #important, disable flow control
+            print('command = AT&K=0, ',end='')
+            if get_response():
+                print('modem initialized')
+                return True
+    else:
+        return False
 
 def get_response(response='OK'):
     try:
@@ -88,6 +91,7 @@ def get_response(response='OK'):
                 return False
     except SerialException as e:
         print('error: {}'.format(e))
+        return False
 
 
 #Get signal quality using AT+CSQF command (see AT command reference).
@@ -187,6 +191,34 @@ def transmit_ascii(msg):
         return False
     
     
+def _getFloat(data, index):
+    end = index + 4
+    if end > len(data):
+        print('Reached end of data unexpectedly')
+    return (struct.unpack_from('f', data[index:end])[0], end)
+
+
+def _getInt1(data, index):
+    end = index + 1
+    return (ord(data[index:end]), end)
+
+
+def _getInt2(data, index):
+    end = index + 2
+    return (struct.unpack_from('h', data[index:end])[0], end)
+
+
+def _getInt4(data, index):
+    end = index + 4
+    return (struct.unpack_from('i', data[index:end])[0], end)      
+   
+    
+# Get Payload type, current valid types are 2 or 3
+def _getPayloadType(data):
+    (data_type,) = struct.unpack_from('c', (data[0:1]))
+    data_type=data_type.decode('ascii')
+    return (data_type, 1)
+  
 
 #MAIN
 #
@@ -197,11 +229,72 @@ def transmit_ascii(msg):
 #Sub-header 1 thru N:
 #    ,<id>,<start-byte>:
 #--------------------------------------------------------------------------------------------
-def main():
+def main(payload_data):
+
+    #check for data
+    if len(payload_data) == 0:
+           print('no data')
+           return 
+       
+    # Get Payload type, current valid type is 7
+    (data_type, index) = _getPayloadType(payload_data)
+    print("payload type: {}".format(data_type))
+
+    if data_type != payload_type:
+        print("Invalid payload type: 0x{}".format(codecs.encode(data_type, 
+                                                                "hex")))
+        sys.exit(1)
+
+    data_len = len(data)
+    while index < data_len:
+        print("index: {}".format(index))
+        (sensor_type, index) = _getInt1(data, index)
+        (port, index) = _getInt1(data, index)
+        print("sensor type: {}, com Port: {}".format(sensor_type, com_port))
+
+        (size, index) = _getInt2(data, index)
+        print("size: {}".format(size))
+
+        if sensor_type == 50:
+            
+            index = _processMicroSWIFT(p_id, data, index, size)
+
+        else:
+            raise Exception(
+                "Payload {} has unknown sensor type {} at index {}".format(
+                    p_id, sensor_type, index))  
+       
+       
+       
+       
+       
+       
     
-    GPIO.output(modemGpio,GPIO.HIGH) #turn modem on
+    #initialize modem
+    modem_initialized = init_modem()
     
-    #-------------------------------------------------------
+    if not modem_initialized:
+        print('modem not initialized, unable to send data')
+        return
+        
+    
+    #checks: bytes > 0, modem initialized, payload type, sensor type
+    
+    
+     
+        #split up payload data into packets
+    
+        #send packets
+    
+        #turn off modem   
+        
+    
+    
+    
+    
+    
+    
+    
     if PayLoadType == 50:
         payloadSize =  (16 + 7*42) * 4 + 4
         eventLog.info('[%.3f] - Payload type: %d' % (elapsedTime, PayLoadType))
@@ -211,11 +304,28 @@ def main():
         payloadSize =  (5 + 7*42)*4 + 4
         eventLog.info('[%.3f] - Payload type: %d' % (elapsedTime, PayLoadType))
         payload_bytes = struct.calcsize('sbbhfff42f42f42f42f42f42f42ffff')
+        
+        
+        
+        
+        
+        
+        
+        
 
     #create header and first sub header according to SWIFT payload spec. see 'UW-APL v4.0.1.pdf'
     header = str(packet_type).encode('ascii')
     sub_header_0 = str(','+str(id)+','+str(0)+','+str(total_bytes)+':').encode('ascii')
-    payload_type = payload_type.encode('ascii')
+    payload_type = payload_type.encode('ascii')        
+        
+        
+        
+        
+        
+        
+        
+        
+
     
     #1st message to send 
     packet1 = (struct.pack('<ss2ssss4sssbbhfff',
@@ -319,8 +429,12 @@ def main():
     
     
 
-#run main function unless importing as a module
+
 if __name__ == "__main__":
+
+
+
+
 
 #turn on modem and initalize serial port
 

@@ -26,8 +26,9 @@ except Exception as e:
     logger.info('error importing GPSwavesC')
     logger.info(e)
     
-#inputs are u,v,z arrays, last lat/lon, sampling rate (Hz), and burst duration (secs) from recordGPS.py
-def main(u,v,z,lat,lon,fs=4,burst_seconds=512,badValue,payload_type):
+#inputs are u,v,z arrays, last lat/lon, sampling rate (Hz), burst duration (secs), 
+#bad value, payload type, sensor type, and port number from recordGPS.py
+def main(u,v,z,lat,lon,fs=4,burst_seconds=512,badValue,payload_type,sensor_type,port):
 
     #check the number of u,v,z samples matches expected and 1 Hz minimum
     pts_expected
@@ -81,11 +82,12 @@ def main(u,v,z,lat,lon,fs=4,burst_seconds=512,badValue,payload_type):
 
     with open(telem_file, 'wb') as f:
         
-        
-        
         if payload_type != 50:
             logger.info('invalid payload type: %d' % payloadType)
             sys.exit(1)
+        
+        #payload size in bytes: 16 4-byte floats, 7 arrays of 42 4-byte floats, two 1-byte ints, and one 2-byte int   
+        payload_size = (16 + 7*42) * 4 + 4
     
         Hs = round(Hs,6)
         Tp = round(Tp,6)
@@ -101,7 +103,7 @@ def main(u,v,z,lat,lon,fs=4,burst_seconds=512,badValue,payload_type):
         volt = 0.0
 
         #create formatted struct with all payload data
-        payload_data = struct.pack('<sbbhfff', str(payload_version).encode(),sensor_type,port, payload_size,Hs,Tp,Dp) +
+        payload_data = (struct.pack('<sbbhfff', str(payload_type).encode(),sensor_type,port, payload_size,Hs,Tp,Dp) + 
                         struct.pack('<42f', *E) +
                         struct.pack('<42f', *f) +
                         struct.pack('<42f', *a1) +
@@ -121,18 +123,14 @@ def main(u,v,z,lat,lon,fs=4,burst_seconds=512,badValue,payload_type):
                         struct.pack('<i', int(now.day)) +
                         struct.pack('<i', int(now.hour)) +
                         struct.pack('<i', int(now.minute)) +
-                        struct.pack('<i', int(now.second)) +
-                        
-        
+                        struct.pack('<i', int(now.second)))
         
         f.write(payload_data)
         f.flush()
         
-    
     #run send_sbd script to send telemetry file
-    send_sbd(payload_data)    
+    send_sbd.main(payload_data)
     
-    return telem_file
 
 def _getuvzMean(badValue, pts):
     mean = badValue     #set values to 999 initially and fill if valid values
@@ -149,14 +147,5 @@ def _get_last(badValue,a):
         if a[-i] != badValue: #count back from last point looking for a real position
             return a[-i]
         
-    return [a-i] #returns badValue if no real position exists
-    
-if __name__== '__main__':
-    
-    telem_file = main()
-    
-    
-    
-    
-    
+    return badValue #returns badValue if no real position exists
 

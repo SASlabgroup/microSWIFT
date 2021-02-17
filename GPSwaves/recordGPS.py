@@ -44,11 +44,11 @@ logger.addHandler(logFileHandler)
 dataDir = config.getString('System', 'dataDir')
 floatID = config.getString('System', 'floatID') 
 projectName = config.getString('System', 'projectName')
-payload_type = config.getInt('System', 'payLoadType')
+sensor_type = config.getInt('System', 'sensorType')
 badValue = config.getInt('System', 'badValue')
 numCoef = config.getInt('System', 'numCoef')
-Port = config.getInt('System', 'port')
-payloadVersion = config.getInt('System', 'payloadVersion')
+port = config.getInt('System', 'port')
+payload_type = config.getInt('System', 'payloadType')
 burst_seconds = config.getInt('System', 'burst_seconds')
 burst_time = config.getInt('System', 'burst_time')
 burst_int = config.getInt('System', 'burst_interval')
@@ -249,7 +249,8 @@ def record_gps(ser,fname):
 
 #------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------
-def main():
+#initialize GPS and record data unless importing as a module
+if __name__ == "__main__":
 	
 	logger.info("---------------recordGPS.py------------------")
 	logger.info(sys.version)
@@ -269,22 +270,15 @@ def main():
 				fname = dataDir + 'microSWIFT'+floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
 				logger.info("file name: %s" %fname)
 				#call record_gps	
-				u,v,z,lat,lon = record_gps(ser,fname)
-			
-			
-				
+				u,v,z,lat,lon = record_gps(ser,fname)				
 				
 	else:
-		logger.info("GPS not init ialized, no data will be logged")
+		logger.info("GPS not initialized, exiting")
+		sys.exit(1)
 		
-	process_data.main(u,v,z,lat,lon,gps_freq,burst_seconds,badValue,payload_type)	
+	process_data.main(u,v,z,lat,lon,gps_freq,burst_seconds,badValue,payload_type,sensor_type,port)	
 	sys.exit(0)
-
-#run main function unless importing as a module
-if __name__ == "__main__":
-
-	
-    main()
+ 
 
 
 

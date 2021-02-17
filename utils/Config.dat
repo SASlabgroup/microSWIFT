@@ -68,7 +68,7 @@ projectName=TX
 #Sensor type either 7 or the new type 50
 #sensorType=7
 sensorType=50
-payloadVersion=7
+payloadType=7
 badValue=999
 
 #default number of seconds to record, whether 1, 2, 3, 4, or 5 bursts per hour
