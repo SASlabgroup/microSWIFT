@@ -44,7 +44,7 @@ logger.addHandler(logFileHandler)
 dataDir = config.getString('System', 'dataDir')
 floatID = config.getString('System', 'floatID') 
 projectName = config.getString('System', 'projectName')
-payloadType = config.getInt('System', 'payLoadType')
+payload_type = config.getInt('System', 'payLoadType')
 badValue = config.getInt('System', 'badValue')
 numCoef = config.getInt('System', 'numCoef')
 Port = config.getInt('System', 'port')
@@ -277,7 +277,7 @@ def main():
 	else:
 		logger.info("GPS not init ialized, no data will be logged")
 		
-	process_data.main(u,v,z,lat,lon,gps_freq,burst_seconds,badValue,payloadType)	
+	process_data.main(u,v,z,lat,lon,gps_freq,burst_seconds,badValue,payload_type)	
 	sys.exit(0)
 
 #run main function unless importing as a module

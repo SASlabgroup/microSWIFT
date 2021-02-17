@@ -65,9 +65,9 @@ shipDir=Documents/microSWIFT_Test_Data
 floatID=035
 # 2 digit string for project id
 projectName=TX
-#PayLoadType either 7 or the new type 50
-#PayLoadType=7
-payLoadType=50
+#Sensor type either 7 or the new type 50
+#sensorType=7
+sensorType=50
 payloadVersion=7
 badValue=999
 
