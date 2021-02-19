@@ -77,7 +77,7 @@ def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port):
     a2 = np.where(WaveSpectra_a2>=18446744073709551615, 999.00000, WaveSpectra_a2)
     b2 = np.squeeze(wavestats[8])
     b2 = np.where(WaveSpectra_b2>=18446744073709551615, 999.00000, WaveSpectra_b2)
-    checkdata = np.full(numCoef,1)
+    checkdata = np.full(42,1)
     
     np.set_printoptions(formatter={'float_kind':'{:.5f}'.format})
     np.set_printoptions(formatter={'float_kind':'{:.2e}'.format})
