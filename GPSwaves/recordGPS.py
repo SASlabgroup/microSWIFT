@@ -50,16 +50,6 @@ gpsGPIO = config.getInt('GPS', 'gpsGPIO')
 getFix = config.getInt('GPS', 'getFix') # min before rec gps
 gps_timeout = config.getInt('GPS','timeout')
 
-#temp and volt params 
-#maxHoursTemp = config.getInt('Temp', 'maxHours')
-#maxHoursVolt = config.getInt('Voltage', 'maxHours')
-
-#hard coded parameters to change 
-#IfHourlyCall = config.getString('Iridium', 'IfHourlyCall')
-#IfHourlyCall = eval(IfHourlyCall) #boolean
-#MakeCall = config.getString('Iridium', 'MakeCall') 
-#MakeCall = eval(MakeCall) #boolean
-
 #setup GPIO and initialize
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
@@ -234,7 +224,7 @@ def record_gps(ser,fname):
 
 #------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------
-#initialize GPS and record data unless importing as a module
+#set up logging, initialize GPS, and record data unless importing as a module
 if __name__ == "__main__":
 	
 	#set up logging
