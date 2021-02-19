@@ -6,7 +6,7 @@ import numpy as np
 from struct import *
 from logging import *
 from datetime import datetime
-import time
+import time as t
 import RPi.GPIO as GPIO
 import pynmea2
 import struct
@@ -98,8 +98,8 @@ def init_gps():
 	#read lines from GPS serial port and wait for fix
 	try:
 		#loop until timeout dictated by gps_timeout value (seconds)
-		timeout=time.time() + gps_timeout
-		while time.time() < timeout:
+		timeout=t.time() + gps_timeout
+		while t.time() < timeout:
 			ser.flushInput()
 			ser.read_until('\n'.encode())
 			newline=ser.readline().decode('utf-8')
@@ -173,10 +173,10 @@ def record_gps(ser,fname):
 		with open(fname, 'w',newline='\n') as gps_out:
 			
 			logger.info('open file for writing: %s' %fname)
-			t_end = time.time() + burst_seconds #get end time for burst
+			t_end = t.time() + burst_seconds #get end time for burst
 			ipos=0
 			ivel=0
-			while time.time() <= t_end or ipos < gps_samples or ivel < gps_samples:
+			while t.time() <= t_end or ipos < gps_samples or ivel < gps_samples:
 				newline=ser.readline().decode()
 				gps_out.write(newline)
 				gps_out.flush()
@@ -204,7 +204,7 @@ def record_gps(ser,fname):
 					continue
 			
 				#if burst has ended but we are close to getting the right number of samples, continue for as short while
-				if time.time() >= t_end and 0 < gps_samples-ipos <= 10:
+				if t.time() >= t_end and 0 < gps_samples-ipos <= 10:
 					
 					continue
 				elif ipos == gps_samples and ivel == gps_samples:
