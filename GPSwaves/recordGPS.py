@@ -250,18 +250,17 @@ if __name__ == "__main__":
 	
 	if gps_initialized:
 
-		while True:
-			#burst start conditions
-			now=datetime.utcnow()
-			if  now.minute == burst_time or now.minute % burst_int == 0 and now.second == 0:
-				logger.info("starting burst")
-				
-				#create file name
-				fname = dataDir + 'microSWIFT'+floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
-				logger.info("file name: %s" %fname)
-				#call record_gps	
-				u,v,z,lat,lon = record_gps(ser,fname)				
-				
+		#burst start conditions
+		now=datetime.utcnow()
+		if  now.minute == burst_time or now.minute % burst_int == 0 and now.second == 0:
+			
+			logger.info("starting burst")
+			#create file name
+			fname = dataDir + 'microSWIFT'+floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
+			logger.info("file name: %s" %fname)
+			#call record_gps	
+			u,v,z,lat,lon = record_gps(ser,fname)				
+			
 	else:
 		logger.info("GPS not initialized, exiting")
 		sys.exit(1)
