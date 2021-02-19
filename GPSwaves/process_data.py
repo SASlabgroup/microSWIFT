@@ -28,7 +28,7 @@ except Exception as e:
     
 #inputs are u,v,z arrays, last lat/lon, sampling rate (Hz), burst duration (secs), 
 #bad value, payload type, sensor type, and port number from recordGPS.py
-def main(u,v,z,lat,lon,fs=4,burst_seconds=512,badValue,payload_type,sensor_type,port):
+def main(u,v,z,lat,lon,fs=4,burst_seconds=512,badValue=999,payload_type,sensor_type,port):
 
     #check the number of u,v,z samples matches expected and 1 Hz minimum
     pts_expected
@@ -97,8 +97,8 @@ def main(u,v,z,lat,lon,fs=4,burst_seconds=512,badValue,payload_type,sensor_type,
             logger.info('invalid payload type: %d' % payloadType)
             sys.exit(1)
         
-        #payload size in bytes: 16 4-byte floats, 7 arrays of 42 4-byte floats, two 1-byte ints, and one 2-byte int   
-        payload_size = (16 + 7*42) * 4 + 4
+        #payload size in bytes: 16 4-byte floats, 7 arrays of 42 4-byte floats, three 1-byte ints, and one 2-byte int   
+        payload_size = (16 + 7*42) * 4 + 5
     
         Hs = round(Hs,6)
         Tp = round(Tp,6)

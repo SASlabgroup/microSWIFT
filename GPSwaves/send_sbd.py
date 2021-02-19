@@ -27,12 +27,9 @@ call_interval = 60 #config.getInt('Iridium', 'call_interval')
 call_time = 10 #config.getInt('Iridium', 'call_time')
 timeout=60 #some commands can take a long time to complete
 
-payload_type='7'
-sensor_type=50
 packet_type = 1
-id=0
-port=1
-
+id =0
+print('running')
 #set up GPIO pins for modem control
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
@@ -51,10 +48,15 @@ def open_bin(binfile):
 
 def init_modem():
     #power on GPIO enable pin
-    GPIO.output(modemGPIO,GPIO.HIGH)
-    print('power on modem...',end='')
-    sleep(3)
-    print('done')
+    try:
+        GPIO.output(modemGPIO,GPIO.HIGH)
+        print('power on modem...',end='')
+        sleep(3)
+        print('done')
+    except Exception as e:
+        print('error powering on modem')
+        print(e)
+        
     #open serial port
     print('opening serial port with modem at {0} on port {1}...'.format(baud,modemPort),end='')
     try:
@@ -257,29 +259,26 @@ def main(payload_data):
 
     #send packets
     #--------------------------------------------------------------------------------------
-    print ('----- packet1 =')
-    print (packet1)
-    send_sbd_msg(packet1,bytelen0,modemPort,modemBaud,MakeCall,eventLog,elapsedTime,modemGpio)
-
-    print ('----- packet2 =')
-    print (packet2)
-    send_sbd_msg(packet2,bytelen1,modemPort,modemBaud,MakeCall,eventLog,elapsedTime,modemGpio)
-
-    print ('----- packet3 =')
-    print (packet3)
-    send_sbd_msg(packet3,bytelen2,modemPort,modemBaud,MakeCall,eventLog,elapsedTime,modemGpio)
     
-    print ('----- packet4 =')
-    print (packet4)
-    send_sbd_msg(packet4,bytelen3,modemPort,modemBaud,MakeCall,eventLog,elapsedTime,modemGpio)
+    transmit_bin(packet0, bytelen0)
+    print('sending first packet')
+
+    transmit_bin(packet1, bytelen1)
+    print('sending second packet')
+
+    transmit_bin(packet2, bytelen2)
+    print('sending third packet')
+
+    transmit_bin(packet3, bytelen3)
+    print('sending fourth packet')
     
     
     #turn off modem
     #--------------------------------------------------------------------------------------
     GPIO.output(modemGpio,GPIO.LOW)
-    return
+    
 
-if __name__ == "__main__":
+#if __name__ == "__main__":
 
 
 
