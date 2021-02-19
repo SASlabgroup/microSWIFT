@@ -261,6 +261,8 @@ if __name__ == "__main__":
 			#call record_gps	
 			u,v,z,lat,lon = record_gps(ser,fname)
 			
+			
+			#call data processing script
 			logger.info('starting to process data')
 			process_data.main(u,v,z,lat,lon,gps_freq,burst_seconds,badValue,payload_type,sensor_type,port)		
 			

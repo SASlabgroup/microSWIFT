@@ -19,7 +19,7 @@ import struct
 from time import sleep
 
 #create modele level logger
-logger = getLogger('system_logger.'+__name__)
+logger = getLogger('system_logger.'+__name__)   
 
 #my imports
 import send_sbd
@@ -34,7 +34,7 @@ except Exception as e:
 def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port):
 
     #check the number of u,v,z samples matches expected and 1 Hz minimum
-    pts_expected
+    pts_expected = fs * burst_seconds
     if len(z) >= pts_expected and fs >= 1:          
         try:
             #note gps_freq is assumed to be 4Hz
