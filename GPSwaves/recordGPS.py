@@ -37,6 +37,9 @@ payload_type = config.getInt('System', 'payloadType')
 burst_seconds = config.getInt('System', 'burst_seconds')
 burst_time = config.getInt('System', 'burst_time')
 burst_int = config.getInt('System', 'burst_interval')
+call_int = configt.getInt('Iridium', 'call_interval')
+call_time = config.getInt('Iridium', 'call_time')
+
 
 #GPS parameters 
 gps_port = config.getString('GPS', 'port')
@@ -243,13 +246,17 @@ if __name__ == "__main__":
 	logger.addHandler(logFileHandler)
 	
 	logger.info("---------------recordGPS.py------------------")
-	logger.info(sys.version)
+	logger.info('python version {}'.format(sys.version))
 	
+	logger.info('microSWIFT configuration:')
+	logger.info('float ID: {0}, payload type: {1}, sensors type: {2}, '.format(floatID, payload_type, sensor_type))
+	logger.info('burst seconds: {0}, burst interval: {1}, burst time: {2}'.format(burst_seconds, burst_int, burst_time))
+	logger.info('gps sample rate: {0}, call interval {1}, call time: {2}'.format(gps_freq, call_int, call_time))
 	#call function to initialize GPS
 	ser, gps_initialized, time, date = init_gps()
 	
 	if gps_initialized:
-
+		logger.info('waiting for burst start')
 		while True:
 			#burst start conditions
 			now=datetime.utcnow()
