@@ -33,7 +33,7 @@ print('running')
 #set up GPIO pins for modem control
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
-GPIO.setup(modemGpio,GPIO.OUT)
+GPIO.setup(modemGPIO,GPIO.OUT)
 
 #open binary data file and return bytes
 def open_bin(binfile):
