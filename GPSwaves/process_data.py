@@ -21,8 +21,6 @@ from time import sleep
 #create modele level logger
 logger = getLogger('system_logger.'+__name__)
 
-print(__name__)
-
 #my imports
 import send_sbd
 try:
