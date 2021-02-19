@@ -37,7 +37,7 @@ payload_type = config.getInt('System', 'payloadType')
 burst_seconds = config.getInt('System', 'burst_seconds')
 burst_time = config.getInt('System', 'burst_time')
 burst_int = config.getInt('System', 'burst_interval')
-call_int = configt.getInt('Iridium', 'call_interval')
+call_int = config.getInt('Iridium', 'call_interval')
 call_time = config.getInt('Iridium', 'call_time')
 
 
