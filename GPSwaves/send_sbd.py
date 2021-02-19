@@ -29,7 +29,7 @@ timeout=60 #some commands can take a long time to complete
 
 packet_type = 1
 id =0
-print('running')
+
 #set up GPIO pins for modem control
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)

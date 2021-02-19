@@ -25,21 +25,6 @@ if( not ok ):
 	logger.info ('Error loading config file: "%s"' % configFilename)
 	sys.exit(1)
 	
-#set up logging
-logDir = config.getString('Loggers', 'logDir')
-LOG_LEVEL = config.getString('Loggers', 'DefaultLogLevel')
-#format log messages (example: 2020-11-23 14:31:00,578, recordGPS - info - this is a log message)
-#NOTE: TIME IS SYSTEM TIME
-LOG_FORMAT = ('%(asctime)s, %(filename)s - [%(levelname)s] - %(message)s')
-#log file name (example: home/pi/microSWIFT/recordGPS_23Nov2020.log)
-LOG_FILE = (logDir + '/' + 'recordGPS' + '_' + datetime.strftime(datetime.now(), '%d%b%Y') + '.log')
-logger = getLogger('system_logger')
-logger.setLevel(LOG_LEVEL)
-logFileHandler = FileHandler(LOG_FILE)
-logFileHandler.setLevel(LOG_LEVEL)
-logFileHandler.setFormatter(Formatter(LOG_FORMAT))
-logger.addHandler(logFileHandler)
-
 #system parameters
 dataDir = config.getString('System', 'dataDir')
 floatID = config.getString('System', 'floatID') 
@@ -251,6 +236,21 @@ def record_gps(ser,fname):
 #------------------------------------------------------------------------------------------------------
 #initialize GPS and record data unless importing as a module
 if __name__ == "__main__":
+	
+	#set up logging
+	logDir = config.getString('Loggers', 'logDir')
+	LOG_LEVEL = config.getString('Loggers', 'DefaultLogLevel')
+	#format log messages (example: 2020-11-23 14:31:00,578, recordGPS - info - this is a log message)
+	#NOTE: TIME IS SYSTEM TIME
+	LOG_FORMAT = ('%(asctime)s, %(filename)s - [%(levelname)s] - %(message)s')
+	#log file name (example: home/pi/microSWIFT/recordGPS_23Nov2020.log)
+	LOG_FILE = (logDir + '/' + 'recordGPS' + '_' + datetime.strftime(datetime.now(), '%d%b%Y') + '.log')
+	logger = getLogger('system_logger')
+	logger.setLevel(LOG_LEVEL)
+	logFileHandler = FileHandler(LOG_FILE)
+	logFileHandler.setLevel(LOG_LEVEL)
+	logFileHandler.setFormatter(Formatter(LOG_FORMAT))
+	logger.addHandler(logFileHandler)
 	
 	logger.info("---------------recordGPS.py------------------")
 	logger.info(sys.version)
