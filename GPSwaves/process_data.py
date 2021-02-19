@@ -47,6 +47,17 @@ def main(u,v,z,lat,lon,fs=4,burst_seconds=512,badValue,payload_type,sensor_type,
         logger.info('samples expected = %d, samples received = %d' % (pts_expected, len(z)))
         sys.exit(1)
         
+        
+    if payload_type != 7:
+        logger.info('invalid payload type: {}'.format(payload_type))
+        logger.info('exiting')
+        sys.exit(1)
+        
+    if sensor_type != 50:
+        logger.info('invalid sensor type: {}'.format(sensor_type))
+        logger.info('exiting')
+        sys.exit(1)
+        
     #unpack wave processing results        
     Hs = wavestats[0]
     Tp = wavestats[1]
