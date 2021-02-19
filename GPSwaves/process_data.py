@@ -28,7 +28,7 @@ except Exception as e:
     
 #inputs are u,v,z arrays, last lat/lon, sampling rate (Hz), burst duration (secs), 
 #bad value, payload type, sensor type, and port number from recordGPS.py
-def main(u,v,z,lat,lon,fs=4,burst_seconds=512,badValue=999,payload_type,sensor_type,port):
+def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port):
 
     #check the number of u,v,z samples matches expected and 1 Hz minimum
     pts_expected
