@@ -66,17 +66,17 @@ def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port):
     Tp = wavestats[1]
     Dp = wavestats[2]
     E = np.squeeze(wavestats[3])
-    E = np.where(WaveSpectra_Energy>=18446744073709551615, 999.00000, WaveSpectra_Energy)
+    E = np.where(E>=18446744073709551615, 999.00000, E)
     f = np.squeeze(wavestats[4])
-    f = np.where(WaveSpectra_Freq>=18446744073709551615, 999.00000, WaveSpectra_Freq)
+    f = np.where(f>=18446744073709551615, 999.00000, f)
     a1 = np.squeeze(wavestats[5])
-    a1 = np.where(WaveSpectra_a1>=18446744073709551615, 999.00000, WaveSpectra_a1)
+    a1 = np.where(a1>=18446744073709551615, 999.00000, a1)
     b1 = np.squeeze(wavestats[6])
-    b1 = np.where(WaveSpectra_b1>=18446744073709551615, 999.00000, WaveSpectra_b1)
+    b1 = np.where(b1>=18446744073709551615, 999.00000, b1)
     a2 = np.squeeze(wavestats[7])
-    a2 = np.where(WaveSpectra_a2>=18446744073709551615, 999.00000, WaveSpectra_a2)
+    a2 = np.where(a2>=18446744073709551615, 999.00000, a2)
     b2 = np.squeeze(wavestats[8])
-    b2 = np.where(WaveSpectra_b2>=18446744073709551615, 999.00000, WaveSpectra_b2)
+    b2 = np.where(b2>=18446744073709551615, 999.00000, b2)
     checkdata = np.full(42,1)
     
     np.set_printoptions(formatter={'float_kind':'{:.5f}'.format})
