@@ -259,13 +259,15 @@ if __name__ == "__main__":
 			fname = dataDir + 'microSWIFT'+floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
 			logger.info("file name: %s" %fname)
 			#call record_gps	
-			u,v,z,lat,lon = record_gps(ser,fname)				
+			u,v,z,lat,lon = record_gps(ser,fname)
+			
+			logger.info('starting to process data')
+			process_data.main(u,v,z,lat,lon,gps_freq,burst_seconds,badValue,payload_type,sensor_type,port)		
 			
 	else:
 		logger.info("GPS not initialized, exiting")
 		sys.exit(1)
 		
-	process_data.main(u,v,z,lat,lon,gps_freq,burst_seconds,badValue,payload_type,sensor_type,port)	
 	sys.exit(0)
  
 
