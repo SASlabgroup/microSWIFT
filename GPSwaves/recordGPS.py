@@ -218,7 +218,7 @@ def record_gps(ser,fname):
 						
 		return u,v,z,lat,lon
 	except Exception as e:
-		logger.info(e)
+		logger.info(e, exc_info=True)
 		return u,v,z,lat,lon
 
 
