@@ -96,7 +96,7 @@ def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port,d
 
     with open(telem_file, 'wb') as f:
         
-        if payload_type != 50:
+        if payload_type != 7:
             logger.info('invalid payload type: %d' % payload_type)
             sys.exit(1)
         
