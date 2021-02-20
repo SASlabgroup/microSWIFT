@@ -114,6 +114,7 @@ def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port,d
         volt = 0.0
 
         #create formatted struct with all payload data
+        now=datetime.now()
         payload_data = (struct.pack('<sbbhfff', str(payload_type).encode(),sensor_type,port, payload_size,Hs,Tp,Dp) + 
                         struct.pack('<42f', *E) +
                         struct.pack('<42f', *f) +
