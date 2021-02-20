@@ -274,7 +274,7 @@ if __name__ == "__main__":
 
 		#call data processing script
 		logger.info('starting to process data')
-		process_data.main(u,v,z,lat,lon,gps_freq,burst_seconds,badValue,payload_type,sensor_type,port)		
+		process_data.main(u,v,z,lat,lon,gps_freq,burst_seconds,badValue,payload_type,sensor_type,port,dataDir,floatID)		
 			
 	else:
 		logger.info("GPS not initialized, exiting")
