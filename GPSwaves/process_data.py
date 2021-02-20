@@ -96,9 +96,6 @@ def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port,d
 
     with open(telem_file, 'wb') as f:
         
-        if payload_type != 7:
-            logger.info('invalid payload type: %d' % payload_type)
-            sys.exit(1)
         
         #payload size in bytes: 16 4-byte floats, 7 arrays of 42 4-byte floats, three 1-byte ints, and one 2-byte int   
         payload_size = (16 + 7*42) * 4 + 5
