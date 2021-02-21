@@ -24,7 +24,7 @@ modemGPIO =  16 #config.getInt('Iridium', 'modemGPIO')
 formatType = 10 #config.getInt('Iridium', 'formatType')
 call_interval = 60 #config.getInt('Iridium', 'call_interval')
 call_time = 10 #config.getInt('Iridium', 'call_time')
-timeout=60 #some commands can take a long time to complete
+timeout=30 #some commands can take a long time to complete
 
 packet_type = 1
 id =0
