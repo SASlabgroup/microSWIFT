@@ -141,6 +141,7 @@ def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port,d
         file.flush()
         
     #run send_sbd script to send telemetry file
+    return payload_data
     send_sbd.main(payload_data)
     
 
