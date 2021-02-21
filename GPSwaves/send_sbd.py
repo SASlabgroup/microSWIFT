@@ -49,7 +49,7 @@ def init_modem():
     #power on GPIO enable pin
     try:
         GPIO.output(modemGPIO,GPIO.HIGH)
-        logger.info('power on modem...',end='')
+        logger.info('power on modem...')
         sleep(3)
         logger.info('done')
     except Exception as e:
@@ -57,7 +57,7 @@ def init_modem():
         logger.info(e)
         
     #open serial port
-    logger.info('opening serial port with modem at {0} on port {1}...'.format(modemBaud,modemPort),end='')
+    logger.info('opening serial port with modem at {0} on port {1}...'.format(modemBaud,modemPort))
     try:
         ser=serial.Serial(modemPort,modemBaud,timeout=timeout
         logger.info('done')
@@ -67,15 +67,15 @@ def init_modem():
         sys.exit(1)
     ser.flushInput()    
     ser.write(b'AT\r') #send AT command
-    logger.info('command = AT, ',end='')
+    logger.info('command = AT')
     if get_response():
         ser.flushInput()
         ser.write(b'AT&F\r') #set default parameters with AT&F command
-        logger.info('command = AT&F, ',end='')
+        logger.info('command = AT&F')
         if get_response():
             ser.flushInput()
             ser.write(b'AT&K=0\r') #important, disable flow control
-            logger.info('command = AT&K=0, ',end='')
+            logger.info('command = AT&K=0, ')
             if get_response():
                 logger.info('modem initialized')
                 return True
@@ -103,7 +103,7 @@ def get_response(response='OK'):
 def sig_qual(command='AT+CSQ'):
     ser.flushInput()
     ser.write(command+'\r'.encode())
-    logger.info('command = {}, '.format(command),end='')
+    logger.info('command = {}, '.format(command))
     r=ser.read(25).decode()
     if 'CSQ:' in r:
         r=r[9:15]
@@ -123,7 +123,7 @@ def sig_qual(command='AT+CSQ'):
 def transmit_bin(msg,bytelen):
     ser.flushInput()
     ser.write('AT+SBDWB='+str(bytelen)+'\r').encode() #command to write bytes, followed by number of bytes to write
-    logger.info('command = AT+SBDWB, ',end='')
+    logger.info('command = AT+SBDWB, ')
     r = ser.read_until(b'READY') #block until READY message is received
     if b'READY' in r: #only pass bytes if modem is ready, otherwise it has timed out
         logger.info('response = READY')
@@ -141,7 +141,7 @@ def transmit_bin(msg,bytelen):
             if r == 0: #response of zero = successful write, ready to send
                 ser.flushInput()
                 ser.write(b'AT+SBDIX\r') #start extended Iridium session (transmit)
-                logger.info('command = AT+SBDIX, ',end='')
+                logger.info('command = AT+SBDIX')
                 r=ser.read(36).decode()
                 if '+SBDIX: ' in r:
                     r=r[11:36] #get command response in the form +SBDIX:<MO status>,<MOMSN>,<MT status>,<MTMSN>,<MT length>,<MT queued>
@@ -168,13 +168,13 @@ def transmit_ascii(msg):
     
     ser.flushInput()
     ser.write(b'AT+SBDWT\r') #command to write text to modem buffer
-    logger.info('command = AT+SBDWT, ',end='')
+    logger.info('command = AT+SBDWT')
     r = ser.read_until(b'READY') #block until READY message is received
     if b'READY' in r: #only pass bytes if modem is ready, otherwise it has timed out
         logger.info('response = READY')
         ser.flushInput()
         ser.write(msg.encode()+'\r') #pass bytes to modem. Must have carriage return
-        logger.info('passing message to modem buffer, ',end='')
+        logger.info('passing message to modem buffer')
         r=ser.read(msg_len+9).decode() #read response to get result code (0 or 1)
         if 'OK' in r:
             index=msg_len+2 #index of result code
@@ -183,7 +183,7 @@ def transmit_ascii(msg):
             if r == 0:
                 ser.flushInput()
                 ser.write(b'AT+SBDIX\r') #start extended Iridium session (transmit)
-                logger.info('command = AT+SBDIX, ',end='')
+                logger.info('command = AT+SBDIX')
                 r=ser.read(36).decode()
                 if '+SBDIX: ' in r:
                     r=r[11:36] #get command response in the form +SBDIX:<MO status>,<MOMSN>,<MT status>,<MTMSN>,<MT length>,<MT queued>
