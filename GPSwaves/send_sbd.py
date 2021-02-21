@@ -24,7 +24,7 @@ modemGPIO =  16 #config.getInt('Iridium', 'modemGPIO')
 formatType = 10 #config.getInt('Iridium', 'formatType')
 call_interval = 60 #config.getInt('Iridium', 'call_interval')
 call_time = 10 #config.getInt('Iridium', 'call_time')
-timeout=30 #some commands can take a long time to complete
+timeout=60 #some commands can take a long time to complete
 
 packet_type = 1
 id =0
@@ -59,7 +59,7 @@ def init_modem():
     #open serial port
     logger.info('opening serial port with modem at {0} on port {1}...'.format(modemBaud,modemPort),end='')
     try:
-        ser=serial.Serial(modemPort,modemBaud,60)
+        ser=serial.Serial(modemPort,modemBaud,timeout=timeout
         logger.info('done')
     except serial.SerialException:
         logger.info('unable to open serial port')
