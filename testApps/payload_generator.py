@@ -5,7 +5,6 @@ import random
 import struct
 from datetime import datetime
 
-import process_data
 
 payload_type=7
 sensor_type=50
