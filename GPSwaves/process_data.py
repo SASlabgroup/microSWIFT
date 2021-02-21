@@ -94,7 +94,7 @@ def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port,d
     telem_file = dataDir+'microSWIFT'+floatID+'_TX_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(now)
     logger.info('telemetry file = %s' % telem_file)
 
-    with open(telem_file, 'wb') as f:
+    with open(telem_file, 'wb') as file:
         
         
         #payload size in bytes: 16 4-byte floats, 7 arrays of 42 4-byte floats, three 1-byte ints, and one 2-byte int   
@@ -137,8 +137,8 @@ def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port,d
                         struct.pack('<i', int(now.minute)) +
                         struct.pack('<i', int(now.second)))
         
-        f.write(payload_data)
-        f.flush()
+        file.write(payload_data)
+        file.flush()
         
     #run send_sbd script to send telemetry file
     send_sbd.main(payload_data)
