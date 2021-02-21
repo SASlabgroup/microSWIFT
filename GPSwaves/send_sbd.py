@@ -59,7 +59,7 @@ def init_modem():
     #open serial port
     logger.info('opening serial port with modem at {0} on port {1}...'.format(modemBaud,modemPort),end='')
     try:
-        ser=serial.Serial(modemPort,modemBaud,timeout)
+        ser=serial.Serial(modemPort,modemBaud,60)
         logger.info('done')
     except serial.SerialException:
         logger.info('unable to open serial port')
