@@ -58,7 +58,7 @@ def init_modem():
         print(e)
         
     #open serial port
-    print('opening serial port with modem at {0} on port {1}...'.format(baud,modemPort),end='')
+    print('opening serial port with modem at {0} on port {1}...'.format(modemBaud,modemPort),end='')
     try:
         ser=serial.Serial(modemPort,modemBaud,timeout)
         print('done')
