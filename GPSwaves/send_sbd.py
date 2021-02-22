@@ -50,7 +50,7 @@ def init_modem():
     try:
         GPIO.output(modemGPIO,GPIO.HIGH)
         print('power on modem...')
-        sleep(3)
+        sleep(6)
         print('done')
     except Exception as e:
         print('error powering on modem')
@@ -62,7 +62,7 @@ def init_modem():
         ser=serial.Serial(modemPort,modemBaud,timeout=timeout)
         print('done')
     except serial.SerialException:
-        print('unable to open serial port')
+        print('unable to open serial port: {}'.format(e))
         return False
         sys.exit(1)
     ser.flushInput()    
@@ -121,6 +121,11 @@ def sig_qual(command='AT+CSQ'):
 #checksum is least significant 2 bytes of sum of message, with hgiher order byte sent first
 #returns false if anything goes wrong
 def transmit_bin(msg,bytelen):
+    
+    #test for init_modem
+    #test for open serial port
+    
+    
     ser.flushInput()
     ser.write('AT+SBDWB='+str(bytelen)+'\r').encode() #command to write bytes, followed by number of bytes to write
     print('command = AT+SBDWB, ')
@@ -165,6 +170,11 @@ def transmit_ascii(msg):
     if not msg.isascii(): #check for ascii text
         print('message must be ascii text')
         return Fasle
+    
+    
+    #test for init_modem
+    #test for open serial port
+    
     
     ser.flushInput()
     ser.write(b'AT+SBDWT\r') #command to write text to modem buffer
