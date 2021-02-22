@@ -68,21 +68,21 @@ def init_modem():
     ser.flushInput()    
     ser.write(b'AT\r') #send AT command
     print('command = AT')
-    if get_response():
+    if get_response(ser):
         ser.flushInput()
         ser.write(b'AT&F\r') #set default parameters with AT&F command
         print('command = AT&F')
-        if get_response():
+        if get_response(ser):
             ser.flushInput()
             ser.write(b'AT&K=0\r') #important, disable flow control
             print('command = AT&K=0, ')
-            if get_response():
+            if get_response(ser):
                 print('modem initialized')
                 return True
     else:
         return False
 
-def get_response(response='OK'):
+def get_response(ser, response='OK'):
     try:
         while ser.in_waiting > 0:
             r=ser.readline().decode().strip(b'\r\n')
@@ -92,7 +92,7 @@ def get_response(response='OK'):
             elif 'ERROR' in response:
                 print('response = ERROR')
                 return False
-    except SerialException as e:
+    except serial.SerialException as e:
         print('error: {}'.format(e))
         return False
 
@@ -100,7 +100,7 @@ def get_response(response='OK'):
 #Get signal quality using AT+CSQF command (see AT command reference).
 #Returns signal quality, default range is 0-5. Returns -1 for an error or no response
 #Example modem output: AT+CSQF +CSQF:0 OK    
-def sig_qual(command='AT+CSQ'):
+def sig_qual(ser, command='AT+CSQ'):
     ser.flushInput()
     ser.write(command+'\r'.encode())
     print('command = {}, '.format(command))
@@ -120,7 +120,7 @@ def sig_qual(command='AT+CSQ'):
 #returns true if trasmit command is sent, but does not mean a successful transmission
 #checksum is least significant 2 bytes of sum of message, with hgiher order byte sent first
 #returns false if anything goes wrong
-def transmit_bin(msg,bytelen):
+def transmit_bin(ser,msg,bytelen):
     
     #test for init_modem
     #test for open serial port
@@ -152,17 +152,17 @@ def transmit_bin(msg,bytelen):
                     r=r[11:36] #get command response in the form +SBDIX:<MO status>,<MOMSN>,<MT status>,<MTMSN>,<MT length>,<MT queued>
                     r=r.strip('\r') #remove any dangling carriage returns
                     print('response = {}'.format(r)) 
-                    return True
+                    return ser, True
             else:
-                return False
+                return ser, False
         except IndexError:
             print('no response from modem')
-            return False
+            return ser, False
     else:
-        return False
+        return ser, False
     
 #same as transmit_bin but sends ascii text using SBDWT command instead of bytes
-def transmit_ascii(msg):
+def transmit_ascii(ser,msg):
     msg_len=len(msg)
     if msg_len < 340: #check message length
         print('message too long. must be 340 bytes or less')
@@ -221,7 +221,7 @@ def main(payload_data):
            return 
     
     #initialize modem
-    modem_initialized = init_modem()
+    ser, modem_initialized = init_modem()
     
     if not modem_initialized:
         print('modem not initialized, unable to send data')
@@ -269,16 +269,16 @@ def main(payload_data):
     #send packets
     #--------------------------------------------------------------------------------------
     
-    transmit_bin(packet0, bytelen0)
+    transmit_bin(ser,packet0, bytelen0)
     print('sending first packet')
 
-    transmit_bin(packet1, bytelen1)
+    transmit_bin(ser,packet1, bytelen1)
     print('sending second packet')
 
-    transmit_bin(packet2, bytelen2)
+    transmit_bin(ser,packet2, bytelen2)
     print('sending third packet')
 
-    transmit_bin(packet3, bytelen3)
+    transmit_bin(ser,packet3, bytelen3)
     print('sending fourth packet')
     
     
