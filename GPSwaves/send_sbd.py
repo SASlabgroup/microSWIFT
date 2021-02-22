@@ -61,7 +61,7 @@ def init_modem():
     try:
         ser=serial.Serial(modemPort,modemBaud,timeout=timeout)
         print('done')
-    except serial.SerialException:
+    except serial.SerialException as e:
         print('unable to open serial port: {}'.format(e))
         return False
         sys.exit(1)
