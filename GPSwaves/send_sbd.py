@@ -18,7 +18,7 @@ from time import sleep
 #logger = getLogger('system_logger.'+__name__)  
 
 #Iridium parameters - fixed for now
-modemPort = '/dev/tty/USB0' #config.getString('Iridium', 'port')
+modemPort = '/dev/ttyUSB0' #config.getString('Iridium', 'port')
 modemBaud = 19200 #config.getInt('Iridium', 'baud')
 modemGPIO =  16 #config.getInt('Iridium', 'modemGPIO')
 formatType = 10 #config.getInt('Iridium', 'formatType')
