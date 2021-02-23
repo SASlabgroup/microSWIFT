@@ -187,7 +187,7 @@ def transmit_ascii(ser,msg):
     if b'READY' in r: #only pass bytes if modem is ready, otherwise it has timed out
         print('response = READY')
         ser.flushInput()
-        ser.write(msg + '\r'.encode()) #pass bytes to modem. Must have carriage return
+        ser.write((msg + '\r').encode()) #pass bytes to modem. Must have carriage return
         print('passing message to modem buffer')
         r=ser.read(msg_len+9).decode() #read response to get result code (0 or 1)
         if 'OK' in r:
