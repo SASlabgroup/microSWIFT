@@ -142,8 +142,8 @@ def transmit_bin(ser,msg,bytelen):
         print('passing message to modem buffer')
         ser.flushInput()
         ser.write(msg) #pass bytes to modem
-        ser.write(chr(checksum >> 8)) #first byte of 2-byte checksum (shift bytes right by 8 bits)
-        ser.write(chr(checksum & 0xFF)) #second byte of checksum
+        ser.write(hex(checksum >> 8)) #first byte of 2-byte checksum (shift bytes right by 8 bits)
+        ser.write(hex(checksum & 0xFF)) #second byte of checksum
         sleep(0.25)
         
         r=ser.read(3).decode() #read response to get result code from SBDWB command (0-4)
