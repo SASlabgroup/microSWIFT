@@ -85,7 +85,7 @@ def init_modem():
 def get_response(ser, response='OK'):
     try:
         while ser.in_waiting > 0:
-            r=ser.readline().decode().strip(b'\r\n')
+            r=ser.readline().decode().strip('\r\n')
             if response in r:
                 print('response = {}'.format(r))
                 return True

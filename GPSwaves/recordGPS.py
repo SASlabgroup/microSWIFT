@@ -260,21 +260,25 @@ if __name__ == "__main__":
 		while True:
 			#burst start conditions
 			now=datetime.utcnow()
-			if  now.minute == burst_time or now.minute % burst_int == 0 and now.second == 0:
+			if now.minute % burst_int == 0 and now.second == 0:
 				
-				break
-			
-			
-		logger.info("starting burst")
-		#create file name
-		fname = dataDir + 'microSWIFT'+floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
-		logger.info("file name: %s" %fname)
-		#call record_gps	
-		u,v,z,lat,lon = record_gps(ser,fname)
+				logger.info("starting burst")
+				#create file name
+				fname = dataDir + 'microSWIFT'+floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
+				logger.info("file name: %s" %fname)
+				#call record_gps	
+				u,v,z,lat,lon = record_gps(ser,fname)
+				
+				if len(z) >= 2048:
+					#call data processing script
+					logger.info('starting to process data')
+					process_data.main(u,v,z,lat,lon,gps_freq,burst_seconds,badValue,payload_type,sensor_type,port,dataDir,floatID)		
+				else:
+					logger.info('not enough points to process data: {}'.format(len(z))
+					sys.exit(1)
+				
 
-		#call data processing script
-		logger.info('starting to process data')
-		process_data.main(u,v,z,lat,lon,gps_freq,burst_seconds,badValue,payload_type,sensor_type,port,dataDir,floatID)		
+		
 			
 	else:
 		logger.info("GPS not initialized, exiting")
