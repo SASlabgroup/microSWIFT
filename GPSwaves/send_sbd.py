@@ -34,7 +34,7 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.setup(modemGPIO,GPIO.OUT)
 
-modem_initialized = false #set global modem state
+modem_initialized = False #set global modem state
 
 #open binary data file and return bytes
 def open_bin(binfile):
