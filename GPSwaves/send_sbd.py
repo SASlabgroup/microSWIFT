@@ -65,24 +65,22 @@ def init_modem():
         print('unable to open serial port: {}'.format(e))
         return False
         sys.exit(1)
-    ser.flushInput()    
-    ser.write(b'AT\r') #send AT command
+   
     print('command = AT')
-    if get_response(ser):
-        ser.flushInput()
-        ser.write(b'AT&F\r') #set default parameters with AT&F command
+    if get_response(ser,'AT'): #send AT command
         print('command = AT&F')
-        if get_response(ser):
-            ser.flushInput()
-            ser.write(b'AT&K=0\r') #important, disable flow control
+        if get_response(ser,'AT&F'): #set default parameters with AT&F command 
             print('command = AT&K=0, ')
-            if get_response(ser):
+            if get_response(ser,'AT&K=0'): #important, disable flow control
                 print('modem initialized')
                 return True
     else:
         return False
 
 def get_response(ser,command, response='OK'):
+    ser.flushInput()
+    command=(command+'\r').encode()
+    ser.write
     sleep(0.25)
     try:
         while ser.in_waiting > 0:
