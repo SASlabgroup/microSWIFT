@@ -124,7 +124,6 @@ def transmit_bin(ser,msg,bytelen):
     #test for init_modem
     #test for open serial port
     
-    
     ser.flushInput()
     ser.write('AT+SBDWB='+str(bytelen)+'\r').encode() #command to write bytes, followed by number of bytes to write
     print('command = AT+SBDWB, ')
@@ -182,7 +181,7 @@ def transmit_ascii(ser,msg):
     if b'READY' in r: #only pass bytes if modem is ready, otherwise it has timed out
         print('response = READY')
         ser.flushInput()
-        ser.write(msg.encode()+'\r') #pass bytes to modem. Must have carriage return
+        ser.write(msg + '\r'.encode()) #pass bytes to modem. Must have carriage return
         print('passing message to modem buffer')
         r=ser.read(msg_len+9).decode() #read response to get result code (0 or 1)
         if 'OK' in r:
@@ -191,8 +190,8 @@ def transmit_ascii(ser,msg):
             print('response = {}'.format(r))        
             if r == 0:
                 ser.flushInput()
-                ser.write(b'AT+SBDIX\r') #start extended Iridium session (transmit)
                 print('command = AT+SBDIX')
+                ser.write(b'AT+SBDIX\r') #start extended Iridium session (transmit)
                 r=ser.read(36).decode()
                 if '+SBDIX: ' in r:
                     r=r[11:36] #get command response in the form +SBDIX:<MO status>,<MOMSN>,<MT status>,<MTMSN>,<MT length>,<MT queued>
