@@ -128,28 +128,33 @@ def transmit_bin(ser,msg,bytelen):
     #if modem_initialized == False:
        # print('modem not initialized')
        # return False
-    
+       
+    print('command = AT+SBDWB, ')
     ser.flushInput()
     ser.write('AT+SBDWB='+str(bytelen)+'\r').encode() #command to write bytes, followed by number of bytes to write
-    print('command = AT+SBDWB, ')
+    sleep(0.25)
+    
     r = ser.read_until(b'READY') #block until READY message is received
     if b'READY' in r: #only pass bytes if modem is ready, otherwise it has timed out
         print('response = READY')
+
+        checksum=sum(msg) #calculate checksum value
+        print('passing message to modem buffer')
         ser.flushInput()
         ser.write(msg) #pass bytes to modem
-        checksum=sum(msg) #calculate checksum value
         ser.write(chr(checksum >> 8)) #first byte of 2-byte checksum (shift bytes right by 8 bits)
         ser.write(chr(checksum & 0xFF)) #second byte of checksum
-    
-        print('passing message to modem buffer')
+        sleep(0.25)
+        
         r=ser.read(3).decode() #read response to get result code from SBDWB command (0-4)
         try:
             r=r[2] #result code of expected response
             print('response = {}'.format(r))
             if r == 0: #response of zero = successful write, ready to send
+                print('command = AT+SBDIX')
                 ser.flushInput()
                 ser.write(b'AT+SBDIX\r') #start extended Iridium session (transmit)
-                print('command = AT+SBDIX')
+                sleep(5)
                 r=ser.read(36).decode()
                 if '+SBDIX: ' in r:
                     r=r[11:36] #get command response in the form +SBDIX:<MO status>,<MOMSN>,<MT status>,<MTMSN>,<MT length>,<MT queued>
@@ -181,13 +186,16 @@ def transmit_ascii(ser,msg):
         return False
     
     ser.flushInput()
-    ser.write(b'AT+SBDWT\r') #command to write text to modem buffer
     print('command = AT+SBDWT')
+    ser.write(b'AT+SBDWT\r') #command to write text to modem buffer
+    sleep(0.25)
+    
     r = ser.read_until(b'READY') #block until READY message is received
     if b'READY' in r: #only pass bytes if modem is ready, otherwise it has timed out
         print('response = READY')
         ser.flushInput()
         ser.write((msg + '\r').encode()) #pass bytes to modem. Must have carriage return
+        sleep(0.25)
         print('passing message to modem buffer')
         r=ser.read(msg_len+9).decode() #read response to get result code (0 or 1)
         if 'OK' in r:
@@ -195,9 +203,10 @@ def transmit_ascii(ser,msg):
             r=r[index:index+1] 
             print('response = {}'.format(r))        
             if r == 0:
-                ser.flushInput()
                 print('command = AT+SBDIX')
+                ser.flushInput()
                 ser.write(b'AT+SBDIX\r') #start extended Iridium session (transmit)
+                sleep(5)
                 r=ser.read(36).decode()
                 if '+SBDIX: ' in r:
                     r=r[11:36] #get command response in the form +SBDIX:<MO status>,<MOMSN>,<MT status>,<MTMSN>,<MT length>,<MT queued>
