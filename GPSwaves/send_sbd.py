@@ -82,8 +82,8 @@ def init_modem():
     else:
         return False
 
-def get_response(ser, response='OK'):
-    sleep(1)
+def get_response(ser,command, response='OK'):
+    sleep(0.25)
     try:
         while ser.in_waiting > 0:
             r=ser.readline().decode().strip('\r\n')
