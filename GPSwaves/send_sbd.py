@@ -172,7 +172,7 @@ def transmit_ascii(ser,msg):
         #return False 
        
     msg_len=len(msg)
-    if msg_len < 340: #check message length
+    if msg_len > 340: #check message length
         print('message too long. must be 340 bytes or less')
         return False
     
