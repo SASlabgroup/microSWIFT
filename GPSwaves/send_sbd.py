@@ -81,7 +81,7 @@ def get_response(ser,command, response='OK'):
     ser.flushInput()
     command=(command+'\r').encode()
     ser.write
-    sleep(0.25)
+    sleep(1)
     try:
         while ser.in_waiting > 0:
             r=ser.readline().decode().strip('\r\n')
