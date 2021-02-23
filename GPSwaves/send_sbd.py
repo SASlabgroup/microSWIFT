@@ -34,7 +34,7 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.setup(modemGPIO,GPIO.OUT)
 
-modem_initialized = False #set global modem state
+#modem_initialized = False #set global modem state
 
 #open binary data file and return bytes
 def open_bin(binfile):
@@ -75,8 +75,8 @@ def init_modem():
             print('command = AT&K=0, ')
             if get_response(ser,'AT&K=0'): #important, disable flow control
                 print('modem initialized')
-                global modem_initialized
-                modem_initialized = True
+                #global modem_initialized
+                #modem_initialized = True
                 return ser
     else:
         return ser
@@ -125,9 +125,9 @@ def sig_qual(ser, command='AT+CSQ'):
 #returns false if anything goes wrong
 def transmit_bin(ser,msg,bytelen):
 
-    if modem_initialized == False:
-        print('modem not initialized')
-        return False
+    #if modem_initialized == False:
+       # print('modem not initialized')
+       # return False
     
     ser.flushInput()
     ser.write('AT+SBDWB='+str(bytelen)+'\r').encode() #command to write bytes, followed by number of bytes to write
@@ -167,9 +167,9 @@ def transmit_bin(ser,msg,bytelen):
 #same as transmit_bin but sends ascii text using SBDWT command instead of bytes
 def transmit_ascii(ser,msg):
     #checks before attempting to send
-    if modem_initialized == False:
-        print('modem not initialized')
-        return False 
+    #if modem_initialized == False:
+        #print('modem not initialized')
+        #return False 
        
     msg_len=len(msg)
     if msg_len < 340: #check message length
