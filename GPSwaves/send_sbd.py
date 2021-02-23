@@ -65,7 +65,7 @@ def init_modem():
         print('done')
     except serial.SerialException as e:
         print('unable to open serial port: {}'.format(e))
-        return False
+        return ser,False
         sys.exit(1)
    
     print('command = AT')
@@ -75,9 +75,9 @@ def init_modem():
             print('command = AT&K=0, ')
             if get_response(ser,'AT&K=0'): #important, disable flow control
                 print('modem initialized')
-                return True
+                return ser,True
     else:
-        return False
+        return ser,False
 
 def get_response(ser,command, response='OK'):
     ser.flushInput()
@@ -153,14 +153,14 @@ def transmit_bin(ser,msg,bytelen):
                     r=r[11:36] #get command response in the form +SBDIX:<MO status>,<MOMSN>,<MT status>,<MTMSN>,<MT length>,<MT queued>
                     r=r.strip('\r') #remove any dangling carriage returns
                     print('response = {}'.format(r)) 
-                    return ser, True
+                    return True
             else:
-                return ser, False
+                return False
         except IndexError:
             print('no response from modem')
-            return ser, False
+            return False
     else:
-        return ser, False
+        return False
     
 #same as transmit_bin but sends ascii text using SBDWT command instead of bytes
 def transmit_ascii(ser,msg):
@@ -176,7 +176,7 @@ def transmit_ascii(ser,msg):
     
     if not msg.isascii(): #check for ascii text
         print('message must be ascii text')
-        return Fasle
+        return False
     
     ser.flushInput()
     ser.write(b'AT+SBDWT\r') #command to write text to modem buffer
