@@ -75,6 +75,7 @@ def init_modem():
             print('command = AT&K=0, ')
             if get_response(ser,'AT&K=0'): #important, disable flow control
                 print('modem initialized')
+                global modem_initialized
                 modem_initialized = True
                 return ser
     else:
