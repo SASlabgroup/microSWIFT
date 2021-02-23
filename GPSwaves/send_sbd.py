@@ -131,7 +131,7 @@ def transmit_bin(ser,msg,bytelen):
        
     print('command = AT+SBDWB, ')
     ser.flushInput()
-    ser.write('AT+SBDWB='+str(bytelen)+'\r').encode() #command to write bytes, followed by number of bytes to write
+    ser.write(('AT+SBDWB='+str(bytelen)+'\r').encode()) #command to write bytes, followed by number of bytes to write
     sleep(0.25)
     
     r = ser.read_until(b'READY') #block until READY message is received
