@@ -80,7 +80,7 @@ def init_modem():
 def get_response(ser,command, response='OK'):
     ser.flushInput()
     command=(command+'\r').encode()
-    ser.write
+    ser.write(command)
     sleep(1)
     try:
         while ser.in_waiting > 0:
