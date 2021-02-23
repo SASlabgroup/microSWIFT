@@ -65,7 +65,7 @@ def init_modem():
         print('done')
     except serial.SerialException as e:
         print('unable to open serial port: {}'.format(e))
-        return ser,False
+        return ser
         sys.exit(1)
    
     print('command = AT')
@@ -75,9 +75,10 @@ def init_modem():
             print('command = AT&K=0, ')
             if get_response(ser,'AT&K=0'): #important, disable flow control
                 print('modem initialized')
-                return ser,True
+                modem_initialized = True
+                return ser
     else:
-        return ser,False
+        return ser
 
 def get_response(ser,command, response='OK'):
     ser.flushInput()
@@ -223,7 +224,7 @@ def main(payload_data):
            return 
     
     #initialize modem
-    ser, modem_initialized = init_modem()
+    ser = init_modem()
     
     if not modem_initialized:
         print('modem not initialized, unable to send data')
