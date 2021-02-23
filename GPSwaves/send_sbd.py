@@ -197,12 +197,12 @@ def transmit_ascii(ser,msg):
         ser.write((msg + '\r').encode()) #pass bytes to modem. Must have carriage return
         sleep(0.25)
         print('passing message to modem buffer')
-        r=ser.read(msg_len+9).decode() #read response to get result code (0 or 1)
+        r=ser.read(msg_len+9).decode() #read response to get result code (0 for successful save in buffer or 1 for fail)
         if 'OK' in r:
             index=msg_len+2 #index of result code
             r=r[index:index+1] 
             print('response = {}'.format(r))        
-            if r == 0:
+            if r == '0'
                 print('command = AT+SBDIX')
                 ser.flushInput()
                 ser.write(b'AT+SBDIX\r') #start extended Iridium session (transmit)
