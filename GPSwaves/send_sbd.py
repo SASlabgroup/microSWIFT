@@ -202,7 +202,7 @@ def transmit_ascii(ser,msg):
             index=msg_len+2 #index of result code
             r=r[index:index+1] 
             print('response = {}'.format(r))        
-            if r == '0'
+            if r == '0':
                 print('command = AT+SBDIX')
                 ser.flushInput()
                 ser.write(b'AT+SBDIX\r') #start extended Iridium session (transmit)
