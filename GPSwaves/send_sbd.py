@@ -123,11 +123,13 @@ def sig_qual(ser, command='AT+CSQ'):
 #returns true if trasmit command is sent, but does not mean a successful transmission
 #checksum is least significant 2 bytes of sum of message, with hgiher order byte sent first
 #returns false if anything goes wrong
-def transmit_bin(ser,msg,bytelen):
+def transmit_bin(ser,msg):
 
     #if modem_initialized == False:
        # print('modem not initialized')
        # return False
+       
+    bytelen=len(msg)
        
     print('command = AT+SBDWB, ')
     ser.flushInput()
