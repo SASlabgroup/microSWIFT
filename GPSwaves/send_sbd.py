@@ -80,7 +80,7 @@ def init_modem():
         logger.info('done')
     except serial.SerialException as e:
         logger.info('unable to open serial port: {}'.format(e))
-        return ser
+        return ser, False
         sys.exit(1)
    
     logger.info('command = AT')
@@ -92,9 +92,9 @@ def init_modem():
                 logger.info('modem initialized')
                 #global modem_initialized
                 #modem_initialized = True
-                return ser
+                return ser, True
     else:
-        return ser
+        return ser, False
 
 def get_response(ser,command, response='OK'):
     ser.flushInput()
@@ -257,7 +257,7 @@ def main(payload_data):
            return 
     
     #initialize modem
-    ser = init_modem()
+    ser, modem_initialized = init_modem()
     
     if not modem_initialized:
         logger.info('modem not initialized, unable to send data')
