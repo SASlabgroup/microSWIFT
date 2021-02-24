@@ -274,7 +274,7 @@ if __name__ == "__main__":
 					logger.info('starting to process data')
 					process_data.main(u,v,z,lat,lon,gps_freq,burst_seconds,badValue,payload_type,sensor_type,port,dataDir,floatID)		
 				else:
-					logger.info('not enough points to process data: {}'.format(len(z))
+					logger.info('not enough points to process data: {}'.format(len(z)))
 					sys.exit(1)
 				
 
