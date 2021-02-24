@@ -156,7 +156,7 @@ def transmit_bin(ser,msg,bytelen):
         try:
             r=r[2] #result code of expected response
             print('response = {}'.format(r))
-            if r == 0: #response of zero = successful write, ready to send
+            if r == '0': #response of zero = successful write, ready to send
                 print('command = AT+SBDIX')
                 ser.flushInput()
                 ser.write(b'AT+SBDIX\r') #start extended Iridium session (transmit)
