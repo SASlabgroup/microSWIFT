@@ -7,7 +7,7 @@
 
 # standard imports 
 import serial, sys
-from logging import *
+#from logging import *
 import struct
 import numpy as np
 import time
@@ -15,7 +15,9 @@ import datetime
 import RPi.GPIO as GPIO
 from time import sleep
 
-#logger = getLogger('system_logger.'+__name__)  
+import logging
+import sys
+
 
 #Iridium parameters - fixed for now
 modemPort = '/dev/ttyUSB0' #config.getString('Iridium', 'port')
@@ -42,39 +44,39 @@ def open_bin(binfile):
         with open(binfile, 'rb') as f:
             bytes=bytearray(f.read())
     except FileNotFoundError:
-        print('file not found: {}'.format(binfile))   
+        logger.info('file not found: {}'.format(binfile))   
     except Exception as e:
-        print('error opening file: {}'.format(e))
+        logger.info('error opening file: {}'.format(e))
     return bytes
 
 def init_modem():
     #power on GPIO enable pin
     try:
         GPIO.output(modemGPIO,GPIO.HIGH)
-        print('power on modem...')
+        logger.info('power on modem...')
         sleep(3)
-        print('done')
+        logger.info('done')
     except Exception as e:
-        print('error powering on modem')
-        print(e)
+        logger.info('error powering on modem')
+        logger.info(e)
         
     #open serial port
-    print('opening serial port with modem at {0} on port {1}...'.format(modemBaud,modemPort))
+    logger.info('opening serial port with modem at {0} on port {1}...'.format(modemBaud,modemPort))
     try:
         ser=serial.Serial(modemPort,modemBaud,timeout=timeout)
-        print('done')
+        logger.info('done')
     except serial.SerialException as e:
-        print('unable to open serial port: {}'.format(e))
+        logger.info('unable to open serial port: {}'.format(e))
         return ser
         sys.exit(1)
    
-    print('command = AT')
+    logger.info('command = AT')
     if get_response(ser,'AT'): #send AT command
-        print('command = AT&F')
+        logger.info('command = AT&F')
         if get_response(ser,'AT&F'): #set default parameters with AT&F command 
-            print('command = AT&K=0, ')
+            logger.info('command = AT&K=0, ')
             if get_response(ser,'AT&K=0'): #important, disable flow control
-                print('modem initialized')
+                logger.info('modem initialized')
                 #global modem_initialized
                 #modem_initialized = True
                 return ser
@@ -90,13 +92,13 @@ def get_response(ser,command, response='OK'):
         while ser.in_waiting > 0:
             r=ser.readline().decode().strip('\r\n')
             if response in r:
-                print('response = {}'.format(r))
+                logger.info('response = {}'.format(r))
                 return True
             elif 'ERROR' in response:
-                print('response = ERROR')
+                logger.info('response = ERROR')
                 return False
     except serial.SerialException as e:
-        print('error: {}'.format(e))
+        logger.info('error: {}'.format(e))
         return False
 
 
@@ -106,17 +108,17 @@ def get_response(ser,command, response='OK'):
 def sig_qual(ser, command='AT+CSQ'):
     ser.flushInput()
     ser.write(command+'\r'.encode())
-    print('command = {}, '.format(command))
+    logger.info('command = {}, '.format(command))
     r=ser.read(25).decode()
     if 'CSQ:' in r:
         r=r[9:15]
-        print('response = {}'.format(r))
+        logger.info('response = {}'.format(r))
         return r[14] #return signal quality (0-5)
     elif 'ERROR' in r:
-        print('response = ERROR')
+        logger.info('response = ERROR')
         return -1
     else:
-        print('unexpected response: {}'.format(r))  
+        logger.info('unexpected response: {}'.format(r))  
         return -1
 
 #send binary message to modem buffer and transmit
@@ -126,21 +128,21 @@ def sig_qual(ser, command='AT+CSQ'):
 def transmit_bin(ser,msg):
 
     #if modem_initialized == False:
-       # print('modem not initialized')
+       # logger.info('modem not initialized')
        # return False
        
     bytelen=len(msg)
        
-    print('command = AT+SBDWB, ')
+    logger.info('command = AT+SBDWB, ')
     ser.flushInput()
     ser.write(('AT+SBDWB='+str(bytelen)+'\r').encode()) #command to write bytes, followed by number of bytes to write
     sleep(0.25)
     
     r = ser.read_until(b'READY') #block until READY message is received
     if b'READY' in r: #only pass bytes if modem is ready, otherwise it has timed out
-        print('response = READY')
+        logger.info('response = READY')
 
-        print('passing message to modem buffer')
+        logger.info('passing message to modem buffer')
         ser.flushInput()
         ser.write(msg) #pass bytes to modem
         
@@ -157,9 +159,9 @@ def transmit_bin(ser,msg):
         r=ser.read(3).decode() #read response to get result code from SBDWB command (0-4)
         try:
             r=r[2] #result code of expected response
-            print('response = {}'.format(r))
+            logger.info('response = {}'.format(r))
             if r == '0': #response of zero = successful write, ready to send
-                print('command = AT+SBDIX')
+                logger.info('command = AT+SBDIX')
                 ser.flushInput()
                 ser.write(b'AT+SBDIX\r') #start extended Iridium session (transmit)
                 sleep(5)
@@ -167,12 +169,12 @@ def transmit_bin(ser,msg):
                 if '+SBDIX: ' in r:
                     r=r[11:36] #get command response in the form +SBDIX:<MO status>,<MOMSN>,<MT status>,<MTMSN>,<MT length>,<MT queued>
                     r=r.strip('\r') #remove any dangling carriage returns
-                    print('response = {}'.format(r)) 
+                    logger.info('response = {}'.format(r)) 
                     return True
             else:
                 return False
         except IndexError:
-            print('no response from modem')
+            logger.info('no response from modem')
             return False
     else:
         return False
@@ -181,37 +183,37 @@ def transmit_bin(ser,msg):
 def transmit_ascii(ser,msg):
     #checks before attempting to send
     #if modem_initialized == False:
-        #print('modem not initialized')
+        #logger.info('modem not initialized')
         #return False 
        
     msg_len=len(msg)
     if msg_len > 340: #check message length
-        print('message too long. must be 340 bytes or less')
+        logger.info('message too long. must be 340 bytes or less')
         return False
     
     if not msg.isascii(): #check for ascii text
-        print('message must be ascii text')
+        logger.info('message must be ascii text')
         return False
     
     ser.flushInput()
-    print('command = AT+SBDWT')
+    logger.info('command = AT+SBDWT')
     ser.write(b'AT+SBDWT\r') #command to write text to modem buffer
     sleep(0.25)
     
     r = ser.read_until(b'READY') #block until READY message is received
     if b'READY' in r: #only pass bytes if modem is ready, otherwise it has timed out
-        print('response = READY')
+        logger.info('response = READY')
         ser.flushInput()
         ser.write((msg + '\r').encode()) #pass bytes to modem. Must have carriage return
         sleep(0.25)
-        print('passing message to modem buffer')
+        logger.info('passing message to modem buffer')
         r=ser.read(msg_len+9).decode() #read response to get result code (0 for successful save in buffer or 1 for fail)
         if 'OK' in r:
             index=msg_len+2 #index of result code
             r=r[index:index+1] 
-            print('response = {}'.format(r))        
+            logger.info('response = {}'.format(r))        
             if r == '0':
-                print('command = AT+SBDIX')
+                logger.info('command = AT+SBDIX')
                 ser.flushInput()
                 ser.write(b'AT+SBDIX\r') #start extended Iridium session (transmit)
                 sleep(5)
@@ -219,7 +221,7 @@ def transmit_ascii(ser,msg):
                 if '+SBDIX: ' in r:
                     r=r[11:36] #get command response in the form +SBDIX:<MO status>,<MOMSN>,<MT status>,<MTMSN>,<MT length>,<MT queued>
                     r=r.strip('\r') #remove any dangling carriage returns
-                    print('response = {}'.format(r)) 
+                    logger.info('response = {}'.format(r)) 
                     return True
     else:
         return False
@@ -235,17 +237,31 @@ def transmit_ascii(ser,msg):
 #    ,<id>,<start-byte>:
 #--------------------------------------------------------------------------------------------
 def main(payload_data):
+    
+    #logger = getLogger('system_logger.'+__name__)  
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    
+    #set up logging to sdout:
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setLevel(logging.DEBUG)
+    format = logging.Formatter('%(asctime)s, %(name)s - [%(levelname)s] - %(message)s')
+    handler.setFormatter(format)
+    logger.addHandler(handler)
+    
+    
+    
 
     #check for data
     if len(payload_data) == 0:
-           print('payload data is empty')
+           logger.info('payload data is empty')
            return 
     
     #initialize modem
     ser = init_modem()
     
     if not modem_initialized:
-        print('modem not initialized, unable to send data')
+        logger.info('modem not initialized, unable to send data')
         return
         
  
@@ -291,16 +307,16 @@ def main(payload_data):
     #--------------------------------------------------------------------------------------
     
     transmit_bin(ser,packet0, bytelen0)
-    print('sending first packet')
+    logger.info('sending first packet')
 
     transmit_bin(ser,packet1, bytelen1)
-    print('sending second packet')
+    logger.info('sending second packet')
 
     transmit_bin(ser,packet2, bytelen2)
-    print('sending third packet')
+    logger.info('sending third packet')
 
     transmit_bin(ser,packet3, bytelen3)
-    print('sending fourth packet')
+    logger.info('sending fourth packet')
     
     
     #turn off modem
