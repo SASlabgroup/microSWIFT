@@ -138,12 +138,18 @@ def transmit_bin(ser,msg,bytelen):
     if b'READY' in r: #only pass bytes if modem is ready, otherwise it has timed out
         print('response = READY')
 
-        checksum=sum(msg) #calculate checksum value
         print('passing message to modem buffer')
         ser.flushInput()
         ser.write(msg) #pass bytes to modem
-        ser.write(hex(checksum >> 8)) #first byte of 2-byte checksum (shift bytes right by 8 bits)
-        ser.write(hex(checksum & 0xFF)) #second byte of checksum
+        
+        #The checksum is the least significant 2-bytes of the summation of the entire SBD message. 
+        #The high order byte must be sent first. 
+        checksum=sum(msg) #calculate checksum value
+        byte1 = (checksum >> 8).to_bytes(1,'big') #bitwise operation shift 8 bits right to get firt byte of checksum and convert to bytes
+        byte2 = (checksum & 0xFF).to_bytes(1,'big')#bitwise operation to get second byte of checksum, convet to bytes
+        
+        ser.write(byte1) #first byte of 2-byte checksum 
+        ser.write(byte2) #second byte of checksum
         sleep(0.25)
         
         r=ser.read(3).decode() #read response to get result code from SBDWB command (0-4)
