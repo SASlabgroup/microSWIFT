@@ -29,7 +29,7 @@ call_time = 10 #config.getInt('Iridium', 'call_time')
 timeout=60 #some commands can take a long time to complete
 
 packet_type = 1
-id =0
+id = 0
 
 #set up GPIO pins for modem control
 GPIO.setmode(GPIO.BCM)
@@ -267,7 +267,7 @@ def main(payload_data):
     #split up payload data into packets    
     #----------------------------------------------------------------------------------------
     index = 0 #byte index
-    
+    global id
     #first packet to send
     header = str(packet_type).encode('ascii') #packet type as as ascii number
     sub_header0 = str(','+str(id)+','+str(index)+','+str(total_bytes)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
