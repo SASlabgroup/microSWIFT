@@ -38,6 +38,19 @@ GPIO.setup(modemGPIO,GPIO.OUT)
 
 #modem_initialized = False #set global modem state
 
+
+#logger = getLogger('system_logger.'+__name__)  
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+
+#set up logging to sdout:
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.DEBUG)
+format = logging.Formatter('%(asctime)s, %(name)s - [%(levelname)s] - %(message)s')
+handler.setFormatter(format)
+logger.addHandler(handler)
+
+
 #open binary data file and return bytes
 def open_bin(binfile):
     try:
@@ -237,20 +250,6 @@ def transmit_ascii(ser,msg):
 #    ,<id>,<start-byte>:
 #--------------------------------------------------------------------------------------------
 def main(payload_data):
-    
-    #logger = getLogger('system_logger.'+__name__)  
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
-    
-    #set up logging to sdout:
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setLevel(logging.DEBUG)
-    format = logging.Formatter('%(asctime)s, %(name)s - [%(levelname)s] - %(message)s')
-    handler.setFormatter(format)
-    logger.addHandler(handler)
-    
-    
-    
 
     #check for data
     if len(payload_data) == 0:
