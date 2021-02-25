@@ -269,6 +269,7 @@ def send_microSWIFT(payload_data):
     #split up payload data into packets    
     #----------------------------------------------------------------------------------------
     index = 0 #byte index
+    payload_size = 1245
     #first packet to send
     header = str(packet_type).encode('ascii') #packet type as as ascii number
     sub_header0 = str(','+str(id)+','+str(index)+','+str(payload_size)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
