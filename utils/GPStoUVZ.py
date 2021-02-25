@@ -4,6 +4,7 @@ import numpy as np
 import pynmea2
 
 gps_samples=2048
+badValue=999
 
 def getUVZ(gpsfile):
     
