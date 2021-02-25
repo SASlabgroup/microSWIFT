@@ -324,7 +324,7 @@ def send_microSWIFT(payload_data):
     #turn off modem
     #--------------------------------------------------------------------------------------
     logger.info('powering down modem')    
-    GPIO.output(modemGpio,GPIO.LOW)
+    GPIO.output(modemGPIO,GPIO.LOW)
 
     
 
