@@ -35,7 +35,7 @@ def getUVZ(gpsfile):
                 lat[ipos] = gpgga.latitude
                 lon[ipos] = gpgga.longitude
                 ipos+=1
-            elif "GPVTG" in newline:
+            elif "GPVTG" in line:
                 if gpgga.gps_qual < 1:
                     continue
                 gpvtg = pynmea2.parse(line,check=True)   #grab gpvtg sentence
