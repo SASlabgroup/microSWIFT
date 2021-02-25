@@ -119,9 +119,10 @@ def sig_qual(ser, command='AT+CSQ'):
     logger.info('command = {}, '.format(command))
     r=ser.read(23).decode()
     if 'CSQ:' in r:
-        r=r[9:15]
-        logger.info('response = {}'.format(r))
-        return r[14] #return signal quality (0-5)
+        response=r[9:15]
+        qual = r[14]
+        logger.info('response = {}'.format(response))
+        return qual #return signal quality (0-5)
     elif 'ERROR' in r:
         logger.info('response = ERROR')
         return -1
