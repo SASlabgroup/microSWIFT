@@ -46,7 +46,7 @@ def getUVZ(gpsfile):
                 continue
            
     print('GPGGA lines: {}.'.format(ipos))
-    print('GPVTG lines: {}'.format(ive))
+    print('GPVTG lines: {}'.format(ivel))
 
     return u,v,z,lat,lon
 
