@@ -162,7 +162,7 @@ def transmit_bin(ser,msg):
         checksum=sum(msg) #calculate checksum value
         byte1 = (checksum >> 8).to_bytes(1,'big') #bitwise operation shift 8 bits right to get firt byte of checksum and convert to bytes
         byte2 = (checksum & 0xFF).to_bytes(1,'big')#bitwise operation to get second byte of checksum, convet to bytes
-        
+        logger.info('passing checksum to modem buffer')
         ser.write(byte1) #first byte of 2-byte checksum 
         ser.write(byte2) #second byte of checksum
         sleep(0.25)
@@ -274,7 +274,8 @@ def send_microSWIFT(payload_data):
     header = str(packet_type).encode('ascii') #packet type as as ascii number
     sub_header0 = str(','+str(id)+','+str(index)+','+str(payload_size)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
     payload_bytes0 = payload_data[index:324] #data bytes for packet 0
-    packet0 = header + sub_header0 + payload_bytes0   
+    packet0 = header + sub_header0 + payload_bytes0
+      
     
     
     #second packet to send
@@ -301,18 +302,22 @@ def send_microSWIFT(payload_data):
 
     #send packets
     #--------------------------------------------------------------------------------------
-    
-    transmit_bin(ser,packet0)
     logger.info('sending first packet')
-
-    transmit_bin(ser,packet1)
+    logger.info(packet0)
+    transmit_bin(ser,packet0)
+    
     logger.info('sending second packet')
-
-    transmit_bin(ser,packet2)
+    logger.info(packet1)
+    transmit_bin(ser,packet1)
+    
     logger.info('sending third packet')
-
-    transmit_bin(ser,packet3)
+    logger.info(packet2)
+    transmit_bin(ser,packet2)
+    
     logger.info('sending fourth packet')
+    logger.info(packet3)
+    transmit_bin(ser,packet3)
+    
     
     
     #turn off modem
