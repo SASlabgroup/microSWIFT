@@ -252,6 +252,7 @@ def transmit_ascii(ser,msg):
 #    ,<id>,<start-byte>:
 #--------------------------------------------------------------------------------------------
 def send_microSWIFT(payload_data):
+    logger.info('sending microSWIFT telemetry')
     global id
     #check for data
     if len(payload_data) == 0:
@@ -326,8 +327,5 @@ def send_microSWIFT(payload_data):
     GPIO.output(modemGpio,GPIO.LOW)
 
     
-
-#if __name__ == "__main__":
-
 
 
