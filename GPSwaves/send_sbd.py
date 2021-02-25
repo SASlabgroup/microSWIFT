@@ -267,12 +267,12 @@ def main(payload_data):
     #split up payload data into packets    
     #----------------------------------------------------------------------------------------
     index = 0 #byte index
-    global id
+    total_bytes = 1284
     #first packet to send
     header = str(packet_type).encode('ascii') #packet type as as ascii number
     sub_header0 = str(','+str(id)+','+str(index)+','+str(total_bytes)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
     payload_bytes0 = payload_data[index:324] #data bytes for packet 0
-    packet0 = struct.pack('<s10s', header, sub_header0) + payload_bytes0   
+    packet0 = struct.pack('<s11s', header, sub_header0) + payload_bytes0   
     bytelen0 = len(packet0) #number of bytes to modem
     
     
@@ -280,7 +280,7 @@ def main(payload_data):
     index = 325
     sub_header1 = str(','+str(id)+','+str(index)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
     payload_bytes1 = payload_data[index:652] #data bytes for packet 1    
-    packet1 = struct.pack('<s10s', header, sub_header1) + payload_bytes1         
+    packet1 = struct.pack('<s8s', header, sub_header1) + payload_bytes1         
     bytelen1 = len(packet1) #number of bytes to modem
     
     
@@ -288,7 +288,7 @@ def main(payload_data):
     index = 653
     sub_header2 = str(','+str(id)+','+str(index)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
     payload_bytes2 = payload_data[index:980] #data bytes for packet 2
-    packet2 = struct.pack('<s10s', header, sub_header2) + payload_bytes2 
+    packet2 = struct.pack('<s8s', header, sub_header2) + payload_bytes2 
     bytelen2 = len(packet2) #number of bytes to modem     
    
     
@@ -296,7 +296,7 @@ def main(payload_data):
     index = 981
     sub_header3 = str(','+str(id)+','+str(index)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
     payload_bytes3 = payload_data[index:1244] #data bytes for packet 3
-    packet3 = struct.pack('<s10s', header, sub_header3) + payload_bytes3
+    packet3 = struct.pack('<s8s', header, sub_header3) + payload_bytes3
     bytelen3 = len(packet3) #number of bytes to modem   
         
     id+=1    
