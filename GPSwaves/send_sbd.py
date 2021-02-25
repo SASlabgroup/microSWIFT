@@ -63,6 +63,7 @@ def open_bin(binfile):
     return bytes
 
 def init_modem():
+    global modem_initialized
     #power on GPIO enable pin
     try:
         GPIO.output(modemGPIO,GPIO.HIGH)
@@ -90,7 +91,6 @@ def init_modem():
             logger.info('command = AT&K=0, ')
             if get_response(ser,'AT&K=0'): #important, disable flow control
                 logger.info('modem initialized')
-                global modem_initialized
                 modem_initialized = 1
                 return ser, True
     else:
