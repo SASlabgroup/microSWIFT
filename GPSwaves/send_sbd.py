@@ -36,9 +36,6 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.setup(modemGPIO,GPIO.OUT)
 
-modem_initialized = 0 #set global modem state
-
-
 #logger = getLogger('system_logger.'+__name__)  
 logger = logging.getLogger('send_sbd.py')
 logger.setLevel(logging.INFO)
@@ -63,10 +60,9 @@ def open_bin(binfile):
     return bytes
 
 def init_modem():
-    global modem_initialized
-    #power on GPIO enable pin
+   
     try:
-        GPIO.output(modemGPIO,GPIO.HIGH)
+        GPIO.output(modemGPIO,GPIO.HIGH) #power on GPIO enable pin
         logger.info('power on modem...')
         sleep(3)
         logger.info('done')
@@ -91,7 +87,6 @@ def init_modem():
             logger.info('command = AT&K=0, ')
             if get_response(ser,'AT&K=0'): #important, disable flow control
                 logger.info('modem initialized')
-                modem_initialized += 1
                 return ser, True
     else:
         return ser, False
@@ -139,17 +134,20 @@ def sig_qual(ser, command='AT+CSQ'):
 #checksum is least significant 2 bytes of sum of message, with hgiher order byte sent first
 #returns false if anything goes wrong
 def transmit_bin(ser,msg):
-
-    if modem_initialized == 0:
-        logger.info('modem not initialized')
-        return False
-       
+    
     bytelen=len(msg)
-       
-    logger.info('command = AT+SBDWB, ')
-    ser.flushInput()
-    ser.write(('AT+SBDWB='+str(bytelen)+'\r').encode()) #command to write bytes, followed by number of bytes to write
-    sleep(0.25)
+    
+    try:  
+        logger.info('command = AT+SBDWB, ')
+        ser.flushInput()
+        ser.write(('AT+SBDWB='+str(bytelen)+'\r').encode()) #command to write bytes, followed by number of bytes to write
+        sleep(0.25)
+    except serial.SerialException as e:
+        logger.info('serial error: {}'.format(e))
+        return False
+    except Exception as e:
+        logger.info('error: {}'.format(e))
+        return False
     
     r = ser.read_until(b'READY') #block until READY message is received
     if b'READY' in r: #only pass bytes if modem is ready, otherwise it has timed out
@@ -194,12 +192,9 @@ def transmit_bin(ser,msg):
     
 #same as transmit_bin but sends ascii text using SBDWT command instead of bytes
 def transmit_ascii(ser,msg):
-    #checks before attempting to send
-    #if modem_initialized == False:
-        #logger.info('modem not initialized')
-        #return False 
-       
+ 
     msg_len=len(msg)
+    
     if msg_len > 340: #check message length
         logger.info('message too long. must be 340 bytes or less')
         return False
@@ -208,10 +203,17 @@ def transmit_ascii(ser,msg):
         logger.info('message must be ascii text')
         return False
     
-    ser.flushInput()
-    logger.info('command = AT+SBDWT')
-    ser.write(b'AT+SBDWT\r') #command to write text to modem buffer
-    sleep(0.25)
+    try:  
+        ser.flushInput()
+        logger.info('command = AT+SBDWT')
+        ser.write(b'AT+SBDWT\r') #command to write text to modem buffer
+        sleep(0.25)
+    except serial.SerialException as e:
+        logger.info('serial error: {}'.format(e))
+        return False
+    except Exception as e:
+        logger.info('error: {}'.format(e))
+        return False
     
     r = ser.read_until(b'READY') #block until READY message is received
     if b'READY' in r: #only pass bytes if modem is ready, otherwise it has timed out
@@ -314,7 +316,9 @@ def send_microSWIFT(payload_data):
     
     #turn off modem
     #--------------------------------------------------------------------------------------
+    logger.info('powering down modem')    
     GPIO.output(modemGpio,GPIO.LOW)
+
     
 
 #if __name__ == "__main__":
