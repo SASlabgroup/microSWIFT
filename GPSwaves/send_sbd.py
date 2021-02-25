@@ -201,7 +201,7 @@ def transmit_ascii(ser,msg):
     
     if not msg.isascii(): #check for ascii text
         logger.info('message must be ascii text')
-        return False
+        return Falsem
     
     try:  
         ser.flushInput()

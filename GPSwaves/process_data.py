@@ -141,7 +141,7 @@ def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port,d
         file.flush()
         
     #run send_sbd script to send telemetry file
-    send_sbd.main(payload_data)
+    send_sbd.send_microSWIFT(payload_data)
     return payload_data
 
 def _getuvzMean(badValue, pts):
