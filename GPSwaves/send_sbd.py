@@ -250,7 +250,7 @@ def transmit_ascii(ser,msg):
 #    ,<id>,<start-byte>:
 #--------------------------------------------------------------------------------------------
 def send_microSWIFT(payload_data):
-
+    global id
     #check for data
     if len(payload_data) == 0:
         logger.info('payload data is empty')
@@ -293,8 +293,7 @@ def send_microSWIFT(payload_data):
     sub_header3 = str(','+str(id)+','+str(index)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
     payload_bytes3 = payload_data[index:1244] #data bytes for packet 3
     packet3 = header, sub_header3 + payload_bytes3 
-    
-    global id   
+       
     id+=1    
 
     #send packets
