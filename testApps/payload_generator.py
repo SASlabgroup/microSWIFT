@@ -98,7 +98,7 @@ with open(r'C:\Users\Alex de Klerk\Desktop\binfile.dat', 'wb') as file:
     file.flush()
 
 
-
+print(payload_data)
 
 
 

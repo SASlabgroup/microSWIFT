@@ -36,16 +36,16 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.setup(modemGPIO,GPIO.OUT)
 
-#modem_initialized = False #set global modem state
+modem_initialized = 0 #set global modem state
 
 
 #logger = getLogger('system_logger.'+__name__)  
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+logger = logging.getLogger('send_sbd.py')
+logger.setLevel(logging.INFO)
 
 #set up logging to sdout:
 handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.DEBUG)
+handler.setLevel(logging.INFO)
 format = logging.Formatter('%(asctime)s, %(name)s - [%(levelname)s] - %(message)s')
 handler.setFormatter(format)
 logger.addHandler(handler)
@@ -90,8 +90,8 @@ def init_modem():
             logger.info('command = AT&K=0, ')
             if get_response(ser,'AT&K=0'): #important, disable flow control
                 logger.info('modem initialized')
-                #global modem_initialized
-                #modem_initialized = True
+                global modem_initialized
+                modem_initialized = 1
                 return ser, True
     else:
         return ser, False
@@ -140,9 +140,9 @@ def sig_qual(ser, command='AT+CSQ'):
 #returns false if anything goes wrong
 def transmit_bin(ser,msg):
 
-    #if modem_initialized == False:
-       # logger.info('modem not initialized')
-       # return False
+    if modem_initialized == 0:
+        logger.info('modem not initialized')
+        return False
        
     bytelen=len(msg)
        
@@ -249,12 +249,12 @@ def transmit_ascii(ser,msg):
 #Sub-header 1 thru N:
 #    ,<id>,<start-byte>:
 #--------------------------------------------------------------------------------------------
-def main(payload_data):
+def send_microSWIFT(payload_data):
 
     #check for data
     if len(payload_data) == 0:
-           logger.info('payload data is empty')
-           return 
+        logger.info('payload data is empty')
+        return 
     
     #initialize modem
     ser, modem_initialized = init_modem()
@@ -267,54 +267,49 @@ def main(payload_data):
     #split up payload data into packets    
     #----------------------------------------------------------------------------------------
     index = 0 #byte index
-    total_bytes = 1284
     #first packet to send
     header = str(packet_type).encode('ascii') #packet type as as ascii number
-    sub_header0 = str(','+str(id)+','+str(index)+','+str(total_bytes)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
+    sub_header0 = str(','+str(id)+','+str(index)+','+str(payload_size)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
     payload_bytes0 = payload_data[index:324] #data bytes for packet 0
-    packet0 = struct.pack('<s11s', header, sub_header0) + payload_bytes0   
-    bytelen0 = len(packet0) #number of bytes to modem
+    packet0 = header + sub_header0 + payload_bytes0   
     
     
     #second packet to send
     index = 325
     sub_header1 = str(','+str(id)+','+str(index)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
     payload_bytes1 = payload_data[index:652] #data bytes for packet 1    
-    packet1 = struct.pack('<s8s', header, sub_header1) + payload_bytes1         
-    bytelen1 = len(packet1) #number of bytes to modem
+    packet1 = header + sub_header1 + payload_bytes1         
     
     
     #third packet to send
     index = 653
     sub_header2 = str(','+str(id)+','+str(index)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
     payload_bytes2 = payload_data[index:980] #data bytes for packet 2
-    packet2 = struct.pack('<s8s', header, sub_header2) + payload_bytes2 
-    bytelen2 = len(packet2) #number of bytes to modem     
+    packet2 = header + sub_header2 + payload_bytes2      
    
     
     #fourth packet to send
     index = 981
     sub_header3 = str(','+str(id)+','+str(index)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
     payload_bytes3 = payload_data[index:1244] #data bytes for packet 3
-    packet3 = struct.pack('<s8s', header, sub_header3) + payload_bytes3
-    bytelen3 = len(packet3) #number of bytes to modem   
-        
+    packet3 = header, sub_header3 + payload_bytes3 
+    
+    global id   
     id+=1    
-
 
     #send packets
     #--------------------------------------------------------------------------------------
     
-    transmit_bin(ser,packet0, bytelen0)
+    transmit_bin(ser,packet0)
     logger.info('sending first packet')
 
-    transmit_bin(ser,packet1, bytelen1)
+    transmit_bin(ser,packet1)
     logger.info('sending second packet')
 
-    transmit_bin(ser,packet2, bytelen2)
+    transmit_bin(ser,packet2)
     logger.info('sending third packet')
 
-    transmit_bin(ser,packet3, bytelen3)
+    transmit_bin(ser,packet3)
     logger.info('sending fourth packet')
     
     
