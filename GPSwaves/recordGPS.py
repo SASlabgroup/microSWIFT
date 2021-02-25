@@ -269,6 +269,13 @@ if __name__ == "__main__":
 				#call record_gps	
 				u,v,z,lat,lon = record_gps(ser,fname)
 				
+				
+				
+				#try:
+				#	os.path.isfile(fpath) and os.path.getsize(fpath) > 0
+					
+				#except OSError
+				
 				if len(z) >= 2048:
 					#call data processing script
 					logger.info('starting to process data')

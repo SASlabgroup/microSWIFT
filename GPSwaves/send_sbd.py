@@ -115,7 +115,7 @@ def get_response(ser,command, response='OK'):
 #Example modem output: AT+CSQF +CSQF:0 OK    
 def sig_qual(ser, command='AT+CSQ'):
     ser.flushInput()
-    ser.write(command+'\r'.encode())
+    ser.write((command+'\r').encode())
     logger.info('command = {}, '.format(command))
     r=ser.read(25).decode()
     if 'CSQ:' in r:
