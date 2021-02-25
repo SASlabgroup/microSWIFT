@@ -91,7 +91,7 @@ def init_modem():
             logger.info('command = AT&K=0, ')
             if get_response(ser,'AT&K=0'): #important, disable flow control
                 logger.info('modem initialized')
-                modem_initialized = 1
+                modem_initialized += 1
                 return ser, True
     else:
         return ser, False
