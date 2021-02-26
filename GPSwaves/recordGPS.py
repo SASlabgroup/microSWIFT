@@ -271,27 +271,22 @@ if __name__ == "__main__":
 				
 				
 				#check if burst completed with 2048 poi
-				#try:
-				#	os.path.isfile(fpath) and os.path.getsize(fpath) > 0
+				try:
+					if os.path.isfile(fname) and os.path.getsize(fname) == 1245:
+						#call data processing script
+						logger.info('starting to process data')
+						process_data.main(u,v,z,lat,lon,gps_freq,burst_seconds,badValue,payload_type,sensor_type,port,dataDir,floatID)
+					else:
+						logger.info('data file does not exist or does not contain enough data for processing')	
 					
-				#except OSError
-				
-				if len(z) >= 2048:
-					#call data processing script
-					logger.info('starting to process data')
-					process_data.main(u,v,z,lat,lon,gps_freq,burst_seconds,badValue,payload_type,sensor_type,port,dataDir,floatID)		
-				else:
-					logger.info('not enough points to process data: {}'.format(len(z)))
+				except OSError as e:
+					logger.info(e)
 					sys.exit(1)
-				
-
-		
-			
+					
 	else:
 		logger.info("GPS not initialized, exiting")
 		sys.exit(1)
 		
-	sys.exit(0)
  
 
 
