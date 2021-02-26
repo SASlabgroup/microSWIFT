@@ -40,12 +40,17 @@ GPIO.setup(modemGPIO,GPIO.OUT)
 logger = logging.getLogger('send_sbd.py')
 logger.setLevel(logging.INFO)
 
-#set up logging to sdout:
-handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.INFO)
-format = logging.Formatter('%(asctime)s, %(name)s - [%(levelname)s] - %(message)s')
-handler.setFormatter(format)
-logger.addHandler(handler)
+#set up logging to file or sdout:
+LOG_FILE = (logDir + '/' + 'recordGPS' + '_' + datetime.strftime(datetime.now(), '%d%b%Y') + '.log')
+logFileHandler = FileHandler(LOG_FILE)
+logFileHandler.setLevel(logging.INFO)
+logFileHandler.setFormatter(Formatter('%(asctime)s, %(name)s - [%(levelname)s] - %(message)s'))
+logger.addHandler(logFileHandler)
+#handler = logging.StreamHandler(sys.stdout)
+#handler.setLevel(logging.INFO)
+#format = logging.Formatter('%(asctime)s, %(name)s - [%(levelname)s] - %(message)s')
+#handler.setFormatter(format)
+#logger.addHandler(handler)
 
 
 #open binary data file and return bytes
