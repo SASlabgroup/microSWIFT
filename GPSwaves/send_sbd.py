@@ -145,7 +145,7 @@ def transmit_bin(ser,msg):
     bytelen=len(msg)
     
     try:  
-        sbdlogger.info('command = AT+SBDWB, ')
+        sbdlogger.info('command = AT+SBDWB')
         ser.flushInput()
         ser.write(('AT+SBDWB='+str(bytelen)+'\r').encode()) #command to write bytes, followed by number of bytes to write
         sleep(0.25)
@@ -195,6 +195,7 @@ def transmit_bin(ser,msg):
             sbdlogger.info('no response from modem')
             return False
     else:
+        sbdlogger('did not receive READY message')
         return False
     
 #same as transmit_bin but sends ascii text using SBDWT command instead of bytes
