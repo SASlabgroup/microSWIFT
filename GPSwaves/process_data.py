@@ -38,7 +38,9 @@ def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port,d
     if len(z) >= pts_expected and fs >= 1:          
         try:
             #note gps_freq is assumed to be 4Hz
-            wavestats = GPSwavesC.main_GPSwaves(len(z),u,v,z,fs)    
+            logger.info('running GPSwaves processing...')
+            wavestats = GPSwavesC.main_GPSwaves(len(z),u,v,z,fs)
+            logger.info('done')    
                     
         except Exception as e:
             logger.info('error running GPSwavesC processing')
@@ -95,6 +97,7 @@ def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port,d
     logger.info('telemetry file = %s' % telem_file)
 
     with open(telem_file, 'wb') as file:
+        logger.info('create telemetry file: {}'.format(telem_file))
         
         
         #payload size in bytes: 16 4-byte floats, 7 arrays of 42 4-byte floats, three 1-byte ints, and one 2-byte int   
@@ -112,6 +115,9 @@ def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port,d
         #ignore temp and voltage for now
         temp = 0.0
         volt = 0.0
+        
+        logger.info('Hs: {0} Tp: {1} Dp: {2} lat: {3} lon: {4} temp: {5} volt: {6} uMean: {7} vMean: {8} zMean: {9}'.format(
+            Hs, Tp, Dp, lat, lon, temp, volt, uMean, vMean, zMean))
 
         #create formatted struct with all payload data
         now=datetime.now()
@@ -138,11 +144,14 @@ def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port,d
                         struct.pack('<i', int(now.minute)) +
                         struct.pack('<i', int(now.second)))
         
+        logger.info('writing data to file'
         file.write(payload_data)
+        logger.info('done')
         file.flush()
         
     #run send_sbd script to send telemetry file
     send_sbd.send_microSWIFT(payload_data)
+    logger.info('data processing complete')
     return payload_data
 
 def _getuvzMean(badValue, pts):
