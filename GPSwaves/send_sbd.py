@@ -37,15 +37,15 @@ GPIO.setwarnings(False)
 GPIO.setup(modemGPIO,GPIO.OUT)
 
 #logger = getLogger('system_logger.'+__name__)  
-logger = logging.getLogger('send_sbd.py')
-logger.setLevel(logging.INFO)
+sbdlogger = logging.getLogger('send_sbd.py')
+sbdlogger.setLevel(logging.INFO)
 
 #set up logging to file or sdout:
 LOG_FILE = (logDir + '/' + 'recordGPS' + '_' + datetime.strftime(datetime.now(), '%d%b%Y') + '.log')
 sbdFileHandler = FileHandler(LOG_FILE)
 sbdFileHandler.setLevel(logging.INFO)
 sbdFileHandler.setFormatter(Formatter('%(asctime)s, %(name)s - [%(levelname)s] - %(message)s'))
-logger.addHandler(sbdFileHandler)
+sbdlogger.addHandler(sbdFileHandler)
 #handler = logging.StreamHandler(sys.stdout)
 #handler.setLevel(logging.INFO)
 #format = logging.Formatter('%(asctime)s, %(name)s - [%(levelname)s] - %(message)s')
