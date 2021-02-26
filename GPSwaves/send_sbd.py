@@ -60,39 +60,39 @@ def open_bin(binfile):
         with open(binfile, 'rb') as f:
             bytes=bytearray(f.read())
     except FileNotFoundError:
-        logger.info('file not found: {}'.format(binfile))   
+        sbdlogger.info('file not found: {}'.format(binfile))   
     except Exception as e:
-        logger.info('error opening file: {}'.format(e))
+        sbdlogger.info('error opening file: {}'.format(e))
     return bytes
 
 def init_modem():
    
     try:
         GPIO.output(modemGPIO,GPIO.HIGH) #power on GPIO enable pin
-        logger.info('power on modem...')
+        sbdlogger.info('power on modem...')
         sleep(3)
-        logger.info('done')
+        sbdlogger.info('done')
     except Exception as e:
-        logger.info('error powering on modem')
-        logger.info(e)
+        sbdlogger.info('error powering on modem')
+        sbdlogger.info(e)
         
     #open serial port
-    logger.info('opening serial port with modem at {0} on port {1}...'.format(modemBaud,modemPort))
+    sbdlogger.info('opening serial port with modem at {0} on port {1}...'.format(modemBaud,modemPort))
     try:
         ser=serial.Serial(modemPort,modemBaud,timeout=timeout)
-        logger.info('done')
+        sbdlogger.info('done')
     except serial.SerialException as e:
-        logger.info('unable to open serial port: {}'.format(e))
+        sbdlogger.info('unable to open serial port: {}'.format(e))
         return ser, False
         sys.exit(1)
    
-    logger.info('command = AT')
+    sbdlogger.info('command = AT')
     if get_response(ser,'AT'): #send AT command
-        logger.info('command = AT&F')
+        sbdlogger.info('command = AT&F')
         if get_response(ser,'AT&F'): #set default parameters with AT&F command 
-            logger.info('command = AT&K=0, ')
+            sbdlogger.info('command = AT&K=0, ')
             if get_response(ser,'AT&K=0'): #important, disable flow control
-                logger.info('modem initialized')
+                sbdlogger.info('modem initialized')
                 return ser, True
     else:
         return ser, False
@@ -106,13 +106,13 @@ def get_response(ser,command, response='OK'):
         while ser.in_waiting > 0:
             r=ser.readline().decode().strip('\r\n')
             if response in r:
-                logger.info('response = {}'.format(r))
+                sbdlogger.info('response = {}'.format(r))
                 return True
             elif 'ERROR' in response:
-                logger.info('response = ERROR')
+                sbdlogger.info('response = ERROR')
                 return False
     except serial.SerialException as e:
-        logger.info('error: {}'.format(e))
+        sbdlogger.info('error: {}'.format(e))
         return False
 
 
@@ -122,18 +122,18 @@ def get_response(ser,command, response='OK'):
 def sig_qual(ser, command='AT+CSQ'):
     ser.flushInput()
     ser.write((command+'\r').encode())
-    logger.info('command = {}, '.format(command))
+    sbdlogger.info('command = {}, '.format(command))
     r=ser.read(23).decode()
     if 'CSQ:' in r:
         response=r[9:15]
         qual = r[14]
-        logger.info('response = {}'.format(response))
+        sbdlogger.info('response = {}'.format(response))
         return qual #return signal quality (0-5)
     elif 'ERROR' in r:
-        logger.info('response = ERROR')
+        sbdlogger.info('response = ERROR')
         return -1
     else:
-        logger.info('unexpected response: {}'.format(r))  
+        sbdlogger.info('unexpected response: {}'.format(r))  
         return -1
 
 #send binary message to modem buffer and transmit
@@ -145,22 +145,22 @@ def transmit_bin(ser,msg):
     bytelen=len(msg)
     
     try:  
-        logger.info('command = AT+SBDWB, ')
+        sbdlogger.info('command = AT+SBDWB, ')
         ser.flushInput()
         ser.write(('AT+SBDWB='+str(bytelen)+'\r').encode()) #command to write bytes, followed by number of bytes to write
         sleep(0.25)
     except serial.SerialException as e:
-        logger.info('serial error: {}'.format(e))
+        sbdlogger.info('serial error: {}'.format(e))
         return False
     except Exception as e:
-        logger.info('error: {}'.format(e))
+        sbdlogger.info('error: {}'.format(e))
         return False
     
     r = ser.read_until(b'READY') #block until READY message is received
     if b'READY' in r: #only pass bytes if modem is ready, otherwise it has timed out
-        logger.info('response = READY')
+        sbdlogger.info('response = READY')
 
-        logger.info('passing message to modem buffer')
+        sbdlogger.info('passing message to modem buffer')
         ser.flushInput()
         ser.write(msg) #pass bytes to modem
         
@@ -169,7 +169,7 @@ def transmit_bin(ser,msg):
         checksum=sum(msg) #calculate checksum value
         byte1 = (checksum >> 8).to_bytes(1,'big') #bitwise operation shift 8 bits right to get firt byte of checksum and convert to bytes
         byte2 = (checksum & 0xFF).to_bytes(1,'big')#bitwise operation to get second byte of checksum, convet to bytes
-        logger.info('passing checksum to modem buffer')
+        sbdlogger.info('passing checksum to modem buffer')
         ser.write(byte1) #first byte of 2-byte checksum 
         ser.write(byte2) #second byte of checksum
         sleep(0.25)
@@ -177,9 +177,9 @@ def transmit_bin(ser,msg):
         r=ser.read(3).decode() #read response to get result code from SBDWB command (0-4)
         try:
             r=r[2] #result code of expected response
-            logger.info('response = {}'.format(r))
+            sbdlogger.info('response = {}'.format(r))
             if r == '0': #response of zero = successful write, ready to send
-                logger.info('command = AT+SBDIX')
+                sbdlogger.info('command = AT+SBDIX')
                 ser.flushInput()
                 ser.write(b'AT+SBDIX\r') #start extended Iridium session (transmit)
                 sleep(5)
@@ -187,12 +187,12 @@ def transmit_bin(ser,msg):
                 if '+SBDIX: ' in r:
                     r=r[11:36] #get command response in the form +SBDIX:<MO status>,<MOMSN>,<MT status>,<MTMSN>,<MT length>,<MT queued>
                     r=r.strip('\r') #remove any dangling carriage returns
-                    logger.info('response = {}'.format(r)) 
+                    sbdlogger.info('response = {}'.format(r)) 
                     return True
             else:
                 return False
         except IndexError:
-            logger.info('no response from modem')
+            sbdlogger.info('no response from modem')
             return False
     else:
         return False
@@ -203,39 +203,39 @@ def transmit_ascii(ser,msg):
     msg_len=len(msg)
     
     if msg_len > 340: #check message length
-        logger.info('message too long. must be 340 bytes or less')
+        sbdlogger.info('message too long. must be 340 bytes or less')
         return False
     
     if not msg.isascii(): #check for ascii text
-        logger.info('message must be ascii text')
+        sbdlogger.info('message must be ascii text')
         return Falsem
     
     try:  
         ser.flushInput()
-        logger.info('command = AT+SBDWT')
+        sbdlogger.info('command = AT+SBDWT')
         ser.write(b'AT+SBDWT\r') #command to write text to modem buffer
         sleep(0.25)
     except serial.SerialException as e:
-        logger.info('serial error: {}'.format(e))
+        sbdlogger.info('serial error: {}'.format(e))
         return False
     except Exception as e:
-        logger.info('error: {}'.format(e))
+        sbdlogger.info('error: {}'.format(e))
         return False
     
     r = ser.read_until(b'READY') #block until READY message is received
     if b'READY' in r: #only pass bytes if modem is ready, otherwise it has timed out
-        logger.info('response = READY')
+        sbdlogger.info('response = READY')
         ser.flushInput()
         ser.write((msg + '\r').encode()) #pass bytes to modem. Must have carriage return
         sleep(0.25)
-        logger.info('passing message to modem buffer')
+        sbdlogger.info('passing message to modem buffer')
         r=ser.read(msg_len+9).decode() #read response to get result code (0 for successful save in buffer or 1 for fail)
         if 'OK' in r:
             index=msg_len+2 #index of result code
             r=r[index:index+1] 
-            logger.info('response = {}'.format(r))        
+            sbdlogger.info('response = {}'.format(r))        
             if r == '0':
-                logger.info('command = AT+SBDIX')
+                sbdlogger.info('command = AT+SBDIX')
                 ser.flushInput()
                 ser.write(b'AT+SBDIX\r') #start extended Iridium session (transmit)
                 sleep(5)
@@ -243,7 +243,7 @@ def transmit_ascii(ser,msg):
                 if '+SBDIX: ' in r:
                     r=r[11:36] #get command response in the form +SBDIX:<MO status>,<MOMSN>,<MT status>,<MTMSN>,<MT length>,<MT queued>
                     r=r.strip('\r') #remove any dangling carriage returns
-                    logger.info('response = {}'.format(r)) 
+                    sbdlogger.info('response = {}'.format(r)) 
                     return True
     else:
         return False
@@ -259,18 +259,18 @@ def transmit_ascii(ser,msg):
 #    ,<id>,<start-byte>:
 #--------------------------------------------------------------------------------------------
 def send_microSWIFT(payload_data):
-    logger.info('sending microSWIFT telemetry')
+    sbdlogger.info('sending microSWIFT telemetry')
     global id
     #check for data
     if len(payload_data) == 0:
-        logger.info('payload data is empty')
+        sbdlogger.info('payload data is empty')
         return 
     
     #initialize modem
     ser, modem_initialized = init_modem()
     
     if not modem_initialized:
-        logger.info('modem not initialized, unable to send data')
+        sbdlogger.info('modem not initialized, unable to send data')
         return
         
  
@@ -310,27 +310,27 @@ def send_microSWIFT(payload_data):
 
     #send packets
     #--------------------------------------------------------------------------------------
-    logger.info('sending first packet')
-    logger.info(packet0)
+    sbdlogger.info('sending first packet')
+    sbdlogger.info(packet0)
     transmit_bin(ser,packet0)
     
-    logger.info('sending second packet')
-    logger.info(packet1)
+    sbdlogger.info('sending second packet')
+    sbdlogger.info(packet1)
     transmit_bin(ser,packet1)
     
-    logger.info('sending third packet')
-    logger.info(packet2)
+    sbdlogger.info('sending third packet')
+    sbdlogger.info(packet2)
     transmit_bin(ser,packet2)
     
-    logger.info('sending fourth packet')
-    logger.info(packet3)
+    sbdlogger.info('sending fourth packet')
+    sbdlogger.info(packet3)
     transmit_bin(ser,packet3)
     
     
     
     #turn off modem
     #--------------------------------------------------------------------------------------
-    logger.info('powering down modem')    
+    sbdlogger.info('powering down modem')    
     GPIO.output(modemGPIO,GPIO.LOW)
 
     
