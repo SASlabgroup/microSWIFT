@@ -91,14 +91,14 @@ def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port,d
     
     #file name for telemetry file (e.g. '/home/pi/microSWIFT/data/microSWIFT001_TX_01Jan2021_080000UTC.dat')
     now=datetime.utcnow()
-    telem_file = dataDir+'microSWIFT'+floatID+'_TX_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(now)
+    telem_file = dataDir+'microSWIFT'+floatID+'_TX_'+"{:%d%b%Y_%H%M%SUTC.sbd}".format(now)
     logger.info('telemetry file = %s' % telem_file)
 
     with open(telem_file, 'wb') as file:
         
         
         #payload size in bytes: 16 4-byte floats, 7 arrays of 42 4-byte floats, three 1-byte ints, and one 2-byte int   
-        payload_size = (16 + 7*42) * 4 + 5
+        #payload_size = (16 + 7*42) * 4 + 5
     
         Hs = round(Hs,6)
         Tp = round(Tp,6)
@@ -115,6 +115,7 @@ def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port,d
 
         #create formatted struct with all payload data
         now=datetime.now()
+        payload_size = struct.calcsize('<sbbhfff42f42f42f42f42f42f42ffffffffiiiiii')
         payload_data = (struct.pack('<sbbhfff', str(payload_type).encode(),sensor_type,port, payload_size,Hs,Tp,Dp) + 
                         struct.pack('<42f', *E) +
                         struct.pack('<42f', *f) +
