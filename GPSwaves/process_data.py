@@ -144,7 +144,7 @@ def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port,d
                         struct.pack('<i', int(now.minute)) +
                         struct.pack('<i', int(now.second)))
         
-        logger.info('writing data to file'
+        logger.info('writing data to file')
         file.write(payload_data)
         logger.info('done')
         file.flush()
