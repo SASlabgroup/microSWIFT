@@ -42,7 +42,7 @@ sbdlogger = logging.getLogger('send_sbd.py')
 sbdlogger.setLevel(logging.INFO)
 
 #set up logging to file or sdout:
-LOG_FILE = ('~/microSWIFT/logs' + '/' + 'recordGPS' + '_' + datetime.strftime(datetime.now(), '%d%b%Y') + '.log')
+LOG_FILE = ('/home/pi/microSWIFT/logs' + '/' + 'recordGPS' + '_' + datetime.strftime(datetime.now(), '%d%b%Y') + '.log')
 sbdFileHandler = FileHandler(LOG_FILE)
 sbdFileHandler.setLevel(logging.INFO)
 sbdFileHandler.setFormatter(Formatter('%(asctime)s, %(name)s - [%(levelname)s] - %(message)s'))

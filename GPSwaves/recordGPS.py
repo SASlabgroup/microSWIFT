@@ -270,7 +270,7 @@ if __name__ == "__main__":
 				u,v,z,lat,lon = record_gps(ser,fname)
 				
 				
-				
+				#check if burst completed with 2048 poi
 				#try:
 				#	os.path.isfile(fpath) and os.path.getsize(fpath) > 0
 					
