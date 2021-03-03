@@ -306,8 +306,11 @@ def send_microSWIFT(payload_data):
     sub_header3 = str(','+str(id)+','+str(index)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
     payload_bytes3 = payload_data[index:1244] #data bytes for packet 3
     packet3 = header + sub_header3 + payload_bytes3 
-       
-    id+=1    
+    
+    if id >= 99:
+        id = 0
+    else:
+       id+=1    
 
     #send packets
     #--------------------------------------------------------------------------------------
