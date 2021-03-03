@@ -315,19 +315,19 @@ def send_microSWIFT(payload_data):
     #send packets
     #--------------------------------------------------------------------------------------
     sbdlogger.info('sending first packet')
-    sbdlogger.info(packet0)
+    #sbdlogger.info(packet0)
     transmit_bin(ser,packet0)
     
     sbdlogger.info('sending second packet')
-    sbdlogger.info(packet1)
+    #sbdlogger.info(packet1)
     transmit_bin(ser,packet1)
     
     sbdlogger.info('sending third packet')
-    sbdlogger.info(packet2)
+    #sbdlogger.info(packet2)
     transmit_bin(ser,packet2)
     
     sbdlogger.info('sending fourth packet')
-    sbdlogger.info(packet3)
+    #sbdlogger.info(packet3)
     transmit_bin(ser,packet3)
     
     
