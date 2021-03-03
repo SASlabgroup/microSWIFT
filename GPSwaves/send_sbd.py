@@ -282,7 +282,7 @@ def send_microSWIFT(payload_data):
     #first packet to send
     header = str(packet_type).encode('ascii') #packet type as as ascii number
     sub_header0 = str(','+str(id)+','+str(index)+','+str(payload_size)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
-    payload_bytes0 = payload_data[index:324] #data bytes for packet 0
+    payload_bytes0 = payload_data[index:325] #data bytes for packet 0
     packet0 = header + sub_header0 + payload_bytes0
       
     
@@ -290,26 +290,26 @@ def send_microSWIFT(payload_data):
     #second packet to send
     index = 325
     sub_header1 = str(','+str(id)+','+str(index)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
-    payload_bytes1 = payload_data[index:652] #data bytes for packet 1    
+    payload_bytes1 = payload_data[index:653] #data bytes for packet 1    
     packet1 = header + sub_header1 + payload_bytes1         
     
     
     #third packet to send
     index = 653
     sub_header2 = str(','+str(id)+','+str(index)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
-    payload_bytes2 = payload_data[index:980] #data bytes for packet 2
+    payload_bytes2 = payload_data[index:981] #data bytes for packet 2
     packet2 = header + sub_header2 + payload_bytes2      
    
     
     #fourth packet to send
     index = 981
     sub_header3 = str(','+str(id)+','+str(index)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
-    payload_bytes3 = payload_data[index:1244] #data bytes for packet 3
+    payload_bytes3 = payload_data[index:1245] #data bytes for packet 3
     packet3 = header + sub_header3 + payload_bytes3 
     
     if id >= 99:
         id = 0
-    else:
+    else:   
        id+=1    
 
     #send packets
