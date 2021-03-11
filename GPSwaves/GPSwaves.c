@@ -339,7 +339,7 @@ void GPSwaves(emxArray_real_T *u, emxArray_real_T *v, emxArray_real_T *z, double
   emxEnsureCapacity_real_T(vfiltered, i0);
   loop_ub = z->size[1];
   std::cout<<"Z inside ";
-  std::cout<<"loop "<<loop_ub'
+  std::cout<<"loop "<<loop_ub;
   for (i0 = 0; i0 < loop_ub; i0++) {
     vfiltered->data[i0] = z->data[z->size[0] * i0];
     std::cout<<vfiltered->data[i0]<<" ";
