@@ -62,7 +62,11 @@ shipPass='1013ne40th'
 shipDir=Documents/microSWIFT_Test_Data
 
 # 4 digit string for float id
+<<<<<<< Updated upstream
 floatID=083
+=======
+floatID=080
+>>>>>>> Stashed changes
 # 2 digit string for project id
 projectName=TX
 #Sensor type either 7 or the new type 50
