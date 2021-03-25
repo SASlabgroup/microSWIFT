@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #read config file 
-source /home/pi/microSWIFT/utils/Config.dat
+source /home/pi/microSWIFT/utils/Config.dat > /dev/null
 
 #host username to send data to 
 USERNAME=$shipUser
@@ -13,6 +13,10 @@ LOGPATH=$logDir
 #use date to organize data and logs within floadID folder
 DATE="$(date +"%d%b%Y")"
 DATESTRING=${DATE}
+YESTERDAY="$(date -d "1 days ago" +"%d%b%Y")"
+YESTERDAYSTRING=${YESTERDAY}
+YEAR="$(date +"%Y")"
+YEARSTRING=${YEAR}
 #create new directory with floatID in config file 
 REMOTEPATH=$shipDir/microSWIFT$floatID/$DATESTRING
 #host password to send data to
@@ -35,8 +39,8 @@ do
     if [ "$?" = 0 ]
     then 
         echo "Host found" 
-        sshpass -p $PASSWORD scp -r $DATAPATH $USERNAME@$HOST:$REMOTEPATH
-	sshpass -p $PASSWORD scp -r $LOGPATH $USERNAME@$HOST:$REMOTEPATH
+        sshpass -p $PASSWORD rsync -r --include="*$DATESTRING*" --include="*$YESTERDAYSTRING*" --include ="*/" --exclude="*$YEARSTRING*" $DATAPATH $USERNAME@$HOST:$REMOTEPATH
+	sshpass -p $PASSWORD rsync -r --include="*$DATESTRING*" --include="*$YESTERDAYSTRING*" --include ="*/" --exclude="*$YEARSTRING*" $LOGPATH $USERNAME@$HOST:$REMOTEPATH
         sendData=1
     else 
         echo "Host not found" 
