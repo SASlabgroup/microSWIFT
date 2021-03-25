@@ -32,7 +32,7 @@ BASEDIR=/home/pi/microSWIFT/
 # ========================== Logging Parameters =================
 [Loggers]
 #where to put logs 
-logDir=/home/pi/microSWIFT/logs
+logDir=/home/pi/microSWIFT/logs/
 
 # Set the default logging level.
 # This is used in any module which does not specify a level
@@ -53,7 +53,7 @@ microSWIFTHandler=INFO
 #=============== micoSWIFT System Parameters ===============
 [System]
 #data directory #(/home/pi/microSWIFT/data/)
-dataDir=/home/pi/microSWIFT/data
+dataDir=/home/pi/microSWIFT/data/
 
 #where to send data 
 shipIP=192.168.0.178
