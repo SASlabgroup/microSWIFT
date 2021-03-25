@@ -6,18 +6,15 @@ import numpy as np
 from struct import *
 from logging import *
 from datetime import datetime
-import time
+import time as t
 import RPi.GPIO as GPIO
 import pynmea2
 import struct
-import time
 from time import sleep
 
 #my imports
-#import send_sbd_binary_data
-#from rec_send_funcs import *
-#import GPSwavesC
 from config3 import Config
+import process_data
 
 
 #load config file and get parameters
@@ -28,33 +25,21 @@ if( not ok ):
 	logger.info ('Error loading config file: "%s"' % configFilename)
 	sys.exit(1)
 	
-#set up logging
-logDir = config.getString('Loggers', 'logDir')
-LOG_LEVEL = config.getString('Loggers', 'DefaultLogLevel')
-#format log messages (example: 2020-11-23 14:31:00,578, recordGPS - info - this is a log message)
-#NOTE: TIME IS SYSTEM TIME
-LOG_FORMAT = ('%(asctime)s, %(filename)s - [%(levelname)s] - %(message)s')
-#log file name (example: home/pi/microSWIFT/recordGPS_23Nov2020.log)
-LOG_FILE = (logDir + '/' + 'recordGPS' + '_' + datetime.strftime(datetime.now(), '%d%b%Y') + '.log')
-logger = getLogger('system_logger')
-logger.setLevel(LOG_LEVEL)
-logFileHandler = FileHandler(LOG_FILE)
-logFileHandler.setLevel(LOG_LEVEL)
-logFileHandler.setFormatter(Formatter(LOG_FORMAT))
-logger.addHandler(logFileHandler)
-
 #system parameters
 dataDir = config.getString('System', 'dataDir')
 floatID = config.getString('System', 'floatID') 
 projectName = config.getString('System', 'projectName')
-payLoadType = config.getInt('System', 'payLoadType')
+sensor_type = config.getInt('System', 'sensorType')
 badValue = config.getInt('System', 'badValue')
 numCoef = config.getInt('System', 'numCoef')
-Port = config.getInt('System', 'port')
-payloadVersion = config.getInt('System', 'payloadVersion')
+port = config.getInt('System', 'port')
+payload_type = config.getInt('System', 'payloadType')
 burst_seconds = config.getInt('System', 'burst_seconds')
 burst_time = config.getInt('System', 'burst_time')
 burst_int = config.getInt('System', 'burst_interval')
+call_int = config.getInt('Iridium', 'call_interval')
+call_time = config.getInt('Iridium', 'call_time')
+
 
 #GPS parameters 
 gps_port = config.getString('GPS', 'port')
@@ -67,24 +52,6 @@ numLines = config.getInt('GPS', 'numLines')
 gpsGPIO = config.getInt('GPS', 'gpsGPIO')
 getFix = config.getInt('GPS', 'getFix') # min before rec gps
 gps_timeout = config.getInt('GPS','timeout')
-
-#temp and volt params 
-#maxHoursTemp = config.getInt('Temp', 'maxHours')
-#maxHoursVolt = config.getInt('Voltage', 'maxHours')
-
-#Iridium parameters
-#modemPort = config.getString('Iridium', 'port')
-#modemBaud = config.getInt('Iridium', 'baud')
-#modemGPIO = config.getInt('Iridium', 'modemGPIO')
-#formatType = config.getInt('Iridium', 'formatType')
-#callInt = config.getInt('Iridium', 'callInt')
-#burst_num = config.getInt('Iridium', 'burstNum')
-
-#hard coded parameters to change 
-#IfHourlyCall = config.getString('Iridium', 'IfHourlyCall')
-#IfHourlyCall = eval(IfHourlyCall) #boolean
-#MakeCall = config.getString('Iridium', 'MakeCall') 
-#MakeCall = eval(MakeCall) #boolean
 
 #setup GPIO and initialize
 GPIO.setmode(GPIO.BCM)
@@ -134,8 +101,8 @@ def init_gps():
 	#read lines from GPS serial port and wait for fix
 	try:
 		#loop until timeout dictated by gps_timeout value (seconds)
-		timeout=time.time() + gps_timeout
-		while time.time() < timeout:
+		timeout=t.time() + gps_timeout
+		while t.time() < timeout:
 			ser.flushInput()
 			ser.read_until('\n'.encode())
 			newline=ser.readline().decode('utf-8')
@@ -146,7 +113,7 @@ def init_gps():
 					logger.info('found GPGGA sentence')
 					logger.info(newline)
 					gpgga=pynmea2.parse(newline,check=True)
-					logger.info('GPS quality= ' + str(gpgga.gps_qual))
+					logger.info('GPS quality= %d' % gpgga.gps_qual)
 					#check gps_qual value from GPGGS sentence. 0=invalid,1=GPS fix,2=DGPS fix
 					if gpgga.gps_qual > 0:
 						logger.info('GPS fix acquired')
@@ -169,6 +136,7 @@ def init_gps():
 										os.system('sudo date -s "%s %s"' %(nmea_date, nmea_time))
 										os.system('sudo hwclock -w')
 										
+										logger.info("GPS initialized")
 										return ser, True, nmea_time, nmea_date
 									except Exception as e:
 										logger.info(e)
@@ -208,21 +176,29 @@ def record_gps(ser,fname):
 		with open(fname, 'w',newline='\n') as gps_out:
 			
 			logger.info('open file for writing: %s' %fname)
-			t_end = time.time() + burst_seconds #get end time for burst
+			t_end = t.time() + burst_seconds #get end time for burst
 			ipos=0
 			ivel=0
-			while time.time() <= t_end or ipos < gps_samples or ivel < gps_samples:
+			while t.time() <= t_end or ipos < gps_samples or ivel < gps_samples:
 				newline=ser.readline().decode()
 				gps_out.write(newline)
 				gps_out.flush()
 		
 				if "GPGGA" in newline:
-					gpgga = pynmea2.parse(newline,check=True)   #grab gpgga sentence to return
+					gpgga = pynmea2.parse(newline,check=True)   #grab gpgga sentence and parse
+					#check to see if we have lost GPS fix, and if so, continue to loop start. a badValue will remain at this index
+					if gpgga.gps_qual < 1:
+						logger.info('lost GPS fix, sample not recorded. Waiting 10 seconds')
+						sleep(10)
+						ipos+=1
+						continue
 					z[ipos] = gpgga.altitude
 					lat[ipos] = gpgga.latitude
 					lon[ipos] = gpgga.longitude
 					ipos+=1
 				elif "GPVTG" in newline:
+					if gpgga.gps_qual < 1:
+						continue
 					gpvtg = pynmea2.parse(newline,check=True)   #grab gpvtg sentence
 					u[ivel] = gpvtg.spd_over_grnd_kmph*np.cos(gpvtg.true_track) #units are kmph
 					v[ivel] = gpvtg.spd_over_grnd_kmph*np.sin(gpvtg.true_track) #units are kmph
@@ -231,151 +207,87 @@ def record_gps(ser,fname):
 					continue
 			
 				#if burst has ended but we are close to getting the right number of samples, continue for as short while
-				if time.time() >= t_end and 0 < gps_samples-ipos <= 10:
+				if t.time() >= t_end and 0 < gps_samples-ipos <= 10:
 					
 					continue
 				elif ipos == gps_samples and ivel == gps_samples:
 					break
 				
-			
+		badpts = len(np.where(z == 999)) #index of bad values if lost GPS fix. Should be same for u and v
+	
 		logger.info('number of GPGGA samples = %s' %ipos)
 		logger.info('number of GPVTG samples = %s' %ivel)
+		logger.info('number of bad samples %d' %badpts)
 						
 		return u,v,z,lat,lon
 	except Exception as e:
-		logger.info(e)
+		logger.info(e, exc_info=True)
 		return u,v,z,lat,lon
 
 
 #------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------
-def main():
+#set up logging, initialize GPS, and record data unless importing as a module
+if __name__ == "__main__":
+	
+	#set up logging
+	logDir = config.getString('Loggers', 'logDir')
+	LOG_LEVEL = config.getString('Loggers', 'DefaultLogLevel')
+	#format log messages (example: 2020-11-23 14:31:00,578, recordGPS - info - this is a log message)
+	#NOTE: TIME IS SYSTEM TIME
+	LOG_FORMAT = ('%(asctime)s, %(filename)s - [%(levelname)s] - %(message)s')
+	#log file name (example: home/pi/microSWIFT/recordGPS_23Nov2020.log)
+	LOG_FILE = (logDir + '/' + 'recordGPS' + '_' + datetime.strftime(datetime.now(), '%d%b%Y') + '.log')
+	logger = getLogger('system_logger')
+	logger.setLevel(LOG_LEVEL)
+	logFileHandler = FileHandler(LOG_FILE)
+	logFileHandler.setLevel(LOG_LEVEL)
+	logFileHandler.setFormatter(Formatter(LOG_FORMAT))
+	logger.addHandler(logFileHandler)
 	
 	logger.info("---------------recordGPS.py------------------")
-	logger.info(sys.version)
+	logger.info('python version {}'.format(sys.version))
 	
+	logger.info('microSWIFT configuration:')
+	logger.info('float ID: {0}, payload type: {1}, sensors type: {2}, '.format(floatID, payload_type, sensor_type))
+	logger.info('burst seconds: {0}, burst interval: {1}, burst time: {2}'.format(burst_seconds, burst_int, burst_time))
+	logger.info('gps sample rate: {0}, call interval {1}, call time: {2}'.format(gps_freq, call_int, call_time))
 	#call function to initialize GPS
 	ser, gps_initialized, time, date = init_gps()
 	
 	if gps_initialized:
-		logger.info("GPS initialized")
-
+		logger.info('waiting for burst start')
 		while True:
 			#burst start conditions
 			now=datetime.utcnow()
-			if  now.minute == burst_time or now.minute % burst_int == 0 and now.second == 0:
-				logger.info("starting burst")
+			if now.minute % burst_int == 0 and now.second == 0:
 				
+				logger.info("starting burst")
 				#create file name
 				fname = dataDir + 'microSWIFT'+floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
 				logger.info("file name: %s" %fname)
 				#call record_gps	
 				u,v,z,lat,lon = record_gps(ser,fname)
-			
-				#GPS_waves_results = GPSwavesC.main_GPSwaves(gps_samples,u,v,z,gps_freq)
-								
-				#SigwaveHeight = GPS_waves_results[0]
-				#logger.info ('WAVEHEIGHT: %f' %SigwaveHeight)
 				
-				#Peakwave_Period = GPS_waves_results[1]
-				#Peakwave_dirT = GPS_waves_results[2]
-
-				#WaveSpectra_Energy = np.squeeze(GPS_waves_results[3])
-				#WaveSpectra_Energy = np.where(WaveSpectra_Energy>=18446744073709551615, 999.00000, WaveSpectra_Energy)
-				#WaveSpectra_Freq = np.squeeze(GPS_waves_results[4])
-				#WaveSpectra_Freq = np.where(WaveSpectra_Freq>=18446744073709551615, 999.00000, WaveSpectra_Freq)
-				#WaveSpectra_a1 = np.squeeze(GPS_waves_results[5])
-				#WaveSpectra_a1 = np.where(WaveSpectra_a1>=18446744073709551615, 999.00000, WaveSpectra_a1)
-				#WaveSpectra_b1 = np.squeeze(GPS_waves_results[6])
-				#WaveSpectra_b1 = np.where(WaveSpectra_b1>=18446744073709551615, 999.00000, WaveSpectra_b1)
-				#WaveSpectra_a2 = np.squeeze(GPS_waves_results[7])
-				#WaveSpectra_a2 = np.where(WaveSpectra_a2>=18446744073709551615, 999.00000, WaveSpectra_a2)
-				#WaveSpectra_b2 = np.squeeze(GPS_waves_results[8])
-				#WaveSpectra_b2 = np.where(WaveSpectra_b2>=18446744073709551615, 999.00000, WaveSpectra_b2)
 				
-				checkdata = np.full(numCoef,1)
-				
-				np.set_printoptions(formatter={'float_kind':'{:.5f}'.format})
-				np.set_printoptions(formatter={'float_kind':'{:.2e}'.format})
-			
-				#uMean = getuvzMean(badValue,u)
-				#vMean = getuvzMean(badValue,v)
-				#zMean = getuvzMean(badValue,z)
-				
-				#dname = now.strftime('%d%b%Y')
-				#tname = now.strftime('%H:%M:%S') 
-				
-				#fbinary = (dataDir + floatID + 'SWIFT' + '_' + projectName + '_' + dname + '_' + tname + '.sbd')
-				#eventLog.info('[%.3f] - SBD file: %s' %(elapsedTime, fbinary ))
-			
-				if payLoadType == 50:
-					payLoadSize = (16 + 7*42)*4
-					#eventLog.info('[%.3f] - Payload type: %d' % (elapsedTime, payLoadType))
-					#eventLog.info('[%.3f] - payLoadSize: %d' % (elapsedTime, payLoadSize))
-				else:
-					payLoadSize =  (5 + 7*42)*4
-					#eventLog.info('[%.3f] - Payload type: %d' % (elapsedTime, payLoadType))
-					#eventLog.info('[%.3f] - payLoadSize: %d' % (elapsedTime, payLoadSize))
-		
-				#try:
-				#	fbinary = open(fbinary, 'wb')
+				#check if burst completed with 2048 poi
+				try:
+					if os.path.isfile(fname) and os.path.getsize(fname) > 0:
+						#call data processing script
+						logger.info('starting to process data')
+						process_data.main(u,v,z,lat,lon,gps_freq,burst_seconds,badValue,payload_type,sensor_type,port,dataDir,floatID)
+					else:
+						logger.info('data file does not exist or does not contain enough data for processing')	
 					
-				#except:
-				#	logger.info ('[%.3f] - To write binary file is already open' % elapsedTime)
-				
-				#SigwaveHeight = round(SigwaveHeight,6)
-				#Peakwave_Period = round(Peakwave_Period,6)
-				#Peakwave_dirT = round(Peakwave_dirT,6)
-				
-				lat[0] = round(lat[0],6)
-				lon[0] = round(lon[0],6)
-				#uMean= round(uMean,6)
-				#vMean= round(vMean,6)
-				#zMean= round(zMean,6)
-				
-				#fbinary.write(struct.pack('<sbbhfff', 
-				#						 str(payloadVersion),payLoadType,Port,
-				#						 payLoadSize,SigwaveHeight,Peakwave_Period,Peakwave_dirT))
-		 
-				#fbinary.write(struct.pack('<42f', *WaveSpectra_Energy))
-				#fbinary.write(struct.pack('<42f', *WaveSpectra_Freq))
-				#fbinary.write(struct.pack('<42f', *WaveSpectra_a1))
-				#fbinary.write(struct.pack('<42f', *WaveSpectra_b1))
-				#fbinary.write(struct.pack('<42f', *WaveSpectra_a2))
-				#fbinary.write(struct.pack('<42f', *WaveSpectra_b2))
-				#fbinary.write(struct.pack('<42f', *checkdata))
-				#fbinary.write(struct.pack('<f', lat[0]))
-				#fbinary.write(struct.pack('<f', lon[0]))
-				#fbinary.write(struct.pack('<f', temp))
-				#fbinary.write(struct.pack('<f', volt))
-				#fbinary.write(struct.pack('<f', uMean))
-				#fbinary.write(struct.pack('<f', vMean))
-				#fbinary.write(struct.pack('<f', zMean))
-				#fbinary.write(struct.pack('<i', int(now.year)))
-				#fbinary.write(struct.pack('<i', int(now.month)))
-				#fbinary.write(struct.pack('<i', int(now.day)))
-				#fbinary.write(struct.pack('<i', int(now.hour)))
-				#fbinary.write(struct.pack('<i', int(now.minute)))
-				#fbinary.write(struct.pack('<i', int(now.second)))
-				#fbinary.flush()
-				#fbinary.close()
-			sleep(0.5)
-
-				
+				except OSError as e:
+					logger.info(e)
+					sys.exit(1)
+					
 	else:
-		logger.info("GPS not init ialized, no data will be logged")
+		logger.info("GPS not initialized, exiting")
+		sys.exit(1)
 		
-	sys.exit(0)
-
-#run main function unless importing as a module
-if __name__ == "__main__":
-	
-	
-	
-	
-	
-	
-    main()
+ 
 
 
 

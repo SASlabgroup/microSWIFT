@@ -1,6 +1,9 @@
-#! /usr/bin/env python2.7
+#! /usr/bin/env python3.7
 '''
 Created on May 16, 2014
+Modified 2/26/2021 for use with Python 3.7
+    change 'buffer(data[0:1])' to data[0:1]
+    decode payload type from bytes to str
 
 @author: adioso
 '''
@@ -49,7 +52,8 @@ def _getInt4(data, index):
 
 # Get Payload type, current valid types are 2 or 3
 def _getPayloadType(data):
-    (data_type,) = unpack_from('c', buffer(data[0:1]))
+    (data_type,) = unpack_from('c', data[0:1])
+    data_type = data_type.decode('ascii')
     return (data_type, 1)
 
 

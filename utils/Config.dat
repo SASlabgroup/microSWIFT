@@ -32,7 +32,7 @@ BASEDIR=/home/pi/microSWIFT/
 # ========================== Logging Parameters =================
 [Loggers]
 #where to put logs 
-logDir=/home/pi/microSWIFT/logs/
+logDir=/home/pi/microSWIFT/logs
 
 # Set the default logging level.
 # This is used in any module which does not specify a level
@@ -53,7 +53,7 @@ microSWIFTHandler=INFO
 #=============== micoSWIFT System Parameters ===============
 [System]
 #data directory #(/home/pi/microSWIFT/data/)
-dataDir=/home/pi/microSWIFT/data/
+dataDir=/home/pi/microSWIFT/data
 
 #where to send data 
 shipIP=192.168.0.178
@@ -62,13 +62,13 @@ shipPass='1013ne40th'
 shipDir=Documents/microSWIFT_Test_Data
 
 # 4 digit string for float id
-floatID=093
+floatID=085
 # 2 digit string for project id
 projectName=TX
-#PayLoadType either 7 or the new type 50
-#PayLoadType=7
-payLoadType=50
-payloadVersion=7
+#Sensor type either 7 or the new type 50
+#sensorType=7
+sensorType=50
+payloadType=7
 badValue=999
 
 #default number of seconds to record, whether 1, 2, 3, 4, or 5 bursts per hour
@@ -76,7 +76,7 @@ burst_seconds=512
 #minute of the hour on which to start the burst 
 burst_time=0
 #number of minutes between bursts (12=5x6, 15=4x6, 20=3x6, 30=2x6, 60=1x6) 
-burst_interval=12 
+burst_interval=12
 
 #change num samples to log for a longer period of time
 #360 = 6min       --> 1440 total samples
