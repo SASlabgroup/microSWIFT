@@ -89,15 +89,18 @@ file3=/home/pi/microSWIFT/utils/Config.dat
 cd /etc/
 file4=dhcpcd.conf
 echo "Setting up static IP address with floatID"
-IPfloatID=$(sed 's/.\{2\}$/.&/' <<< "${floatID}")
+#remove leading zeros of floatID so that the static IP will stick
+IPfloatID=$(echo $floatID | sed 's/0*//')
+echo "IPfloatID $IPfloatID"
+echo "FloatID $floatID"
 #search for commented out lines that need to be changed
 sudo sed -i '/^#.*interface wlan0/s/^#//' ${file4}
 sudo sed -i '/^#.*static ip_address/s/^#//' ${file4}
 sudo sed -i '/^#.*static routers/s/^#//' ${file4}
 sudo sed -i '/^#.*static domain_name_servers/s/^#//' ${file4}
 #replace static IP address using floatID as last three digits of the address
-sudo sed -i "s/^\(static ip_address=\).*/\1192.168.$IPfloatID\/24/" ${file4}
-echo "The new static IP address is 192.168.$IPfloatID/24"
+sudo sed -i "s/^\(static ip_address=\).*/\1192.168.0.$IPfloatID\/24/" ${file4}
+echo "The new static IP address is 192.168.0.$IPfloatID/24"
 sudo sed -i "s/^\(static routers=\).*/\1192.168.0.1/" ${file4}
 sudo sed -i "s/^\(static domain_name_servers=\).*/\1192.168.0.1/" ${file4}
 
