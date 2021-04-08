@@ -29,7 +29,7 @@ if __name__=='__main__':
         with open(fname, 'w') as datafile:
             
             while time.time() < tend:
-                qual = send_sbd.signal_qual(ser)
+                qual = send_sbd.sig_qual(ser)
                 datafile.write(qual)
                 print('signal quality = {}'.format(qual))
                 time.sleep(1)
