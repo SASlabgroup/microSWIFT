@@ -24,7 +24,7 @@ if __name__=='__main__':
         now = datetime.utcnow()
         tend = time.time() + runtime
         
-        fname = 'home/pi/microSWIFT/data/' + 'Iridium_signal_quality_' + '{:%d%b%Y_%H%M%SUTC.dat}'.format(datetime.utcnow())
+        fname = '/home/pi/microSWIFT/data/' + 'Iridium_signal_quality_' + '{:%d%b%Y_%H%M%SUTC.dat}'.format(datetime.utcnow())
         
         with open(fname, 'w') as datafile:
             
