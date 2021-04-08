@@ -10,20 +10,30 @@
 
 import send_sbd
 from datetime import datetime
+import time
 import sys
+
+runtime = 3600
 
 if __name__=='__main__':
     
     ser, success = send_sbd.init_modem()
     
     if success == True:
-        ser.timeout = 60
+        
         now = datetime.utcnow()
+        tend = time.time() + runtime
+        
         fname = 'home/pi/microSWIFT/data/' + 'Iridium_signal_quality_' + '{:%d%b%Y_%H%M%SUTC.dat}'.format(datetime.utcnow())
         
         with open(fname, 'w') as datafile:
-            qual = send_sbd.signal_qual(ser)
-            datafile.write(qual)
+            
+            while time.time() < tend:
+                qual = send_sbd.signal_qual(ser)
+                datafile.write(qual)
+                print('signal quality = {}'.format(qual))
+                time.sleep(1)
+                
         
     else:
         print('modem not initialized, exiting')
