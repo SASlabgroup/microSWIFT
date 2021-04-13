@@ -17,7 +17,6 @@ import RPi.GPIO as GPIO
 from time import sleep
 
 import logging
-import sys
 
 
 #Iridium parameters - fixed for now
