@@ -51,12 +51,10 @@ burst_time=config.getInt('System', 'burst_time')
 burst_seconds=config.getInt('System', 'burst_seconds')
 
 bad = config.getInt('System', 'badValue')
-projectName = config.getString('System', 'projectName')
 
 #IMU parameters
 imuFreq=config.getInt('IMU', 'imuFreq')
 imu_samples = imuFreq*burst_seconds
-maxHours=config.getInt('IMU', 'maxHours')
 imu_gpio=config.getInt('IMU', 'imu_gpio')
 
 #initialize IMU GPIO pin as modem on/off control

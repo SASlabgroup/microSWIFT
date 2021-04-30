@@ -28,7 +28,6 @@ if( not ok ):
 #system parameters
 dataDir = config.getString('System', 'dataDir')
 floatID = config.getString('System', 'floatID') 
-projectName = config.getString('System', 'projectName')
 sensor_type = config.getInt('System', 'sensorType')
 badValue = config.getInt('System', 'badValue')
 numCoef = config.getInt('System', 'numCoef')
@@ -48,9 +47,7 @@ startBaud = config.getInt('GPS', 'startBaud')
 gps_freq = config.getInt('GPS', 'GPS_frequency') #currently not used, hardcoded at 4 Hz (see init_gps function)
 #numSamplesConst = config.getInt('System', 'numSamplesConst')
 gps_samples = gps_freq*burst_seconds
-numLines = config.getInt('GPS', 'numLines')
 gpsGPIO = config.getInt('GPS', 'gpsGPIO')
-getFix = config.getInt('GPS', 'getFix') # min before rec gps
 gps_timeout = config.getInt('GPS','timeout')
 
 #setup GPIO and initialize
