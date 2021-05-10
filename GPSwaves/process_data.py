@@ -93,7 +93,7 @@ def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port,d
     
     #file name for telemetry file (e.g. '/home/pi/microSWIFT/data/microSWIFT001_TX_01Jan2021_080000UTC.dat')
     now=datetime.utcnow()
-    telem_file = dataDir+'microSWIFT'+floatID+'_TX_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(now)
+    telem_file = dataDir + floatID+'_TX_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(now)
     logger.info('telemetry file = %s' % telem_file)
 
     with open(telem_file, 'wb') as file:
