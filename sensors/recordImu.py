@@ -44,7 +44,9 @@ logger.addHandler(logFileHandler)
 
 #load parameters from Config.dat
 #system parameters 
-floatID = config.getString('System', 'floatID')
+floatID = os.uname()[1]
+#floatID = config.getString('System', 'floatID')
+
 dataDir = config.getString('System', 'dataDir')
 burst_interval=config.getInt('System', 'burst_interval')
 burst_time=config.getInt('System', 'burst_time')
@@ -103,7 +105,7 @@ while True:
         logger.info('starting burst')
         
         #create new file for new burst interval 
-        fname = dataDir + 'microSWIFT'+ floatID + '_IMU_'+'{:%d%b%Y_%H%M%SUTC.dat}'.format(datetime.utcnow())
+        fname = dataDir + floatID + '_IMU_'+'{:%d%b%Y_%H%M%SUTC.dat}'.format(datetime.utcnow())
         logger.info('file name: %s' %fname)
              
         with open(fname, 'w',newline='\n') as imu_out:

@@ -27,7 +27,8 @@ if( not ok ):
 	
 #system parameters
 dataDir = config.getString('System', 'dataDir')
-floatID = config.getString('System', 'floatID') 
+floatID = os.uname()[1]
+#floatID = config.getString('System', 'floatID') 
 sensor_type = config.getInt('System', 'sensorType')
 badValue = config.getInt('System', 'badValue')
 numCoef = config.getInt('System', 'numCoef')
@@ -261,7 +262,7 @@ if __name__ == "__main__":
 				
 				logger.info("starting burst")
 				#create file name
-				fname = dataDir + 'microSWIFT'+floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
+				fname = dataDir + floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
 				logger.info("file name: %s" %fname)
 				#call record_gps	
 				u,v,z,lat,lon = record_gps(ser,fname)

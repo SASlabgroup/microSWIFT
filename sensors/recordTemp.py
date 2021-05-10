@@ -41,7 +41,8 @@ logger.addHandler(logFileHandler)
 
 #system parameters
 dataDir = config.getString('System', 'dataDir')
-floatID = config.getString('System', 'floatID') 
+floatID = os.uname()[1]
+#floatID = config.getString('System', 'floatID') 
 projectName = config.getString('System', 'projectName')
 payLoadType = config.getInt('System', 'payLoadType')
 badValue = config.getInt('System', 'badValue')
@@ -94,7 +95,7 @@ def main():
         if  now.minute == burst_time or now.minute % burst_int == 0 and now.second == 0:
             logger.info("starting burst")
             #create new file for burst interval
-            fname = dataDir + 'microSWIFT'+floatID + '_Temp_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
+            fname = dataDir + floatID + '_Temp_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
             logger.info("file name: %s" %fname)
             
             with open(fname, 'w',newline='\n') as temp_out:
