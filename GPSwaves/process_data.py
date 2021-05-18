@@ -143,10 +143,18 @@ def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port,d
         
         elif sensor_type == 51:
             
+            #compute fmin fmax and fstep
+            fmin = np.min(f)
+            fmax = np.max(f)
+            fstep = (fmax - fmin)/41
+            
             now=datetime.now()
-            payload_size = struct.calcsize('<sbbhfff42ffffffffiiiiii')
+            payload_size = struct.calcsize('<sbbhfff42fffffffffffiiiiii')
             payload_data = (struct.pack('<sbbhfff', str(payload_type).encode(),sensor_type,port, payload_size,Hs,Tp,Dp) + 
                             struct.pack('<42f', *E) +
+                            struct.pack('<f', fmin) +
+                            struct.pack('<f', fmax) +
+                            struct.pack('<f', fstep) +
                             struct.pack('<f', lat) +
                             struct.pack('<f', lon) +
                             struct.pack('<f', temp) +
