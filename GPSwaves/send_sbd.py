@@ -28,7 +28,6 @@ call_interval = 60 #config.getInt('Iridium', 'call_interval')
 call_time = 10 #config.getInt('Iridium', 'call_time')
 timeout=60 #some commands can take a long time to complete
 
-packet_type = 1
 id = 0
 
 #set up GPIO pins for modem control
@@ -258,13 +257,19 @@ def transmit_ascii(ser,msg):
 #Sub-header 1 thru N:
 #    ,<id>,<start-byte>:
 #--------------------------------------------------------------------------------------------
-def send_microSWIFT(payload_data):
-    sbdlogger.info('sending microSWIFT telemetry')
+def send_microSWIFT_50(payload_data):
+    sbdlogger.info('sending microSWIFT telemetry (type 51)')
+    
     global id
+    payload_size = len(payload_data)
+    
     #check for data
-    if len(payload_data) == 0:
-        sbdlogger.info('payload data is empty')
+    if payload_size == 0:
+        sbdlogger.info('Error: payload data is empty')
         return 
+    
+    if payload_size != 1245:
+        sbdlogger.info('Error: unexpected number of bytes in payload data. Expected bytes: 1245, bytes received: {}'.format(payload_size))
     
     #initialize modem
     ser, modem_initialized = init_modem()
@@ -277,13 +282,13 @@ def send_microSWIFT(payload_data):
     #split up payload data into packets    
     #----------------------------------------------------------------------------------------
     index = 0 #byte index
-    payload_size = 1245
+    packet_type = 1 #extended message
+        
     #first packet to send
     header = str(packet_type).encode('ascii') #packet type as as ascii number
     sub_header0 = str(','+str(id)+','+str(index)+','+str(payload_size)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
     payload_bytes0 = payload_data[index:325] #data bytes for packet 0
     packet0 = header + sub_header0 + payload_bytes0
-      
     
     
     #second packet to send
@@ -336,6 +341,67 @@ def send_microSWIFT(payload_data):
     sbdlogger.info('powering down modem')    
     GPIO.output(modemGPIO,GPIO.LOW)
 
+    
+    
+#MAIN
+#
+#Packet Structure
+#<packet-type> <sub-header> <data>
+#Sub-header 0:
+#    ,<id>,<start-byte>,<total-bytes>:
+#Sub-header 1 thru N:
+#    ,<id>,<start-byte>:
+#--------------------------------------------------------------------------------------------
+def send_microSWIFT_51(payload_data):
+    sbdlogger.info('sending microSWIFT telemetry (type 51)')
+    
+    global id
+    payload_size = len(payload_data)
+    
+    #check for data
+    if payload_size == 0:
+        sbdlogger.info('Error: payload data is empty')
+        return 
+    
+    if payload_size != 237:
+        sbdlogger.info('Error: unexpected number of bytes in payload data. Expected bytes: 237, bytes received: {}'.format(payload_size))
+    
+    #initialize modem
+    ser, modem_initialized = init_modem()
+    
+    if not modem_initialized:
+        sbdlogger.info('modem not initialized, unable to send data')
+        return
+        
+ 
+    #split up payload data into packets    
+    #----------------------------------------------------------------------------------------
+    index = 0 #byte index
+    packet_type = 0 #single packet
+    
+    #packet to send
+    header = str(packet_type).encode('ascii') #packet type as as ascii number
+    sub_header0 = str(','+str(id)+','+str(index)+','+str(payload_size)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
+    payload_bytes0 = payload_data[index:236] #data bytes for packet
+    packet0 = header + sub_header0 + payload_bytes0
+    
+    if id >= 99:
+        id = 0
+    else:   
+       id+=1    
+
+    #send packets
+    #--------------------------------------------------------------------------------------
+    sbdlogger.info('sending packet')
+    #sbdlogger.info(packet0)
+    transmit_bin(ser,packet0)
+    
+    
+    
+    #turn off modem
+    #--------------------------------------------------------------------------------------
+    sbdlogger.info('powering down modem')    
+    GPIO.output(modemGPIO,GPIO.LOW)
     
 
 

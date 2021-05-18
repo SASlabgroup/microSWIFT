@@ -58,11 +58,6 @@ def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port,d
         logger.info('exiting')
         sys.exit(1)
         
-    if sensor_type != 50:
-        logger.info('invalid sensor type: {}'.format(sensor_type))
-        logger.info('exiting')
-        sys.exit(1)
-        
     #unpack wave processing results        
     Hs = wavestats[0]
     Tp = wavestats[1]
@@ -119,30 +114,59 @@ def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port,d
         logger.info('Hs: {0} Tp: {1} Dp: {2} lat: {3} lon: {4} temp: {5} volt: {6} uMean: {7} vMean: {8} zMean: {9}'.format(
             Hs, Tp, Dp, lat, lon, temp, volt, uMean, vMean, zMean))
 
+        if sensor_type == 50:
+
         #create formatted struct with all payload data
-        now=datetime.now()
-        payload_size = struct.calcsize('<sbbhfff42f42f42f42f42f42f42ffffffffiiiiii')
-        payload_data = (struct.pack('<sbbhfff', str(payload_type).encode(),sensor_type,port, payload_size,Hs,Tp,Dp) + 
-                        struct.pack('<42f', *E) +
-                        struct.pack('<42f', *f) +
-                        struct.pack('<42f', *a1) +
-                        struct.pack('<42f', *b1) +
-                        struct.pack('<42f', *a2) +
-                        struct.pack('<42f', *b2) +
-                        struct.pack('<42f', *checkdata) +
-                        struct.pack('<f', lat) +
-                        struct.pack('<f', lon) +
-                        struct.pack('<f', temp) +
-                        struct.pack('<f', volt) +
-                        struct.pack('<f', uMean) +
-                        struct.pack('<f', vMean) +
-                        struct.pack('<f', zMean) +
-                        struct.pack('<i', int(now.year)) +
-                        struct.pack('<i', int(now.month)) +
-                        struct.pack('<i', int(now.day)) +
-                        struct.pack('<i', int(now.hour)) +
-                        struct.pack('<i', int(now.minute)) +
-                        struct.pack('<i', int(now.second)))
+            now=datetime.now()
+            payload_size = struct.calcsize('<sbbhfff42f42f42f42f42f42f42ffffffffiiiiii')
+            payload_data = (struct.pack('<sbbhfff', str(payload_type).encode(),sensor_type,port, payload_size,Hs,Tp,Dp) + 
+                            struct.pack('<42f', *E) +
+                            struct.pack('<42f', *f) +
+                            struct.pack('<42f', *a1) +
+                            struct.pack('<42f', *b1) +
+                            struct.pack('<42f', *a2) +
+                            struct.pack('<42f', *b2) +
+                            struct.pack('<42f', *checkdata) +
+                            struct.pack('<f', lat) +
+                            struct.pack('<f', lon) +
+                            struct.pack('<f', temp) +
+                            struct.pack('<f', volt) +
+                            struct.pack('<f', uMean) +
+                            struct.pack('<f', vMean) +
+                            struct.pack('<f', zMean) +
+                            struct.pack('<i', int(now.year)) +
+                            struct.pack('<i', int(now.month)) +
+                            struct.pack('<i', int(now.day)) +
+                            struct.pack('<i', int(now.hour)) +
+                            struct.pack('<i', int(now.minute)) +
+                            struct.pack('<i', int(now.second)))
+        
+        elif sensor_type == 51:
+            
+            now=datetime.now()
+            payload_size = struct.calcsize('<sbbhfff42ffffffffiiiiii')
+            payload_data = (struct.pack('<sbbhfff', str(payload_type).encode(),sensor_type,port, payload_size,Hs,Tp,Dp) + 
+                            struct.pack('<42f', *E) +
+                            struct.pack('<f', lat) +
+                            struct.pack('<f', lon) +
+                            struct.pack('<f', temp) +
+                            struct.pack('<f', volt) +
+                            struct.pack('<f', uMean) +
+                            struct.pack('<f', vMean) +
+                            struct.pack('<f', zMean) +
+                            struct.pack('<i', int(now.year)) +
+                            struct.pack('<i', int(now.month)) +
+                            struct.pack('<i', int(now.day)) +
+                            struct.pack('<i', int(now.hour)) +
+                            struct.pack('<i', int(now.minute)) +
+                            struct.pack('<i', int(now.second)))
+        
+        else: 
+            logger.info('invalid sensor type: {}'.format(sensor_type))
+            logger.info('exiting')
+            sys.exit(1)
+        
+        
         
         logger.info('writing data to file')
         file.write(payload_data)
