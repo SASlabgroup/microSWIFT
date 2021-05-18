@@ -130,6 +130,8 @@ def sig_qual(ser, command='AT+CSQ'):
     elif 'ERROR' in r:
         sbdlogger.info('response = ERROR')
         return -1
+    elif r == '':
+        sbdlogger.info('no response from modem')
     else:
         sbdlogger.info('unexpected response: {}'.format(r))  
         return -1
@@ -186,6 +188,9 @@ def transmit_bin(ser,msg):
                     r=r[11:36] #get command response in the form +SBDIX:<MO status>,<MOMSN>,<MT status>,<MTMSN>,<MT length>,<MT queued>
                     r=r.strip('\r') #remove any dangling carriage returns
                     sbdlogger.info('response = {}'.format(r)) 
+                    
+                    
+                    
                     return True
             else:
                 return False
@@ -207,7 +212,7 @@ def transmit_ascii(ser,msg):
     
     if not msg.isascii(): #check for ascii text
         sbdlogger.info('message must be ascii text')
-        return Falsem
+        return False
     
     try:  
         ser.flushInput()
@@ -273,11 +278,14 @@ def send_microSWIFT_50(payload_data):
     
     #initialize modem
     ser, modem_initialized = init_modem()
-    
+
     if not modem_initialized:
         sbdlogger.info('modem not initialized, unable to send data')
+        GPIO.output(modemGPIO,GPIO.LOW) #power off modem
         return
-        
+    
+    sbdlogger.info('waiting 30 seconds') #give modem a chance to find satellites
+    sleep(30)    
  
     #split up payload data into packets    
     #----------------------------------------------------------------------------------------
@@ -363,16 +371,19 @@ def send_microSWIFT_51(payload_data):
         sbdlogger.info('Error: payload data is empty')
         return 
     
-    if payload_size != 237:
-        sbdlogger.info('Error: unexpected number of bytes in payload data. Expected bytes: 237, bytes received: {}'.format(payload_size))
+    if payload_size != 249:
+        sbdlogger.info('Error: unexpected number of bytes in payload data. Expected bytes: 249, bytes received: {}'.format(payload_size))
     
     #initialize modem
     ser, modem_initialized = init_modem()
-    
+
     if not modem_initialized:
         sbdlogger.info('modem not initialized, unable to send data')
+        GPIO.output(modemGPIO,GPIO.LOW) #power off modem
         return
-        
+    
+    sbdlogger.info('waiting 30 seconds') #give modem a chance to find satellites
+    sleep(30)  
  
     #split up payload data into packets    
     #----------------------------------------------------------------------------------------
@@ -382,7 +393,7 @@ def send_microSWIFT_51(payload_data):
     #packet to send
     header = str(packet_type).encode('ascii') #packet type as as ascii number
     sub_header0 = str(','+str(id)+','+str(index)+','+str(payload_size)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
-    payload_bytes0 = payload_data[index:236] #data bytes for packet
+    payload_bytes0 = payload_data[index:248] #data bytes for packet
     packet0 = header + sub_header0 + payload_bytes0
     
     if id >= 99:

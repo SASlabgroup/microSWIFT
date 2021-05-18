@@ -140,6 +140,10 @@ def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port,d
                             struct.pack('<i', int(now.hour)) +
                             struct.pack('<i', int(now.minute)) +
                             struct.pack('<i', int(now.second)))
+            
+            #run send_sbd script to send telemetry file
+            send_sbd.send_microSWIFT_50(payload_data)
+            logger.info('data processing complete')
         
         elif sensor_type == 51:
             
@@ -168,6 +172,10 @@ def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port,d
                             struct.pack('<i', int(now.hour)) +
                             struct.pack('<i', int(now.minute)) +
                             struct.pack('<i', int(now.second)))
+            
+            #run send_sbd script to send telemetry file
+            send_sbd.send_microSWIFT_51(payload_data)
+            logger.info('data processing complete')
         
         else: 
             logger.info('invalid sensor type: {}'.format(sensor_type))
@@ -181,9 +189,6 @@ def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port,d
         logger.info('done')
         file.flush()
         
-    #run send_sbd script to send telemetry file
-    send_sbd.send_microSWIFT(payload_data)
-    logger.info('data processing complete')
     return payload_data
 
 def _getuvzMean(badValue, pts):
