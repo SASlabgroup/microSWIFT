@@ -37,7 +37,7 @@ Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u, v, z, fs)
 # print(Hs, Tp, Dp, E, f, a1, b1, a2, b2)
 
 # Test Output for the GPSwaves.py function
-precision = 0.0001
+precision = 0.001
 # Test Hs
 if(np.abs(Hs-Hs_t) <= precision ):
     print(colored('======== Test Hs Passed ========', 'green'))
