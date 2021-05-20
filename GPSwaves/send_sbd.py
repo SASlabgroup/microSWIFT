@@ -306,7 +306,7 @@ def transmit_ascii(ser,msg):
 #    ,<id>,<start-byte>:
 #--------------------------------------------------------------------------------------------
 def send_microSWIFT_50(payload_data):
-    sbdlogger.info('sending microSWIFT telemetry (type 51)')
+    sbdlogger.info('sending microSWIFT telemetry (type 50)')
     
     global id
     payload_size = len(payload_data)
@@ -321,11 +321,15 @@ def send_microSWIFT_50(payload_data):
     
     #initialize modem
     ser, modem_initialized = init_modem()
+    
+    
 
     if not modem_initialized:
         sbdlogger.info('modem not initialized, unable to send data')
         GPIO.output(modemGPIO,GPIO.LOW) #power off modem
         return
+    
+    
     
     sbdlogger.info('waiting 30 seconds') #give modem a chance to find satellites
     sleep(30)    
