@@ -206,7 +206,7 @@ def transmit_bin(ser,msg,timeout=570):
                         sleep(5)
                         ser.read(11)
                         r=ser.readline().decode().strip('\r\n')  #get command response in the form +SBDIX:<MO status>,<MOMSN>,<MT status>,<MTMSN>,<MT length>,<MT queued>
-                        sbd.logger.info('response = {}'.format(r))
+                        sbdlogger.info('response = {}'.format(r))
                         
                         if '+SBDIX: ' in r:
                             r=r.strip('+SBDIX:').split(', ')
