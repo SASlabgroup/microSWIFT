@@ -211,7 +211,7 @@ def transmit_bin(ser,msg,timeout=570):
                         if '+SBDIX: ' in r:
                             r=r.strip('+SBDIX:').split(', ')
                             #interpret response and check MO status code (0=success)
-                            if r[0] == 0:
+                            if int(r[0]) == 0:
                                 sbdlogger.info('Message send success')
                                 return True
                             else:
