@@ -88,7 +88,7 @@ def init_modem():
     if get_response(ser,'AT'): #send AT command
         sbdlogger.info('command = AT&F')
         if get_response(ser,'AT&F'): #set default parameters with AT&F command 
-            sbdlogger.info('command = AT&K=0')
+            sbdlogger.info('command = AT&K=0')  
             if get_response(ser,'AT&K=0'): #important, disable flow control
                 sbdlogger.info('modem initialized')
                 return ser, True
@@ -120,21 +120,21 @@ def get_response(ser,command, response='OK'):
 def sig_qual(ser, command='AT+CSQ'):
     ser.flushInput()
     ser.write((command+'\r').encode())
-    sbdlogger.info('command = {}, '.format(command))
+    sbdlogger.info('command = {} '.format(command))
     r=ser.read(23).decode()
     if 'CSQ:' in r:
         response=r[9:15]
         qual = r[14]
         sbdlogger.info('response = {}'.format(response))
-        return qual #return signal quality (0-5)
+        return int(qual) #return signal quality (0-5)
     elif 'ERROR' in r:
-        sbdlogger.info('response = ERROR')
+        sbdlogger.info('Response = ERROR')
         return -1
     elif r == '':
-        sbdlogger.info('no response from modem')
+        sbdlogger.info('No response from modem')
         return -1
     else:
-        sbdlogger.info('unexpected response: {}'.format(r))  
+        sbdlogger.info('Unexpected response: {}'.format(r))  
         return -1
 
 #send binary message to modem buffer and transmits
