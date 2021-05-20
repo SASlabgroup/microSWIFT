@@ -99,7 +99,7 @@ def get_response(ser,command, response='OK'):
     ser.flushInput()
     command=(command+'\r').encode()
     ser.write(command)
-    sleep(0.25)
+    sleep(1)
     try:
         while ser.in_waiting > 0:
             r=ser.readline().decode().strip('\r\n')
@@ -371,7 +371,7 @@ def send_microSWIFT_50(payload_data):
     #--------------------------------------------------------------------------------------
     sbdlogger.info('sending first packet')
     #sbdlogger.info(packet0)
-    transmit_bin(ser,packet0,timeout=142)
+    transmit_bin(ser,packet0,timeout=570)
     
     sbdlogger.info('sending second packet')
     #sbdlogger.info(packet1)
