@@ -141,7 +141,7 @@ def sig_qual(ser, command='AT+CSQ'):
 #returns true if trasmit command is sent, but does not mean a successful transmission
 #checksum is least significant 2 bytes of sum of message, with hgiher order byte sent first
 #returns false if anything goes wrong
-def transmit_bin(ser,msg,timeout=600):
+def transmit_bin(ser,msg,timeout=570):
     
     bytelen=len(msg)
     tend = time.time() + timeout
@@ -160,6 +160,7 @@ def transmit_bin(ser,msg,timeout=600):
             
         if len(signal) >= 3 and np.mean(signal[i-3:i]) >= 3: #check rolling average of last 3 values, must be at least 3
             signal.clear() #clear signal values
+            i=0 #reset counter
             #initate message with AT+SBDWB
             try:
                 sbdlogger.info('command = AT+SBDWB')
@@ -203,20 +204,22 @@ def transmit_bin(ser,msg,timeout=600):
                         ser.flushInput()
                         ser.write(b'AT+SBDIX\r') #start extended Iridium session (transmit)
                         sleep(5)
-                        r=ser.read(36).decode()
+                        ser.read(11)
+                        r=ser.readline().decode().strip('\r\n')  #get command response in the form +SBDIX:<MO status>,<MOMSN>,<MT status>,<MTMSN>,<MT length>,<MT queued>
+                        sbd.logger.info('response = {}'.format(r))
+                        
                         if '+SBDIX: ' in r:
-                            r=r[11:36] #get command response in the form +SBDIX:<MO status>,<MOMSN>,<MT status>,<MTMSN>,<MT length>,<MT queued>
-                            r=r.strip('\r') #remove any dangling carriage returns
-                            sbdlogger.info('response = {}'.format(r))
+                            r=r.strip('+SBDIX:').split(', ')
                             #interpret response and check MO status code (0=success)
-                            if 
-                            
-                        
-                            
-                            return True
+                            if r[0] == 0:
+                                sbdlogger.info('Message send success')
+                                return True
+                            else:
+                                sbdlogger.info('Message send failure, status code = {}'.format(r[0]))
+                                continue
                         else:
+                            sbdlogger.info('Unexpected response from modem')
                             continue
-                        
                     elif r == '1':
                         sbdlogger.info('SBD write timeout')
                         continue
@@ -368,19 +371,19 @@ def send_microSWIFT_50(payload_data):
     #--------------------------------------------------------------------------------------
     sbdlogger.info('sending first packet')
     #sbdlogger.info(packet0)
-    transmit_bin(ser,packet0)
+    transmit_bin(ser,packet0,timeout=142)
     
     sbdlogger.info('sending second packet')
     #sbdlogger.info(packet1)
-    transmit_bin(ser,packet1)
+    transmit_bin(ser,packet1,timeout=142)
     
     sbdlogger.info('sending third packet')
     #sbdlogger.info(packet2)
-    transmit_bin(ser,packet2)
+    transmit_bin(ser,packet2,timeout=142)
     
     sbdlogger.info('sending fourth packet')
     #sbdlogger.info(packet3)
-    transmit_bin(ser,packet3)
+    transmit_bin(ser,packet3,timeout=142)
     
     
     
