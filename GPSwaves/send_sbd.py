@@ -162,79 +162,79 @@ def transmit_bin(ser,msg):
     bytelen=len(msg)
     #check signal quality and attempt to send until timeout reached
             
-            try:
-                sbdlogger.info('command = AT+SBDWB')
-                ser.flushInput()
-                ser.write(('AT+SBDWB='+str(bytelen)+'\r').encode()) #command to write bytes, followed by number of bytes to write
-                sleep(0.25)
-            except serial.SerialException as e:
-                sbdlogger.info('serial error: {}'.format(e))
-                return False
-            except Exception as e:
-                sbdlogger.info('error: {}'.format(e))
-                return False
-            
-            r = ser.read_until(b'READY') #block until READY message is received
-            if b'READY' in r: #only pass bytes if modem is ready, otherwise it has timed out
-                sbdlogger.info('response = READY')
+    try:
+        sbdlogger.info('Command = AT+SBDWB')
+        ser.flushInput()
+        ser.write(('AT+SBDWB='+str(bytelen)+'\r').encode()) #command to write bytes, followed by number of bytes to write
+        sleep(0.25)
+    except serial.SerialException as e:
+        sbdlogger.info('Serial error: {}'.format(e))
+        return False
+    except Exception as e:
+        sbdlogger.info('Error: {}'.format(e))
+        return False
+    
+    r = ser.read_until(b'READY') #block until READY message is received
+    if b'READY' in r: #only pass bytes if modem is ready, otherwise it has timed out
+        sbdlogger.info('response = READY')
+
+        sbdlogger.info('passing message to modem buffer')
+        ser.flushInput()
+        ser.write(msg) #pass bytes to modem
+        sleep(0.1)
         
-                sbdlogger.info('passing message to modem buffer')
+        #The checksum is the least significant 2-bytes of the summation of the entire SBD message. 
+        #The high order byte must be sent first. 
+        checksum=sum(msg) #calculate checksum value
+        byte1 = (checksum >> 8).to_bytes(1,'big') #bitwise operation shift 8 bits right to get firt byte of checksum and convert to bytes
+        byte2 = (checksum & 0xFF).to_bytes(1,'big')#bitwise operation to get second byte of checksum, convet to bytes
+        sbdlogger.info('passing checksum to modem buffer')
+        ser.write(byte1) #first byte of 2-byte checksum 
+        sleep(0.1)
+        ser.write(byte2) #second byte of checksum
+        sleep(0.25)
+        
+        r=ser.read(3).decode() #read response to get result code from SBDWB command (0-4)
+        try:
+            r=r[2] #result code of expected response
+            sbdlogger.info('response = {}'.format(r))
+            
+            if r == '0': #response of zero = successful write, ready to send
+                sbdlogger.info('command = AT+SBDIX')
                 ser.flushInput()
-                ser.write(msg) #pass bytes to modem
-                sleep(0.1)
+                ser.write(b'AT+SBDIX\r') #start extended Iridium session (transmit)
+                sleep(5)
+                ser.read(11)
+                r=ser.readline().decode().strip('\r\n')  #get command response in the form +SBDIX:<MO status>,<MOMSN>,<MT status>,<MTMSN>,<MT length>,<MT queued>
+                sbdlogger.info('response = {}'.format(r))
                 
-                #The checksum is the least significant 2-bytes of the summation of the entire SBD message. 
-                #The high order byte must be sent first. 
-                checksum=sum(msg) #calculate checksum value
-                byte1 = (checksum >> 8).to_bytes(1,'big') #bitwise operation shift 8 bits right to get firt byte of checksum and convert to bytes
-                byte2 = (checksum & 0xFF).to_bytes(1,'big')#bitwise operation to get second byte of checksum, convet to bytes
-                sbdlogger.info('passing checksum to modem buffer')
-                ser.write(byte1) #first byte of 2-byte checksum 
-                sleep(0.1)
-                ser.write(byte2) #second byte of checksum
-                sleep(0.25)
-                
-                r=ser.read(3).decode() #read response to get result code from SBDWB command (0-4)
-                try:
-                    r=r[2] #result code of expected response
-                    sbdlogger.info('response = {}'.format(r))
-                    
-                    if r == '0': #response of zero = successful write, ready to send
-                        sbdlogger.info('command = AT+SBDIX')
-                        ser.flushInput()
-                        ser.write(b'AT+SBDIX\r') #start extended Iridium session (transmit)
-                        sleep(5)
-                        ser.read(11)
-                        r=ser.readline().decode().strip('\r\n')  #get command response in the form +SBDIX:<MO status>,<MOMSN>,<MT status>,<MTMSN>,<MT length>,<MT queued>
-                        sbdlogger.info('response = {}'.format(r))
-                        
-                        if '+SBDIX: ' in r:
-                            r=r.strip('+SBDIX:').split(', ')
-                            #interpret response and check MO status code (0=success)
-                            if int(r[0]) == 0:
-                                sbdlogger.info('Message send success')
-                                return True
-                            else:
-                                sbdlogger.info('Message send failure, status code = {}'.format(r[0]))
-                                return False
-                        else:
-                            sbdlogger.info('Unexpected response from modem')
-                            return False
-                    elif r == '1':
-                        sbdlogger.info('SBD write timeout')
-                        return False
-                    elif r == '2':
-                        sbdlogger.info('SBD checksum does not match the checksum calculated by the modem')
-                        return False
-                    elif r == '3':
-                        sbdlogger.info('SBD message size is not correct')
-                        return False
+                if '+SBDIX: ' in r:
+                    r=r.strip('+SBDIX:').split(', ')
+                    #interpret response and check MO status code (0=success)
+                    if int(r[0]) == 0:
+                        sbdlogger.info('Message send success')
+                        return True
                     else:
-                        sbdlogger.info('Unexpected response from modem')
-                        return False   
-                except IndexError:
+                        sbdlogger.info('Message send failure, status code = {}'.format(r[0]))
+                        return False
+                else:
                     sbdlogger.info('Unexpected response from modem')
                     return False
+            elif r == '1':
+                sbdlogger.info('SBD write timeout')
+                return False
+            elif r == '2':
+                sbdlogger.info('SBD checksum does not match the checksum calculated by the modem')
+                return False
+            elif r == '3':
+                sbdlogger.info('SBD message size is not correct')
+                return False
+            else:
+                sbdlogger.info('Unexpected response from modem')
+                return False   
+        except IndexError:
+            sbdlogger.info('Unexpected response from modem')
+            return False
             else:
                 sbdlogger('did not receive READY message')
                 return False
