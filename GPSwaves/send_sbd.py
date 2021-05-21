@@ -177,11 +177,10 @@ def transmit_bin(ser,msg):
     r = ser.read_until(b'READY') #block until READY message is received
     if b'READY' in r: #only pass bytes if modem is ready, otherwise it has timed out
         sbdlogger.info('response = READY')
-
         sbdlogger.info('passing message to modem buffer')
         ser.flushInput()
         ser.write(msg) #pass bytes to modem
-        sleep(0.1)
+        sleep(0.25)
         
         #The checksum is the least significant 2-bytes of the summation of the entire SBD message. 
         #The high order byte must be sent first. 
@@ -190,7 +189,7 @@ def transmit_bin(ser,msg):
         byte2 = (checksum & 0xFF).to_bytes(1,'big')#bitwise operation to get second byte of checksum, convet to bytes
         sbdlogger.info('passing checksum to modem buffer')
         ser.write(byte1) #first byte of 2-byte checksum 
-        sleep(0.1)
+        sleep(0.25)
         ser.write(byte2) #second byte of checksum
         sleep(0.25)
         
@@ -235,14 +234,9 @@ def transmit_bin(ser,msg):
         except IndexError:
             sbdlogger.info('Unexpected response from modem')
             return False
-            else:
-                sbdlogger('did not receive READY message')
-                return False
-        else: 
-            return False #did not meet signal quality threshold
-        
-    sbdlogger.info('Send sbd timeout')
-    return False
+    else:
+        sbdlogger('did not receive READY message')
+        return False
     
 #same as transmit_bin but sends ascii text using SBDWT command instead of bytes
 def transmit_ascii(ser,msg):
