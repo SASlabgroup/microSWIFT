@@ -18,6 +18,18 @@ from time import sleep
 
 import logging
 
+from config3 import Config
+
+#load config file and get parameters
+configFilename = sys.argv[1] #Load config file/parameters needed
+config = Config() # Create object and load file
+ok = config.loadFile( configFilename )
+if( not ok ):
+    logger.info ('Error loading config file: "%s"' % configFilename)
+    sys.exit(1)
+    
+    
+
 
 #Iridium parameters - fixed for now
 modemPort = '/dev/ttyUSB0' #config.getString('Iridium', 'port')

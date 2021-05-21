@@ -22,6 +22,7 @@ from time import sleep
 logger = getLogger('system_logger.'+__name__)   
 
 #my imports
+from config3 import Config
 import send_sbd
 try:
     import GPSwavesC
@@ -29,6 +30,18 @@ except Exception as e:
     logger.info('error importing GPSwavesC')
     logger.info(e)
     
+#load config file and get parameters
+configFilename = sys.argv[1] #Load config file/parameters needed
+config = Config() # Create object and load file
+ok = config.loadFile( configFilename )
+if( not ok ):
+    logger.info ('Error loading config file: "%s"' % configFilename)
+    sys.exit(1)
+    
+    
+
+
+
 #inputs are u,v,z arrays, last lat/lon, sampling rate (Hz), burst duration (secs), 
 #bad value, payload type, sensor type, and port number from recordGPS.py
 def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port,dataDir,floatID):
