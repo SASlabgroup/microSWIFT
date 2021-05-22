@@ -9,7 +9,7 @@
 #payload telemetry type 50 (default)
 
 #imports
-import sys
+import sys, os
 import numpy as np
 from struct import *
 from logging import *
