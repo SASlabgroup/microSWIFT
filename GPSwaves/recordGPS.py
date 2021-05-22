@@ -273,7 +273,7 @@ if __name__ == "__main__":
 					if os.path.isfile(fname) and os.path.getsize(fname) > 0:
 						#call data processing script
 						logger.info('starting to process data')
-						process_data.main(u,v,z,lat,lon,gps_freq,burst_seconds,badValue,payload_type,sensor_type,port,dataDir,floatID)
+						process_data.main(u,v,z,lat,lon)
 					else:
 						logger.info('data file does not exist or does not contain enough data for processing')	
 					

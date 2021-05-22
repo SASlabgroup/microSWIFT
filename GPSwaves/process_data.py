@@ -37,14 +37,20 @@ ok = config.loadFile( configFilename )
 if( not ok ):
     logger.info ('Error loading config file: "%s"' % configFilename)
     sys.exit(1)
-    
-    
 
+dataDir = config.getString('System', 'dataDir')
+floatID = os.uname()[1]
+sensor_type = config.getInt('System', 'sensorType')
+badValue = config.getInt('System', 'badValue')
+port = config.getInt('System', 'port')
+payload_type = config.getInt('System', 'payloadType')
+burst_seconds = config.getInt('System', 'burst_seconds')        
+gps_freq = config.getInt('GPS', 'GPS_frequency') #currently not used, hardcoded at 4 Hz (see init_gps function)
 
 
 #inputs are u,v,z arrays, last lat/lon, sampling rate (Hz), burst duration (secs), 
 #bad value, payload type, sensor type, and port number from recordGPS.py
-def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port,dataDir,floatID):
+def main(u,v,z,lat,lon):
 
     #check the number of u,v,z samples matches expected and 1 Hz minimum
     pts_expected = fs * burst_seconds
