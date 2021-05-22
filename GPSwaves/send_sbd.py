@@ -28,12 +28,13 @@ if( not ok ):
     logger.info ('Error loading config file: "%s"' % configFilename)
     sys.exit(1)
     
+burst_seconds = config.getInt('System', 'burst_seconds')   
 burst_time = config.getInt('System', 'burst_time')
 burst_int = config.getInt('System', 'burst_interval')
 call_int = config.getInt('Iridium', 'call_interval')
 call_time = config.getInt('Iridium', 'call_time')
     
-call_duration = burst_int*60-burst_time #time between burst end and burst start to make a call
+call_duration = burst_int*60-burst_seconds #time between burst end and burst start to make a call
 
 #Iridium parameters - fixed for now
 modemPort = '/dev/ttyUSB0' #config.getString('Iridium', 'port')
