@@ -315,25 +315,10 @@ def send_microSWIFT_50(payload_data):
         sbdlogger.info('Error: unexpected number of bytes in payload data. Expected bytes: 1245, bytes received: {}'.format(payload_size))
         return
     
-    #initialize modem
-    ser, modem_initialized = init_modem()
-    
-    
-
-    if not modem_initialized:
-        sbdlogger.info('modem not initialized, unable to send data')
-        GPIO.output(modemGPIO,GPIO.LOW) #power off modem
-        return
-    
-    
-    
-    sbdlogger.info('waiting 30 seconds') #give modem a chance to find satellites    
- 
-    #split up payload data into packets    
-    #----------------------------------------------------------------------------------------
     index = 0 #byte index
     packet_type = 1 #extended message
         
+    #split up payload data into packets    
     #first packet to send
     header = str(packet_type).encode('ascii') #packet type as as ascii number
     sub_header0 = str(','+str(id)+','+str(index)+','+str(payload_size)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
@@ -361,47 +346,70 @@ def send_microSWIFT_50(payload_data):
     payload_bytes3 = payload_data[index:1245] #data bytes for packet 3
     packet3 = header + sub_header3 + payload_bytes3 
     
-    if id >= 99:
-        id = 0
-    else:   
-       id+=1    
+    
+    tend = time.time()+call_duration #get end time to stop attempting call
+    while time.time() <= tend:
+    
+        #initialize modem
+        ser, modem_initialized = init_modem()
 
-    #send packets
-    #--------------------------------------------------------------------------------------
-    sbdlogger.info('sending first packet')
-    #sbdlogger.info(packet0)
-    transmit_bin(ser,packet0,timeout=570)
-    
-    sbdlogger.info('sending second packet')
-    #sbdlogger.info(packet1)
-    transmit_bin(ser,packet1,timeout=142)
-    
-    sbdlogger.info('sending third packet')
-    #sbdlogger.info(packet2)
-    transmit_bin(ser,packet2,timeout=142)
-    
-    sbdlogger.info('sending fourth packet')
-    #sbdlogger.info(packet3)
-    transmit_bin(ser,packet3,timeout=142)
-    
-    
-    
+        if not modem_initialized:
+            sbdlogger.info('Modem not initialized')
+            GPIO.output(modemGPIO,GPIO.LOW) #power off modem
+            continue
+        
+        #send packets
+        sbdlogger.info('Sending 4 packet message (50)')
+        
+        i=0
+        isignal=[]
+        while time.time() <= tend:
+            
+            isignal = sig_qual(ser)
+            if isignal < 0:
+                continue
+            else: 
+                signal.append(isignal)
+                i+=1
+            
+            if len(signal) >= 3 and np.mean(signal[i-3:i]) >= 3: #check rolling average of last 3 values, must be at least 3 bars
+                signal.clear() #clear signal values
+                i=0 #reset counter
+                
+                #attempt to transmit packets
+                sbdlogger.info('Sending first packet')
+                success0 = transmit_bin(ser,packet0)          
+                if not success0:
+                    continue
+                sbdlogger.info('Sending second packet')
+                success1 = transmit_bin(ser,packet1)          
+                if not success1:
+                    continue
+                sbdlogger.info('Sending third packet')   
+                success2 = transmit_bin(ser,packet2)          
+                if not success2:
+                    continue
+                sbdlogger.info('Sending fourth packet')
+                success3 = transmit_bin(ser,packet3)          
+                if not success3:
+                    continue             
+                #increment message counter for each completed message
+                if id >= 99:
+                     id = 0
+                else:   
+                    id+=1 
+                      
+                #turn off modem
+                sbdlogger.info('Powering down modem')    
+                GPIO.output(modemGPIO,GPIO.LOW)
+                return
+
     #turn off modem
-    #--------------------------------------------------------------------------------------
+    sbdlogger.info('Send SBD timeout')
     sbdlogger.info('powering down modem')    
     GPIO.output(modemGPIO,GPIO.LOW)
+   
 
-    
-    
-#MAIN
-#
-#Packet Structure
-#<packet-type> <sub-header> <data>
-#Sub-header 0:
-#    ,<id>,<start-byte>,<total-bytes>:
-#Sub-header 1 thru N:
-#    ,<id>,<start-byte>:
-#--------------------------------------------------------------------------------------------
 def send_microSWIFT_51(payload_data):
     sbdlogger.info('sending microSWIFT telemetry (type 51)')
     
@@ -459,7 +467,7 @@ def send_microSWIFT_51(payload_data):
                 #attempt to transmit packet            
                 success = transmit_bin(ser,packet0)
             
-                if success == True: #increment message counter for each successful tranmission
+                if success == True: #increment message counter for each completed message
                     if id >= 99:
                          id = 0
                     else:   
