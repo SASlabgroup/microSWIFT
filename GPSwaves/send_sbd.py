@@ -362,7 +362,7 @@ def send_microSWIFT_50(payload_data):
         sbdlogger.info('Sending 4 packet message (50)')
         
         i=0
-        isignal=[]
+        signal=[]
         while time.time() <= tend:
             
             isignal = sig_qual(ser)
@@ -450,7 +450,7 @@ def send_microSWIFT_51(payload_data):
         sbdlogger.info('Sending single packet message (51)')
         
         i=0
-        isignal=[]
+        signal=[]
         while time.time() <= tend:
             
             isignal = sig_qual(ser)
