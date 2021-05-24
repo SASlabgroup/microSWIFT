@@ -346,6 +346,9 @@ def send_microSWIFT_50(payload_data):
     payload_bytes3 = payload_data[index:1245] #data bytes for packet 3
     packet3 = header + sub_header3 + payload_bytes3 
     
+    message = [packet0, packet1, packet2, packet3] #list of packets
+    ordinal = ['first', 'second', 'third', 'fourth']
+
     
     tend = time.time()+call_duration #get end time to stop attempting call
     while time.time() <= tend:
@@ -377,22 +380,12 @@ def send_microSWIFT_50(payload_data):
                 i=0 #reset counter
                 
                 #attempt to transmit packets
-                sbdlogger.info('Sending first packet')
-                success0 = transmit_bin(ser,packet0)          
-                if not success0:
-                    continue
-                sbdlogger.info('Sending second packet')
-                success1 = transmit_bin(ser,packet1)          
-                if not success1:
-                    continue
-                sbdlogger.info('Sending third packet')   
-                success2 = transmit_bin(ser,packet2)          
-                if not success2:
-                    continue
-                sbdlogger.info('Sending fourth packet')
-                success3 = transmit_bin(ser,packet3)          
-                if not success3:
-                    continue             
+                for i in range(4):
+                    sbdlogger.info('Sending {} packet'.format(ordinal[i]))
+                    issent  = False
+                    while issent == False:
+                        issent  = transmit_bin(ser,message[i])            
+            
                 #increment message counter for each completed message
                 if id >= 99:
                      id = 0
