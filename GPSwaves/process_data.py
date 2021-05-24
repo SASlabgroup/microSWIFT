@@ -53,12 +53,12 @@ gps_freq = config.getInt('GPS', 'GPS_frequency') #currently not used, hardcoded 
 def main(u,v,z,lat,lon):
 
     #check the number of u,v,z samples matches expected and 1 Hz minimum
-    pts_expected = fs * burst_seconds
-    if len(z) >= pts_expected and fs >= 1:          
+    pts_expected = gps_freq * burst_seconds
+    if len(z) >= pts_expected and gps_freq >= 1:          
         try:
             #note gps_freq is assumed to be 4Hz
             logger.info('running GPSwaves processing...')
-            wavestats = GPSwavesC.main_GPSwaves(len(z),u,v,z,fs)
+            wavestats = GPSwavesC.main_GPSwaves(len(z),u,v,z,gps_freq)
             logger.info('done')    
                     
         except Exception as e:
