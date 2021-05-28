@@ -161,8 +161,8 @@ def sig_qual(ser, command='AT+CSQ'):
 def transmit_bin(ser,msg):
     
     bytelen=len(msg)
-    sbdlogger.info('payload bytes = {}'.format(bytelen)
-                   
+    sbdlogger.info('payload bytes = {}'.format(bytelen))
+                    
     #check signal quality and attempt to send until timeout reached
             
     try:
