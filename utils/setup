@@ -77,32 +77,33 @@ file2=/etc/ssh/ssh_config
 #grep -qF "StrictHostKeyChecking no" "${file2}" || echo "StrictHostKeyChecking no" | sudo tee --append "${file2}"
 grep -qF "UserKnownHostsFile=/dev/null" "${file2}" || echo "UserKnownHostsFile=/dev/null" | sudo tee --append "${file2}"
 grep -qF "IPQoS cs0 cs0" "${file2}" || echo "IPQoS cs0 cs0" | sudo tee --append "${file2}"
-
+file3=/etc/ssh/sshd_config
+grep -qF "IPQoS cs0 cs0" "${file3}" || echo "IPQoS cs0 cs0" | sudo tee --append "${file3}"
 
 #configure Config.dat
 echo "Changing Config.dat with floatID"
-file3=/home/pi/microSWIFT/utils/Config.dat
-/bin/sed -i "s/^\(floatID=\).*/\1${floatID}/" ${file3}
+file4=/home/pi/microSWIFT/utils/Config.dat
+/bin/sed -i "s/^\(floatID=\).*/\1${floatID}/" ${file4}
 
 
 #setup static IP address with floatID
 cd /etc/
-file4=dhcpcd.conf
+file5=dhcpcd.conf
 echo "Setting up static IP address with floatID"
 #remove leading zeros of floatID so that the static IP will stick
 IPfloatID=$(echo $floatID | sed 's/0*//')
 echo "IPfloatID $IPfloatID"
 echo "FloatID $floatID"
 #search for commented out lines that need to be changed
-sudo sed -i '/^#.*interface wlan0/s/^#//' ${file4}
-sudo sed -i '/^#.*static ip_address/s/^#//' ${file4}
-sudo sed -i '/^#.*static routers/s/^#//' ${file4}
-sudo sed -i '/^#.*static domain_name_servers/s/^#//' ${file4}
+sudo sed -i '/^#.*interface wlan0/s/^#//' ${file5}
+sudo sed -i '/^#.*static ip_address/s/^#//' ${file5}
+sudo sed -i '/^#.*static routers/s/^#//' ${file5}
+sudo sed -i '/^#.*static domain_name_servers/s/^#//' ${file5}
 #replace static IP address using floatID as last three digits of the address
-sudo sed -i "s/^\(static ip_address=\).*/\1192.168.0.$IPfloatID\/24/" ${file4}
+sudo sed -i "s/^\(static ip_address=\).*/\1192.168.0.$IPfloatID\/24/" ${file5}
 echo "The new static IP address is 192.168.0.$IPfloatID/24"
-sudo sed -i "s/^\(static routers=\).*/\1192.168.0.1/" ${file4}
-sudo sed -i "s/^\(static domain_name_servers=\).*/\1192.168.0.1/" ${file4}
+sudo sed -i "s/^\(static routers=\).*/\1192.168.0.1/" ${file5}
+sudo sed -i "s/^\(static domain_name_servers=\).*/\1192.168.0.1/" ${file5}
 
 
 #set up hostname
