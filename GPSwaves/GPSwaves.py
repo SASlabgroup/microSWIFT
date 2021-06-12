@@ -39,14 +39,7 @@ def GPSwaves(u, v, z, fs):
     u = np.array(u)
     v = np.array(v)
     z = np.array(z)
-    
-    print('u = ')
-    print(u)
-    print('v = ')
-    print(v)
-    print('z = ')
-    print(z)
-    
+
     # ---------------------- Tunable Parameters --------------
     # Standard deviations for despiking
     Nstd = 10
