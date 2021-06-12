@@ -318,12 +318,12 @@ def GPSwaves(u, v, z, fs):
 
     # Quality control
     if zdummy == 1:
-        Dp = 9999
+        Dp = 999
 
     if Tp > 20: 
-        Hs = 9999
-        Tp = 9999
-        Dp = 9999
+        Hs = 999
+        Tp = 999
+        Dp = 999
 
     # ----------- Clean High frequency results ------------
     E = np.delete(E, f > maxf)
