@@ -80,16 +80,16 @@ def GPSwaves(u, v, z, fs):
         print('Data is Sufficient for Processing - Processing Start')
     else:
         print('Data is NOT Sufficient for Processing - Program Exit')
-        Hs = 9999
-        Tp = 9999
-        Dp = 9999
-        E = 9999
-        f = 9999
-        a1 = 9999
-        b1 = 9999
-        a2 = 9999
-        b2 = 9999
-        check = 9999
+        Hs = 999
+        Tp = 999
+        Dp = 999
+        E = 999
+        f = 999
+        a1 = 999
+        b1 = 999
+        a2 = 999
+        b2 = 999
+        check = 999
         
 
     # --------------- Detrend and High Pass Filter -------------
