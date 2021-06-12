@@ -336,6 +336,8 @@ def GPSwaves(u, v, z, fs):
     b2 = np.delete(b2, f > maxf)
     check = np.delete(check, f > maxf)
     f = np.delete(f, f > maxf)
+    
+    print(Hs,Tp,Dp,E,f,a1,b1,a2,b2
 
     # Return values
     return Hs, Tp, Dp, E, f, a1, b1, a2, b2
