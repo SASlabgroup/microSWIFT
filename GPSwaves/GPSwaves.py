@@ -27,8 +27,13 @@ def GPSwaves(u, v, z, fs):
 
     # Packages
     import numpy as np
-    import scipy.signal as signal
-    import scipy.fft as fft
+    # import scipy.signal as signal
+    import numpy.fft as fft
+
+    # Define demean function
+    def demean(x):
+        x_demean = x - np.mean(x)
+        return x_demean
 
     # ------------------- Convert Inputs to Numpy Arrays ------
     u = np.array(u)
@@ -58,9 +63,12 @@ def GPSwaves(u, v, z, fs):
 
     # ----------------- Quality Control and Despiking --------
     # Find Spike values
-    badu = np.abs(signal.detrend(u)) >= Nstd * np.std(u)
-    badv = np.abs(signal.detrend(v)) >= Nstd * np.std(v)
-    badz = np.abs(signal.detrend(z)) >= Nstd * np.std(z)
+    # badu = np.abs(signal.detrend(u)) >= Nstd * np.std(u)
+    # badv = np.abs(signal.detrend(v)) >= Nstd * np.std(v)
+    # badz = np.abs(signal.detrend(z)) >= Nstd * np.std(z)
+    badu = np.abs(demean(u)) >= Nstd * np.std(u)
+    badv = np.abs(demean(v)) >= Nstd * np.std(v)
+    badz = np.abs(demean(z)) >= Nstd * np.std(z)
     # Replace Spike values with average of non-spiked series
     u[badu] = np.mean( u[~badu] )
     v[badv] = np.mean( v[~badv] )
@@ -85,9 +93,12 @@ def GPSwaves(u, v, z, fs):
         
 
     # --------------- Detrend and High Pass Filter -------------
-    u = signal.detrend(u)
-    v = signal.detrend(v)
-    z = signal.detrend(z)
+    # u = signal.detrend(u)
+    # v = signal.detrend(v)
+    # z = signal.detrend(z)
+    u = demean(u)
+    v = demean(v)
+    z = demean(z)
 
     # Define alpha for filter
     alpha = RC / (RC + 1/fs)
@@ -126,9 +137,12 @@ def GPSwaves(u, v, z, fs):
 
     # Detrend Individual Windows (full series is alerady detrended)
     for n in np.arange(windows):
-        uwindow[:,n] = signal.detrend(uwindow[:,n])
-        vwindow[:,n] = signal.detrend(vwindow[:,n])
-        zwindow[:,n] = signal.detrend(zwindow[:,n])
+        # uwindow[:,n] = signal.detrend(uwindow[:,n])
+        # vwindow[:,n] = signal.detrend(vwindow[:,n])
+        # zwindow[:,n] = signal.detrend(zwindow[:,n])
+        uwindow[:,n] = demean(uwindow[:,n])
+        vwindow[:,n] = demean(vwindow[:,n])
+        zwindow[:,n] = demean(zwindow[:,n])
 
     # Taper and Resceale Data to Preserve Variance
     taper = np.repeat(np.reshape(np.sin(np.arange(1,win+1) * np.pi/(win+1)), (win, 1)), windows, axis=1)
