@@ -280,7 +280,8 @@ if __name__ == "__main__":
 				except OSError as e:
 					logger.info(e)
 					sys.exit(1)
-					
+			else:
+				sleep(0.25)		
 	else:
 		logger.info("GPS not initialized, exiting")
 		sys.exit(1)
