@@ -7,7 +7,7 @@ def GPSwaves(u, v, z, fs):
     u : 'x' direction velocity from GPS sensor
     v : 'y' direction velocity from GPS sensor
     z : Vertical elevation values from 
-    fs :
+    fs : frequency
 
 
     Returns
