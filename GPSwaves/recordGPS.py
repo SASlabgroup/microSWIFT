@@ -190,7 +190,7 @@ def record_gps(ser,fname):
 						sleep(10)
 						ipos+=1
 						continue
-					z[ipos] = gpgga.altitude
+					z[ipos] = gpgga.altitude #units are meters
 					lat[ipos] = gpgga.latitude
 					lon[ipos] = gpgga.longitude
 					ipos+=1
@@ -198,8 +198,8 @@ def record_gps(ser,fname):
 					if gpgga.gps_qual < 1:
 						continue
 					gpvtg = pynmea2.parse(newline,check=True)   #grab gpvtg sentence
-					u[ivel] = gpvtg.spd_over_grnd_kmph*np.cos(gpvtg.true_track) #units are kmph
-					v[ivel] = gpvtg.spd_over_grnd_kmph*np.sin(gpvtg.true_track) #units are kmph
+					u[ivel] = 0.2778 * gpvtg.spd_over_grnd_kmph*np.cos(gpvtg.true_track) #get u component of SOG and convert to m/s
+					v[ivel] = 0.2778 * gpvtg.spd_over_grnd_kmph*np.sin(gpvtg.true_track) #get v component of SOG and convert to m/s
 					ivel+=1
 				else: #if not GPGGA or GPVTG, continue to start of loop
 					continue
