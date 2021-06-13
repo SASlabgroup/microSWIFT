@@ -36,9 +36,10 @@ def GPSwaves(u, v, z, fs):
         return x_demean
 
     # ------------------- Convert Inputs to Numpy Arrays ------
-    u = np.array(u)
-    v = np.array(v)
-    z = np.array(z)
+    # Not needed since we are inputting as numpy arrays
+    # u = np.array(u)
+    # v = np.array(v)
+    # z = np.array(z)
 
     # ---------------------- Tunable Parameters --------------
     # Standard deviations for despiking
@@ -75,7 +76,7 @@ def GPSwaves(u, v, z, fs):
     z[badz] = np.mean( z[~badz] )
 
     # ----------------- Begin Processing ----------------------
-    num_points = len(u) # number of points
+    num_points = u.shape[0] # number of points
     if ( (num_points >= 2*wsecs ) and (fs >= 1 ) and ( np.sum(badu) < 100 ) and (np.sum(badv) < 100) ):
         print('Data is Sufficient for Processing - Processing Start')
     else:

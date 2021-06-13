@@ -17,6 +17,7 @@ from datetime import datetime
 import time
 import struct
 from time import sleep
+from GPSwaves import GPSwaves
 
 #create modele level logger
 logger = getLogger('system_logger.'+__name__)   
@@ -39,7 +40,8 @@ def main(u,v,z,lat,lon,fs,burst_seconds,badValue,payload_type,sensor_type,port,d
         try:
             #note gps_freq is assumed to be 4Hz
             logger.info('running GPSwaves processing...')
-            wavestats = GPSwavesC.main_GPSwaves(len(z),u,v,z,fs)
+            Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u, v, z, fs)
+            # wavestats = GPSwavesC.main_GPSwaves(len(z),u,v,z,fs)
             logger.info('done')    
                     
         except Exception as e:

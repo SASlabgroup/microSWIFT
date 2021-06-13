@@ -13,9 +13,13 @@ test_data = sio.loadmat('GPSwaves-testdata-out.mat')
 
 # Organize Data into Individual Componenets
 # Test Data
-u = list(np.squeeze(test_data['u']))
-v = list(np.squeeze(test_data['v']))
-z = list(np.squeeze(test_data['z']))
+# u = list(np.squeeze(test_data['u']))
+# v = list(np.squeeze(test_data['v']))
+# z = list(np.squeeze(test_data['z']))
+# fs = float(np.squeeze(test_data['fs']))
+u = np.squeeze(test_data['u'])
+v = np.squeeze(test_data['v'])
+z = np.squeeze(test_data['z'])
 fs = float(np.squeeze(test_data['fs']))
 print('Test Data Loaded')
 
