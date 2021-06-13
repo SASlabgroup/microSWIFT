@@ -22,23 +22,12 @@ from time import sleep
 logger = getLogger('system_logger.'+__name__)   
 
 #my imports
-<<<<<<< HEAD
 #import send_sbd
 #try:
 #    import GPSwavesC
 #except Exception as e:
 #    logger.info('error importing GPSwavesC')
 #    logger.info(e)
-=======
-from config3 import Config
-import send_sbd
-import GPSwaves
-try:
-    import GPSwavesC
-except Exception as e:
-    logger.info('error importing GPSwavesC')
-    logger.info(e)
->>>>>>> parent of 92735f3 (Merge branch 'GPSwaves-python' into payload-type-51)
     
 #load config file and get parameters
 configFilename = sys.argv[1] #Load config file/parameters needed
@@ -88,7 +77,6 @@ def main(u,v,z,lat,lon):
         logger.info('exiting')
         sys.exit(1)
         
-<<<<<<< HEAD
     if sensor_type != 50:
         logger.info('invalid sensor type: {}'.format(sensor_type))
         logger.info('exiting')
@@ -110,24 +98,6 @@ def main(u,v,z,lat,lon):
     #a2 = np.where(a2>=18446744073709551615, 999.00000, a2)
     #b2 = np.squeeze(wavestats[8])
     #b2 = np.where(b2>=18446744073709551615, 999.00000, b2)
-=======
-    unpack wave processing results        
-    Hs = wavestats[0]
-    Tp = wavestats[1]
-    Dp = wavestats[2]
-    E = np.squeeze(wavestats[3])
-    E = np.where(E>=18446744073709551615, 999.00000, E)
-    f = np.squeeze(wavestats[4])
-    f = np.where(f>=18446744073709551615, 999.00000, f)
-    a1 = np.squeeze(wavestats[5])
-    a1 = np.where(a1>=18446744073709551615, 999.00000, a1)
-    b1 = np.squeeze(wavestats[6])
-    b1 = np.where(b1>=18446744073709551615, 999.00000, b1)
-    a2 = np.squeeze(wavestats[7])
-    a2 = np.where(a2>=18446744073709551615, 999.00000, a2)
-    b2 = np.squeeze(wavestats[8])
-    b2 = np.where(b2>=18446744073709551615, 999.00000, b2)
->>>>>>> parent of 92735f3 (Merge branch 'GPSwaves-python' into payload-type-51)
     checkdata = np.full(42,1)
     
     np.set_printoptions(formatter={'float_kind':'{:.5f}'.format})
