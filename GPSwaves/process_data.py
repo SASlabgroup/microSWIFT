@@ -25,11 +25,11 @@ logger = getLogger('system_logger.'+__name__)
 from config3 import Config
 import send_sbd
 import GPSwaves
-#try:
-#    import GPSwavesC
-#except Exception as e:
-#    logger.info('error importing GPSwavesC')
-#    logger.info(e)
+try:
+    import GPSwavesC
+except Exception as e:
+    logger.info('error importing GPSwavesC')
+    logger.info(e)
     
 #load config file and get parameters
 configFilename = sys.argv[1] #Load config file/parameters needed
@@ -59,8 +59,8 @@ def main(u,v,z,lat,lon):
         try:
             #note gps_freq is assumed to be 4Hz
             logger.info('running GPSwaves processing...')
-            #wavestats = GPSwavesC.main_GPSwaves(len(z),u,v,z,gps_freq)
-            Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves.GPSwaves(u,v,z,gps_freq)
+            wavestats = GPSwavesC.main_GPSwaves(len(z),u,v,z,gps_freq)
+            #Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves.GPSwaves(u,v,z,gps_freq)
             logger.info('done')    
                     
         except Exception as e:
@@ -79,22 +79,22 @@ def main(u,v,z,lat,lon):
         logger.info('exiting')
         sys.exit(1)
         
-    #unpack wave processing results        
-    #Hs = wavestats[0]
-    #Tp = wavestats[1]
-    #Dp = wavestats[2]
-    #E = np.squeeze(wavestats[3])
-    #E = np.where(E>=18446744073709551615, 999.00000, E)
-    #f = np.squeeze(wavestats[4])
-    #f = np.where(f>=18446744073709551615, 999.00000, f)
-    #a1 = np.squeeze(wavestats[5])
-    #a1 = np.where(a1>=18446744073709551615, 999.00000, a1)
-    #b1 = np.squeeze(wavestats[6])
-    #b1 = np.where(b1>=18446744073709551615, 999.00000, b1)
-    #a2 = np.squeeze(wavestats[7])
-    #a2 = np.where(a2>=18446744073709551615, 999.00000, a2)
-    #b2 = np.squeeze(wavestats[8])
-    #b2 = np.where(b2>=18446744073709551615, 999.00000, b2)
+    unpack wave processing results        
+    Hs = wavestats[0]
+    Tp = wavestats[1]
+    Dp = wavestats[2]
+    E = np.squeeze(wavestats[3])
+    E = np.where(E>=18446744073709551615, 999.00000, E)
+    f = np.squeeze(wavestats[4])
+    f = np.where(f>=18446744073709551615, 999.00000, f)
+    a1 = np.squeeze(wavestats[5])
+    a1 = np.where(a1>=18446744073709551615, 999.00000, a1)
+    b1 = np.squeeze(wavestats[6])
+    b1 = np.where(b1>=18446744073709551615, 999.00000, b1)
+    a2 = np.squeeze(wavestats[7])
+    a2 = np.where(a2>=18446744073709551615, 999.00000, a2)
+    b2 = np.squeeze(wavestats[8])
+    b2 = np.where(b2>=18446744073709551615, 999.00000, b2)
     checkdata = np.full(42,1)
     
     np.set_printoptions(formatter={'float_kind':'{:.5f}'.format})
