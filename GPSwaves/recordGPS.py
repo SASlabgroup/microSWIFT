@@ -273,7 +273,7 @@ if __name__ == "__main__":
 					if os.path.isfile(fname) and os.path.getsize(fname) > 0:
 						#call data processing script
 						logger.info('starting to process data')
-						with np.set_printoptions(threshold=5000)
+						with np.set_printoptions(threshold=5000):
 							print(u)
 							print(v)
 							print(z)
