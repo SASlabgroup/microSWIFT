@@ -7,7 +7,7 @@ def GPSwaves(u, v, z, fs):
     u : 'x' direction velocity from GPS sensor
     v : 'y' direction velocity from GPS sensor
     z : Vertical elevation values from 
-    fs : frequency
+    fs :
 
 
     Returns
@@ -36,9 +36,10 @@ def GPSwaves(u, v, z, fs):
         return x_demean
 
     # ------------------- Convert Inputs to Numpy Arrays ------
-    #u = np.array(u)
-    #v = np.array(v)
-    #z = np.array(z)
+    # Not needed since we are inputting as numpy arrays
+    # u = np.array(u)
+    # v = np.array(v)
+    # z = np.array(z)
 
     # ---------------------- Tunable Parameters --------------
     # Standard deviations for despiking
@@ -75,21 +76,21 @@ def GPSwaves(u, v, z, fs):
     z[badz] = np.mean( z[~badz] )
 
     # ----------------- Begin Processing ----------------------
-    num_points = len(u) # number of points
+    num_points = u.shape[0] # number of points
     if ( (num_points >= 2*wsecs ) and (fs >= 1 ) and ( np.sum(badu) < 100 ) and (np.sum(badv) < 100) ):
         print('Data is Sufficient for Processing - Processing Start')
     else:
         print('Data is NOT Sufficient for Processing - Program Exit')
-        Hs = 999
-        Tp = 999
-        Dp = 999
-        E = 999
-        f = 999
-        a1 = 999
-        b1 = 999
-        a2 = 999
-        b2 = 999
-        check = 999
+        Hs = 9999
+        Tp = 9999
+        Dp = 9999
+        E = 9999
+        f = 9999
+        a1 = 9999
+        b1 = 9999
+        a2 = 9999
+        b2 = 9999
+        check = 9999
         
 
     # --------------- Detrend and High Pass Filter -------------
@@ -318,12 +319,12 @@ def GPSwaves(u, v, z, fs):
 
     # Quality control
     if zdummy == 1:
-        Dp = 999
+        Dp = 9999
 
     if Tp > 20: 
-        Hs = 999
-        Tp = 999
-        Dp = 999
+        Hs = 9999
+        Tp = 9999
+        Dp = 9999
 
     # ----------- Clean High frequency results ------------
     E = np.delete(E, f > maxf)
@@ -336,8 +337,6 @@ def GPSwaves(u, v, z, fs):
     b2 = np.delete(b2, f > maxf)
     check = np.delete(check, f > maxf)
     f = np.delete(f, f > maxf)
-    
-    print(Hs,Tp,Dp,E,f,a1,b1,a2,b2)
 
     # Return values
     return Hs, Tp, Dp, E, f, a1, b1, a2, b2
