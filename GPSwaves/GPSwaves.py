@@ -36,9 +36,9 @@ def GPSwaves(u, v, z, fs):
         return x_demean
 
     # ------------------- Convert Inputs to Numpy Arrays ------
-    u = np.array(u)
-    v = np.array(v)
-    z = np.array(z)
+    #u = np.array(u)
+    #v = np.array(v)
+    #z = np.array(z)
 
     # ---------------------- Tunable Parameters --------------
     # Standard deviations for despiking
