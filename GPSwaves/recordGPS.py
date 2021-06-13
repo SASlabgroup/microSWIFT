@@ -276,8 +276,8 @@ if __name__ == "__main__":
 				    	print(u.shape)
 				    	process_data.main(u,v,z,lat,lon)
 				    else:
-						logger.info('data file does not exist or does not contain enough data for processing')	
-					
+				    	logger.info('data file does not exist or does not contain enough data for processing')	
+				
 				except OSError as e:
 					logger.info(e)
 					sys.exit(1)
