@@ -270,15 +270,12 @@ if __name__ == "__main__":
 				
 				#check if burst completed with 2048 poi
 				try:
-					if os.path.isfile(fname) and os.path.getsize(fname) > 0:
-						#call data processing script
-						logger.info('starting to process data')
-						np.set_printoptions(threshold=5000)
-						print(u)
-						print(v)
-						print(z)
-						process_data.main(u,v,z,lat,lon)
-					else:
+				    if os.path.isfile(fname) and os.path.getsize(fname) > 0:
+				    	#call data processing script
+				    	logger.info('starting to process data')
+				    	print(u.shape)
+				    	process_data.main(u,v,z,lat,lon)
+				    else:
 						logger.info('data file does not exist or does not contain enough data for processing')	
 					
 				except OSError as e:
