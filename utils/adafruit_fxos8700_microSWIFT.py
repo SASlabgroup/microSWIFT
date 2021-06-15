@@ -129,7 +129,10 @@ class FXOS8700:
         elif accel_range == ACCEL_RANGE_8G:
             self._write_u8(_FXOS8700_REGISTER_XYZ_DATA_CFG, 0x02)
             
-        #MICROSWIFT SETUP    
+            
+'''            
+        #=======================MICROSWIFT SETTINGS==================== 
+'''           
         # High resolution
         self._write_u8(_FXOS8700_REGISTER_CTRL_REG2, 0x02)
         # Active, Normal Mode, Low Noise, 6.25Hz in Hybrid Mode
@@ -139,6 +142,8 @@ class FXOS8700:
         self._write_u8(_FXOS8700_REGISTER_MCTRL_REG1, 0x1F)
         # Jump to reg 0x33 after reading 0x06
         self._write_u8(_FXOS8700_REGISTER_MCTRL_REG2, 0x20)
+        
+        
 
     def _read_u8(self, address):
         # Read an 8-bit unsigned value from the specified 8-bit address.
