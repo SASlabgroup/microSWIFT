@@ -140,9 +140,8 @@ while True:
         
                 isample = isample + 1
                 
-                if isample == imu_samples:
-                    break
-                elif time.time() >= t_end and 0 < imu_samples-isample <= 40:
+               
+                if time.time() >= t_end and 0 < imu_samples-isample <= 40:
                     continue
                 elif time.time() > t_end and imu_samples-isample > 40:
                     break
