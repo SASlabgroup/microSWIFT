@@ -134,8 +134,8 @@ class FXOS8700:
          
         # High resolution
         self._write_u8(_FXOS8700_REGISTER_CTRL_REG2, 0x02)
-        # Active, Normal Mode, Low Noise, 6.25Hz in Hybrid Mode
-        self._write_u8(_FXOS8700_REGISTER_CTRL_REG1, 0x2D)
+        # Active, Normal Mode, Low Noise, 25Hz in Hybrid Mode
+        self._write_u8(_FXOS8700_REGISTER_CTRL_REG1, 0x25)
         # Configure the magnetometer
         # Hybrid Mode, Over Sampling Rate = 16
         self._write_u8(_FXOS8700_REGISTER_MCTRL_REG1, 0x1F)
