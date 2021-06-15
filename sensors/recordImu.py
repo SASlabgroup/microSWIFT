@@ -83,7 +83,7 @@ def init_imu():
     GPIO.output(imu_gpio,GPIO.HIGH)
     i2c = busio.I2C(board.SCL, board.SDA)
     fxos = adafruit_fxos8700_microSWIFT.FXOS8700(i2c, accel_range=adafruit_fxos8700_microSWIFT.ACCEL_RANGE_2G)
-    fxas = adafruit_fxas21002c.FXAS21002C(i2c, gyro_range=adafruit_fxas21002c_microSWIFT_GYRO_RANGE500DPS)
+    fxas = adafruit_fxas21002c_microSWIFT.FXAS21002C(i2c, gyro_range=adafruit_fxas21002c_microSWIFT_GYRO_RANGE500DPS)
     
     return fxos, fxas
 
