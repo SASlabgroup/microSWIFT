@@ -106,7 +106,6 @@ class FXAS21002C:
         # Check for chip ID value.
         if self._read_u8(_GYRO_REGISTER_WHO_AM_I) != _FXAS21002C_ID:
             raise RuntimeError('Failed to find FXAS21002C, check wiring!')
-        ctrl_reg0 = 0x00
         if gyro_range == GYRO_RANGE_250DPS:
             ctrl_reg0 += 0x03
         elif gyro_range == GYRO_RANGE_500DPS:
