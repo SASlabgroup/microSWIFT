@@ -15,7 +15,7 @@ import RPi.GPIO as GPIO
 #my imports 
 from config3 import Config
 import adafruit_fxos8700_microSWIFT
-import adafruit_fxas21002c_microSWIFT
+import adafruit_fxas21002c
 
 #---------------------------------------------------------------
 configDat = sys.argv[1]
