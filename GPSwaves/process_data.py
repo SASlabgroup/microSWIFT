@@ -22,7 +22,8 @@ from time import sleep
 logger = getLogger('system_logger.'+__name__)   
 
 #my imports
-#import send_sbd
+from config3 import Config
+import send_sbd
 #try:
 #    import GPSwavesC
 #except Exception as e:
