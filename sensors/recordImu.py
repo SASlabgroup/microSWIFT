@@ -64,8 +64,6 @@ GPIO.setup(imu_gpio,GPIO.OUT)
 #turn IMU on for script recognizes i2c address
 GPIO.output(imu_gpio,GPIO.HIGH)
 
-
-
 """
 FXOS8700 accelerometer range values
 ACCEL_RANGE_2G = 0x00
@@ -78,6 +76,7 @@ GYRO_RANGE_500DPS   = 500
 GYRO_RANGE_1000DPS  = 1000
 GYRO_RANGE_2000DPS  = 2000
 """
+
 def init_imu():
     #initialize fxos and fxas devices (required after turning off device)
     logger.info('power on IMU')
