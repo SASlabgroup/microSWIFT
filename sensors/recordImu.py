@@ -94,7 +94,7 @@ def init_imu():
  
 # Main loop will read the acceleration and magnetometer values every second
 # and print them out.
-imu = np.empty(imu_samples)
+imu = []
 isample = 0
 
 
