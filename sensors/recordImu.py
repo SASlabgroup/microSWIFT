@@ -148,7 +148,7 @@ while True:
                     break
                 
                 #hard coded sleep to control recording rate. NOT ideal but works for now    
-                sleep(0.07)
+                sleep(0.063)
             
             logger.info('end burst')
             logger.info('IMU samples %s' %isample)  
