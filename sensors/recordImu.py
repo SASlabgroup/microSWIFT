@@ -71,10 +71,10 @@ ACCEL_RANGE_4G = 0x01
 ACCEL_RANGE_8G = 0x02
 
 FXAS21002 gyro range values
-GYRO_RANGE_250DPS   = 0x03
-GYRO_RANGE_500DPS   = 0x02
-GYRO_RANGE_1000DPS  = 0x01
-GYRO_RANGE_2000DPS  = 0x00
+GYRO_RANGE_250DPS   = 250
+GYRO_RANGE_500DPS   = 500
+GYRO_RANGE_1000DPS  = 1000
+GYRO_RANGE_2000DPS  = 2000
 """
 
 def init_imu():
@@ -83,7 +83,7 @@ def init_imu():
     GPIO.output(imu_gpio,GPIO.HIGH)
     i2c = busio.I2C(board.SCL, board.SDA)
     fxos = adafruit_fxos8700_microSWIFT.FXOS8700(i2c, accel_range=0x00)
-    fxas = adafruit_fxas21002c_microSWIFT.FXAS21002C(i2c, gyro_range=0x02)
+    fxas = adafruit_fxas21002c_microSWIFT.FXAS21002C(i2c, gyro_range=500)
     
     return fxos, fxas
 

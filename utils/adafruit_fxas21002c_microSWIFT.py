@@ -79,10 +79,10 @@ _GYRO_SENSITIVITY_1000DPS = 0.03125     # ..
 _GYRO_SENSITIVITY_2000DPS = 0.0625      # ..
 
 # User facing constants/module globals:
-GYRO_RANGE_250DPS   = 0x03
-GYRO_RANGE_500DPS   = 0x02
-GYRO_RANGE_1000DPS  = 0x01
-GYRO_RANGE_2000DPS  = 0x00
+GYRO_RANGE_250DPS   = 250
+GYRO_RANGE_500DPS   = 500
+GYRO_RANGE_1000DPS  = 1000
+GYRO_RANGE_2000DPS  = 2000
 # pylint: enable=bad-whitespace
 
 ctrl_reg0 = 0x1C #0001 1100: LPF cutoff 4Hz @ ODR=12.5Hz, HPF cutoff 0.031Hz, HPF enable
@@ -108,13 +108,13 @@ class FXAS21002C:
             raise RuntimeError('Failed to find FXAS21002C, check wiring!')
     
         if gyro_range == GYRO_RANGE_250DPS:
-            self._write_u8(_GYRO_REGISTER_CTRL_REG0, ctrl_reg0 + GYRO_RANGE_250DPS) #add gyro range setting to reg0 settings bytes defined above
+            self._write_u8(_GYRO_REGISTER_CTRL_REG0, ctrl_reg0 + 0x03) #add gyro range setting to reg0 settings bytes defined above
         elif gyro_range == GYRO_RANGE_500DPS:
-            self._write_u8(_GYRO_REGISTER_CTRL_REG0, ctrl_reg0 + GYRO_RANGE_500DPS)
+            self._write_u8(_GYRO_REGISTER_CTRL_REG0, ctrl_reg0 + 0x02)
         elif gyro_range == GYRO_RANGE_1000DPS:
-            self._write_u8(_GYRO_REGISTER_CTRL_REG0, ctrl_reg0 + GYRO_RANGE_1000DPS)
+            self._write_u8(_GYRO_REGISTER_CTRL_REG0, ctrl_reg0 + 0x01)
         elif gyro_range == GYRO_RANGE_2000DPS:
-            self._write_u8(_GYRO_REGISTER_CTRL_REG0, ctrl_reg0 + GYRO_RANGE_2000DPS)
+            self._write_u8(_GYRO_REGISTER_CTRL_REG0, ctrl_reg0 + 0x00)
         # Reset then switch to active mode with 100Hz output
         # Putting into standy doesn't work as the chip becomes instantly
         # unresponsive.  Perhaps CircuitPython is too slow to go into standby
