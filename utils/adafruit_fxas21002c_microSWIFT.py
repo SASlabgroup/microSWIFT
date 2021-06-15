@@ -79,10 +79,10 @@ _GYRO_SENSITIVITY_1000DPS = 0.03125     # ..
 _GYRO_SENSITIVITY_2000DPS = 0.0625      # ..
 
 # User facing constants/module globals:
-GYRO_RANGE_250DPS   = 250
-GYRO_RANGE_500DPS   = 500
-GYRO_RANGE_1000DPS  = 1000
-GYRO_RANGE_2000DPS  = 2000
+GYRO_RANGE_250DPS   = 0x03
+GYRO_RANGE_500DPS   = 0x02
+GYRO_RANGE_1000DPS  = 0x01
+GYRO_RANGE_2000DPS  = 0x00
 # pylint: enable=bad-whitespace
 
 ctrl_reg0 = 0x1C #0001 1100: LPF cutoff 4Hz @ ODR=12.5Hz, HPF cutoff 0.031Hz, HPF enable
@@ -106,21 +106,21 @@ class FXAS21002C:
         # Check for chip ID value.
         if self._read_u8(_GYRO_REGISTER_WHO_AM_I) != _FXAS21002C_ID:
             raise RuntimeError('Failed to find FXAS21002C, check wiring!')
+    
         if gyro_range == GYRO_RANGE_250DPS:
-            ctrl_reg0 += 0x03
+            self._write_u8(_GYRO_REGISTER_CTRL_REG0, ctrl_reg0 + GYRO_RANGE_250DPS) #add gyro range setting to reg0 settings bytes defined above
         elif gyro_range == GYRO_RANGE_500DPS:
-            ctrl_reg0 += 0x02
+            self._write_u8(_GYRO_REGISTER_CTRL_REG0, ctrl_reg0 + GYRO_RANGE_500DPS)
         elif gyro_range == GYRO_RANGE_1000DPS:
-            ctrl_reg0 += 0x01
+            self._write_u8(_GYRO_REGISTER_CTRL_REG0, ctrl_reg0 + GYRO_RANGE_1000DPS)
         elif gyro_range == GYRO_RANGE_2000DPS:
-            ctrl_reg0 += 0x00
+            self._write_u8(_GYRO_REGISTER_CTRL_REG0, ctrl_reg0 + GYRO_RANGE_2000DPS)
         # Reset then switch to active mode with 100Hz output
         # Putting into standy doesn't work as the chip becomes instantly
         # unresponsive.  Perhaps CircuitPython is too slow to go into standby
         # and send reset?  Keep these two commented for now:
         #self._write_u8(_GYRO_REGISTER_CTRL_REG1, 0x00)     # Standby)
         #self._write_u8(_GYRO_REGISTER_CTRL_REG1, (1<<6))   # Reset
-        self._write_u8(_GYRO_REGISTER_CTRL_REG0, ctrl_reg0) # Set sensitivity
         self._write_u8(_GYRO_REGISTER_CTRL_REG1, ctrl_reg1)     # Active
         time.sleep(0.1) # 60 ms + 1/ODR
 
