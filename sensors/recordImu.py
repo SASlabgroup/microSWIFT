@@ -54,7 +54,7 @@ burst_seconds=config.getInt('System', 'burst_seconds')
 bad = config.getInt('System', 'badValue')
 
 #IMU parameters
-imuFreq=config.getInt('IMU', 'imuFreq')
+imuFreq=config.getFloat('IMU', 'imuFreq')
 imu_samples = imuFreq*burst_seconds
 imu_gpio=config.getInt('IMU', 'imu_gpio')
 
