@@ -330,16 +330,6 @@ def GPSwaves(u, v, z, fs):
 
     # ----------- Clean High frequency results ------------
     ind_to_delete = np.squeeze(np.argwhere(f > maxf))
-    # E = np.delete(E, ind_to_delete)
-    # Ezz = np.delete(Ezz, f > maxf)
-    # dir = np.delete(dir, f > maxf)
-    # spread = np.delete( spread, f > maxf)
-    # a1 = np.delete(a1, f > maxf)
-    # b1 = np.delete(b1, f > maxf)
-    # a2 = np.delete(a2, f > maxf)
-    # b2 = np.delete(b2, f > maxf)
-    # check = np.delete(check, f > maxf)
-    # f = np.delete(f, f > maxf)
     E = np.delete(E, ind_to_delete)
     Ezz = np.delete(Ezz, ind_to_delete)
     dir = np.delete(dir, ind_to_delete)
