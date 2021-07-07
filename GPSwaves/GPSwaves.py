@@ -282,6 +282,7 @@ def GPSwaves(u, v, z, fs):
     
     # ------ Compute Scalar Energy Spectra -------------
     E = Exx + Eyy
+    print('E shape = ', E.shape)
 
     # ------ Compute Wave Statistics -------------
     fwaves = np.logical_and(f > 0.05, f < 1)# Frequency cutoff for wave stats, 0.4 is specific to SWIFT hull
@@ -338,8 +339,6 @@ def GPSwaves(u, v, z, fs):
     b2 = np.delete(b2, f > maxf)
     check = np.delete(check, f > maxf)
     f = np.delete(f, f > maxf)
-    
-    print(Hs,Tp,Dp,E,f,a1,b1,a2,b2)
 
     # Return values
     return Hs, Tp, Dp, E, f, a1, b1, a2, b2
