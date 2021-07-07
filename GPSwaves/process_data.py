@@ -68,6 +68,7 @@ def main(u,v,z,lat,lon):
             #note gps_freq is assumed to be 4Hz
             logger.info('running GPSwaves processing...')
             # wavestats = GPSwavesC.main_GPSwaves(len(z),u,v,z,gps_freq)
+            logger.info('u shape = ', u.shape)
             Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u,v,z,gps_freq)
             wavestats = [Hs, Tp, Dp, E, f, a1, b1, a2, b2]
             logger.info('done')    
