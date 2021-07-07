@@ -233,6 +233,8 @@ def GPSwaves(u, v, z, fs):
     # Convert to displacement spectra (from velocity and heave)
     # Assume perfectly circular deepwater orbits - could be extended to finite depth by 
     # calling wavenumber.m - need to change this to wavenumber.py which I have written
+    print('UU shape = ', UU.shape)
+    print('f shape = ', f.shape)
     Exx = UU / ( (2 * np.pi * f ) ** 2 ) # Energy density, units are m^2/Hz
     Eyy = VV / ( (2 * np.pi * f ) ** 2 ) # Energy density, units are m^2/Hz
     Ezz = ZZ.copy() # Energy density, units are m^2/Hz
