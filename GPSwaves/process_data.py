@@ -22,6 +22,8 @@ from time import sleep
 logger = getLogger('system_logger.'+__name__)   
 
 #my imports
+# Add location of config3 file to system path to load module
+sys.path.insert(1, '/home/pi/microSWIFT/utils')
 from config3 import Config
 import send_sbd
 # try:
