@@ -13,9 +13,9 @@ test_data = sio.loadmat('GPSwaves-testdata-out.mat')
 
 # Organize Data into Individual Componenets
 # Test Data
-u = list(np.squeeze(test_data['u']))
-v = list(np.squeeze(test_data['v']))
-z = list(np.squeeze(test_data['z']))
+u = test_data['u']
+v = test_data['v']
+z = test_data['z']
 fs = float(np.squeeze(test_data['fs']))
 print('Test Data Loaded')
 
@@ -37,7 +37,7 @@ Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u, v, z, fs)
 # print(Hs, Tp, Dp, E, f, a1, b1, a2, b2)
 
 # Test Output for the GPSwaves.py function
-precision = 0.001
+precision = 0.1
 # Test Hs
 if(np.abs(Hs-Hs_t) <= precision ):
     print(colored('======== Test Hs Passed ========', 'green'))
