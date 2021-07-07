@@ -24,10 +24,17 @@ logger = getLogger('system_logger.'+__name__)
 #my imports
 from config3 import Config
 import send_sbd
+# try:
+#     import GPSwavesC
+# except Exception as e:
+#     logger.info('error importing GPSwavesC')
+#     logger.info(e)
+
+# Change to Importing Python GPSwaves
 try:
-    import GPSwavesC
+    from GPSwaves import GPSwaves
 except Exception as e:
-    logger.info('error importing GPSwavesC')
+    logger.info('error importing GPSwaves.py')
     logger.info(e)
     
 #load config file and get parameters
@@ -58,8 +65,9 @@ def main(u,v,z,lat,lon):
         try:
             #note gps_freq is assumed to be 4Hz
             logger.info('running GPSwaves processing...')
-            wavestats = GPSwavesC.main_GPSwaves(len(z),u,v,z,gps_freq)
-            #Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves.GPSwaves(u,v,z,gps_freq)
+            # wavestats = GPSwavesC.main_GPSwaves(len(z),u,v,z,gps_freq)
+            Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u,v,z,gps_freq)
+            wavestats = [Hs, Tp, Dp, E, f, a1, b1, a2, b2]
             logger.info('done')    
                     
         except Exception as e:
