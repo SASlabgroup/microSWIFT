@@ -76,21 +76,21 @@ def GPSwaves(u, v, z, fs):
 
     # ----------------- Begin Processing ----------------------
     num_points = u.shape[0] # number of points
-    if ( (num_points >= 2*wsecs ) and (fs >= 1 ) and ( np.sum(badu) < 100 ) and (np.sum(badv) < 100) ):
+    if ( (num_points >= fs*wsecs ) and (fs >= 1 ) and ( np.sum(badu) < 100 ) and (np.sum(badv) < 100) ):
         print('Data is Sufficient for Processing - Processing Start')
     else:
         print('Data is NOT Sufficient for Processing - Program Exit')
         Hs = 999
         Tp = 999
         Dp = 999
-        E = 999
-        f = 999
-        a1 = 999
-        b1 = 999
-        a2 = 999
-        b2 = 999
-        check = 999
-        
+        E = 999 * np.ones(42)
+        f = 999 * np.ones(42)
+        a1 = 999 * np.ones(42)
+        b1 = 999 * np.ones(42)
+        a2 = 999 * np.ones(42)
+        b2 = 999 * np.ones(42)
+        # Return values and exit
+        return Hs, Tp, Dp, E, f, a1, b1, a2, b2
 
     # --------------- Detrend and High Pass Filter -------------
     # u = signal.detrend(u)
@@ -125,6 +125,8 @@ def GPSwaves(u, v, z, fs):
     windows = int(np.floor( 4*(num_points/win - 1 ) + 1)) # number of windows, 4 is from 75% overlap
     dof = 2 * windows * merge   # Degrees of Freedom
     # Create matrix where each column is a window
+    print('win = ', win)
+    print('windows = ', windows)
     uwindow = np.zeros((win,windows))
     vwindow = np.zeros((win,windows))
     zwindow = np.zeros((win,windows))

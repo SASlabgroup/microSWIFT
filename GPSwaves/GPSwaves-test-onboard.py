@@ -4,9 +4,9 @@ import numpy as np
 
 # Define random vectors to be tested
 amplitude = 3
-u = amplitude * np.random.rand(1, 2048)
-v = amplitude * np.random.rand(1, 2048)
-z = amplitude * np.random.rand(1, 2048)
+u = amplitude * np.random.rand(1, 512)
+v = amplitude * np.random.rand(1, 512)
+z = amplitude * np.random.rand(1, 512)
 fs = 4
 
 # Run GPSwaves.py as a function 
