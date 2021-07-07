@@ -68,7 +68,6 @@ def main(u,v,z,lat,lon):
             #note gps_freq is assumed to be 4Hz
             logger.info('running GPSwaves processing...')
             # wavestats = GPSwavesC.main_GPSwaves(len(z),u,v,z,gps_freq)
-            logger.info(u.shape)
             Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u,v,z,gps_freq)
             wavestats = [Hs, Tp, Dp, E, f, a1, b1, a2, b2]
             logger.info('done')    
@@ -76,12 +75,16 @@ def main(u,v,z,lat,lon):
         except Exception as e:
             logger.info('error running GPSwaves processing')
             logger.info(e)
-            exception_type, exception_object, exception_traceback = sys.exc_info()
-            filename = exception_traceback.tb_frame.f_code.co_filename
-            line_number = exception_traceback.tb_lineno
-            logger.info(exception_type)
-            logger.info(filename)
-            logger.info(line_number)
+            import linecache
+            def PrintException():
+                exc_type, exc_obj, tb = sys.exc_info()
+                f = tb.tb_frame
+                lineno = tb.tb_lineno
+                filename = f.f_code.co_filename
+                linecache.checkcache(filename)
+                line = linecache.getline(filename, lineno, f.f_globals)
+                print 'EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj)
+            PrintException()
             sys.exit(1)
            
     else:
