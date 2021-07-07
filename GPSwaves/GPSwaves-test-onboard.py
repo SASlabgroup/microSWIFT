@@ -14,10 +14,10 @@ from GPSwaves import GPSwaves
 Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u, v, z, fs)
 
 # Print shapes of all outputs
-print('Hs shape = ', Hs.shape)
-print('Tp shape = ', Tp.shape)
-print('Dp shape = ', Dp.shape)
-print('E shape = ', E.shape)
+print('Hs = ', Hs)
+print('Tp = ', Tp)
+print('Dp = ', Dp)
+print('E = ', E.shape)
 print('f shape = ', f.shape)
 print('a1 shape = ', a1.shape )
 print('b1 shape = ', b1.shape)
