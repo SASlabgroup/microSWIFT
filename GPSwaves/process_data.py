@@ -37,7 +37,12 @@ try:
     from GPSwaves import GPSwaves
 except Exception as e:
     logger.info('error importing GPSwaves.py')
-    logger.info(e)
+    exception_type, exception_object, exception_traceback = sys.exc_info()
+    filename = exception_traceback.tb_frame.f_code.co_filename
+    line_number = exception_traceback.tb_lineno
+    logger.info(exception_type)
+    logger.info(filename)
+    logger.info(line_number)
     
 #load config file and get parameters
 configFilename = sys.argv[1] #Load config file/parameters needed
