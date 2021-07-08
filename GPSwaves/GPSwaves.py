@@ -12,12 +12,12 @@ def GPSwaves(u, v, z, fs):
 
     Returns
     ------
-    Hs : 
-    Tp :
-    Dp :
-    E : 
-    f : 
-    a1 : 
+    Hs : Significant Wave height, meters
+    Tp : Peak Wave Period, seconds
+    Dp : Peak Wave Direction, degrees from north
+    E : Energy Spectrum, units are m^2/Hz
+    f : frequency bins, Hz
+    a1 : first spectral moment 
     b1 : 
     a2 : 
     b2 : 
