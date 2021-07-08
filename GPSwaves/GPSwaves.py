@@ -21,6 +21,8 @@ def GPSwaves(u, v, z, fs):
     b1 : 
     a2 : 
     b2 : 
+    
+    Filtering Technique: 
 
 
     """
@@ -125,8 +127,6 @@ def GPSwaves(u, v, z, fs):
     windows = int(np.floor( 4*(num_points/win - 1 ) + 1)) # number of windows, 4 is from 75% overlap
     dof = 2 * windows * merge   # Degrees of Freedom
     # Create matrix where each column is a window
-    print('win = ', win)
-    print('windows = ', windows)
     uwindow = np.zeros((win,windows))
     vwindow = np.zeros((win,windows))
     zwindow = np.zeros((win,windows))
@@ -235,8 +235,6 @@ def GPSwaves(u, v, z, fs):
     # Convert to displacement spectra (from velocity and heave)
     # Assume perfectly circular deepwater orbits - could be extended to finite depth by 
     # calling wavenumber.m - need to change this to wavenumber.py which I have written
-    print('UU shape = ', UU.shape)
-    print('f shape = ', f.shape)
     Exx = UU / ( (2 * np.pi * f ) ** 2 ) # Energy density, units are m^2/Hz
     Eyy = VV / ( (2 * np.pi * f ) ** 2 ) # Energy density, units are m^2/Hz
     Ezz = ZZ.copy() # Energy density, units are m^2/Hz
@@ -284,7 +282,6 @@ def GPSwaves(u, v, z, fs):
     
     # ------ Compute Scalar Energy Spectra -------------
     E = Exx + Eyy
-    print('E shape = ', E.shape)
 
     # ------ Compute Wave Statistics -------------
     fwaves = np.logical_and(f > 0.05, f < 1)# Frequency cutoff for wave stats, 0.4 is specific to SWIFT hull
