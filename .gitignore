@@ -8,3 +8,4 @@ logs/ #log files
 *.project #Eclipse project file
 *.pydevproject #Eclipse pydev project file
 .project
+.DS_Store

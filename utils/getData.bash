@@ -12,8 +12,13 @@
 # User input on microSWIFT Range
 read -p "Enter Lowest microSWIFT ID: " min
 read -p "Enter Highest microSWIFT ID: " max
+read -p "Enter UTC Date(DDMMMYYYY): " date
 read -s -p "Enter Password: " password
 printf "\n"
+
+# Define date
+DATESTRING=$date
+
 
 # Define SWIFT Range
 NUMSWIFTSMIN=$min
@@ -36,7 +41,7 @@ do
         # rsync locates data on microSWIFT and puts it in the local buffer
         # Potential Flags for rsync -avzh
         # To download on mac OS use the command: brew install hudochenkov/sshpass/sshpass
-        sshpass -p $PASSWORD rsync -avzh pi@$IP$MSNUM:/home/pi/microSWIFT/data ./microSWIFT-data/$MSNUM
+        sshpass -p $PASSWORD rsync -avzh --include=$DATESTRING pi@$IP$MSNUM:/home/pi/microSWIFT/data ./microSWIFT-data/$MSNUM
     else
         echo "microSWIFT $MSNUM is offline"
     fi
