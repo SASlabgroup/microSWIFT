@@ -16,9 +16,8 @@ read -p "Enter UTC Date(DDMMMYYYY): " date
 read -s -p "Enter Password: " password
 printf "\n"
 
-# Define date
-DATESTRING=$date
-
+# Make Directory in current directory for this data that all data will be saved in 
+# mkdir $DATESTRING
 
 # Define SWIFT Range
 NUMSWIFTSMIN=$min
@@ -41,7 +40,10 @@ do
         # rsync locates data on microSWIFT and puts it in the local buffer
         # Potential Flags for rsync -avzh
         # To download on mac OS use the command: brew install hudochenkov/sshpass/sshpass
-        sshpass -p $PASSWORD rsync -avzh --include=$DATESTRING pi@$IP$MSNUM:/home/pi/microSWIFT/data ./microSWIFT-data/$MSNUM
+        # rsync the data directory
+        sshpass -p $PASSWORD rsync -av --include "*/" --include="*$date*" --exclude="*" pi@$IP$MSNUM:/home/pi/microSWIFT/data ./$date/$MSNUM
+        # rsync the logs directory
+        sshpass -p $PASSWORD rsync -av --include "*/" --include="*$date*" --exclude="*" pi@$IP$MSNUM:/home/pi/microSWIFT/logs ./$date/$MSNUM
     else
         echo "microSWIFT $MSNUM is offline"
     fi
