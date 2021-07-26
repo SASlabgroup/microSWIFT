@@ -198,8 +198,8 @@ def record_gps(ser,fname):
 					if gpgga.gps_qual < 1:
 						continue
 					gpvtg = pynmea2.parse(newline,check=True)   #grab gpvtg sentence
-					u[ivel] = 0.2778 * gpvtg.spd_over_grnd_kmph*np.cos(gpvtg.true_track) #get u component of SOG and convert to m/s
-					v[ivel] = 0.2778 * gpvtg.spd_over_grnd_kmph*np.sin(gpvtg.true_track) #get v component of SOG and convert to m/s
+					u[ivel] = 0.2778 * gpvtg.spd_over_grnd_kmph*np.cos(np.deg2rad(gpvtg.true_track)) #get u component of SOG and convert to m/s
+					v[ivel] = 0.2778 * gpvtg.spd_over_grnd_kmph*np.sin(np.deg2rad(gpvtg.true_track)) #get v component of SOG and convert to m/s
 					ivel+=1
 				else: #if not GPGGA or GPVTG, continue to start of loop
 					continue
