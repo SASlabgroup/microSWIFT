@@ -11,12 +11,11 @@ from time import sleep
 
 #third party imports
 import RPi.GPIO as GPIO
-#import adafruit_fxos8700
-import adafruit_fxas21002c
 
 #my imports 
 from config3 import Config
 import adafruit_fxos8700_microSWIFT
+import adafruit_fxas21002c_microSWIFT
 
 #---------------------------------------------------------------
 configDat = sys.argv[1]
@@ -55,7 +54,7 @@ burst_seconds=config.getInt('System', 'burst_seconds')
 bad = config.getInt('System', 'badValue')
 
 #IMU parameters
-imuFreq=config.getInt('IMU', 'imuFreq')
+imuFreq=config.getFloat('IMU', 'imuFreq')
 imu_samples = imuFreq*burst_seconds
 imu_gpio=config.getInt('IMU', 'imu_gpio')
 
@@ -65,14 +64,26 @@ GPIO.setup(imu_gpio,GPIO.OUT)
 #turn IMU on for script recognizes i2c address
 GPIO.output(imu_gpio,GPIO.HIGH)
 
+"""
+FXOS8700 accelerometer range values
+ACCEL_RANGE_2G = 0x00
+ACCEL_RANGE_4G = 0x01
+ACCEL_RANGE_8G = 0x02
+
+FXAS21002 gyro range values
+GYRO_RANGE_250DPS   = 250
+GYRO_RANGE_500DPS   = 500
+GYRO_RANGE_1000DPS  = 1000
+GYRO_RANGE_2000DPS  = 2000
+"""
 
 def init_imu():
     #initialize fxos and fxas devices (required after turning off device)
     logger.info('power on IMU')
     GPIO.output(imu_gpio,GPIO.HIGH)
     i2c = busio.I2C(board.SCL, board.SDA)
-    fxos = adafruit_fxos8700_microSWIFT.FXOS8700(i2c)
-    fxas = adafruit_fxas21002c.FXAS21002C(i2c)
+    fxos = adafruit_fxos8700_microSWIFT.FXOS8700(i2c, accel_range=0x00)
+    fxas = adafruit_fxas21002c_microSWIFT.FXAS21002C(i2c, gyro_range=500)
     
     return fxos, fxas
 
@@ -83,7 +94,7 @@ def init_imu():
  
 # Main loop will read the acceleration and magnetometer values every second
 # and print them out.
-imu = np.empty(imu_samples)
+imu = []
 isample = 0
 
 
@@ -129,15 +140,14 @@ while True:
         
                 isample = isample + 1
                 
-                if isample == imu_samples:
-                    break
-                elif time.time() >= t_end and 0 < imu_samples-isample <= 40:
+               
+                if time.time() >= t_end and 0 < imu_samples-isample <= 40:
                     continue
                 elif time.time() > t_end and imu_samples-isample > 40:
                     break
                 
                 #hard coded sleep to control recording rate. NOT ideal but works for now    
-                sleep(0.23)
+                sleep(0.065)
             
             logger.info('end burst')
             logger.info('IMU samples %s' %isample)  
