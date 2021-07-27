@@ -12,7 +12,7 @@ import struct # do we need this twice?
 from time import sleep
 
 # Raspberry pi GPIO
-# import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 
 # Import microSWIFT specific information
 from utils.config3 import Config
@@ -57,12 +57,12 @@ def recordGPS(configFilename):
     gpsGPIO = config.getInt('GPS', 'gpsGPIO')
     gps_timeout = config.getInt('GPS','timeout')
 
-    # #setup GPIO and initialize
-    # GPIO.setmode(GPIO.BCM)
-    # GPIO.setwarnings(False)
-    # #GPIO.setup(modemGPIO,GPIO.OUT)
-    # GPIO.setup(gpsGPIO,GPIO.OUT)
-    # GPIO.output(gpsGPIO,GPIO.HIGH) #set GPS enable pin high to turn on and start acquiring signal
+    #setup GPIO and initialize
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+    #GPIO.setup(modemGPIO,GPIO.OUT)
+    GPIO.setup(gpsGPIO,GPIO.OUT)
+    GPIO.output(gpsGPIO,GPIO.HIGH) #set GPS enable pin high to turn on and start acquiring signal
 
     return GPSdataFilename
     
