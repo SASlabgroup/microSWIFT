@@ -64,5 +64,29 @@ def recordGPS(configFilename):
     GPIO.setup(gpsGPIO,GPIO.OUT)
     GPIO.output(gpsGPIO,GPIO.HIGH) #set GPS enable pin high to turn on and start acquiring signal
 
+    #set up logging
+    logDir = config.getString('Loggers', 'logDir')
+    LOG_LEVEL = config.getString('Loggers', 'DefaultLogLevel')
+    #format log messages (example: 2020-11-23 14:31:00,578, recordGPS - info - this is a log message)
+    #NOTE: TIME IS SYSTEM TIME
+    LOG_FORMAT = ('%(asctime)s, %(filename)s - [%(levelname)s] - %(message)s')
+    #log file name (example: home/pi/microSWIFT/recordGPS_23Nov2020.log)
+    LOG_FILE = (logDir + '/' + 'recordGPS' + '_' + datetime.strftime(datetime.now(), '%d%b%Y') + '.log')
+    logger = getLogger('system_logger')
+    logger.setLevel(LOG_LEVEL)
+    logFileHandler = FileHandler(LOG_FILE)
+    logFileHandler.setLevel(LOG_LEVEL)
+    logFileHandler.setFormatter(Formatter(LOG_FORMAT))
+    logger.addHandler(logFileHandler)
+
+    logger.info("---------------recordGPS.py------------------")
+    logger.info('python version {}'.format(sys.version))
+
+    logger.info('microSWIFT configuration:')
+    logger.info('float ID: {0}, payload type: {1}, sensors type: {2}, '.format(floatID, payload_type, sensor_type))
+    logger.info('burst seconds: {0}, burst interval: {1}, burst time: {2}'.format(burst_seconds, burst_int, burst_time))
+    logger.info('gps sample rate: {0}, call interval {1}, call time: {2}'.format(gps_freq, call_int, call_time))
+
+    # Return the GPS filename to be read into the onboard processing
     return GPSdataFilename
     
