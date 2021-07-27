@@ -9,3 +9,6 @@ logs/ #log files
 *.pydevproject #Eclipse pydev project file
 .project
 .DS_Store
+
+# ignore pycache bytecode
+GPSwaves/__pycache__/ 
