@@ -7,10 +7,12 @@ from struct import *
 from logging import *
 from datetime import datetime
 import time as t
-# import RPi.GPIO as GPIO
 import pynmea2
 import struct # do we need this twice?
 from time import sleep
+
+# Raspberry pi GPIO
+# import RPi.GPIO as GPIO
 
 # Import microSWIFT specific information
 from utils.config3 import Config
@@ -30,31 +32,31 @@ def recordGPS(configFilename):
         logger.info ('Error loading config file: "%s"' % configFilename)
         sys.exit(1)
     
-    # #system parameters
-    # dataDir = config.getString('System', 'dataDir')
-    # floatID = os.uname()[1]
-    # #floatID = config.getString('System', 'floatID') 
-    # sensor_type = config.getInt('System', 'sensorType')
-    # badValue = config.getInt('System', 'badValue')
-    # numCoef = config.getInt('System', 'numCoef')
-    # port = config.getInt('System', 'port')
-    # payload_type = config.getInt('System', 'payloadType')
-    # burst_seconds = config.getInt('System', 'burst_seconds')
-    # burst_time = config.getInt('System', 'burst_time')
-    # burst_int = config.getInt('System', 'burst_interval')
-    # call_int = config.getInt('Iridium', 'call_interval')
-    # call_time = config.getInt('Iridium', 'call_time')
+    #system parameters
+    dataDir = config.getString('System', 'dataDir')
+    floatID = os.uname()[1]
+    #floatID = config.getString('System', 'floatID') 
+    sensor_type = config.getInt('System', 'sensorType')
+    badValue = config.getInt('System', 'badValue')
+    numCoef = config.getInt('System', 'numCoef')
+    port = config.getInt('System', 'port')
+    payload_type = config.getInt('System', 'payloadType')
+    burst_seconds = config.getInt('System', 'burst_seconds')
+    burst_time = config.getInt('System', 'burst_time')
+    burst_int = config.getInt('System', 'burst_interval')
+    call_int = config.getInt('Iridium', 'call_interval')
+    call_time = config.getInt('Iridium', 'call_time')
 
 
-    # #GPS parameters 
-    # gps_port = config.getString('GPS', 'port')
-    # baud = config.getInt('GPS', 'baud')
-    # startBaud = config.getInt('GPS', 'startBaud')
-    # gps_freq = config.getInt('GPS', 'GPS_frequency') #currently not used, hardcoded at 4 Hz (see init_gps function)
-    # #numSamplesConst = config.getInt('System', 'numSamplesConst')
-    # gps_samples = gps_freq*burst_seconds
-    # gpsGPIO = config.getInt('GPS', 'gpsGPIO')
-    # gps_timeout = config.getInt('GPS','timeout')
+    #GPS parameters 
+    gps_port = config.getString('GPS', 'port')
+    baud = config.getInt('GPS', 'baud')
+    startBaud = config.getInt('GPS', 'startBaud')
+    gps_freq = config.getInt('GPS', 'GPS_frequency') #currently not used, hardcoded at 4 Hz (see init_gps function) 
+    #numSamplesConst = config.getInt('System', 'numSamplesConst')
+    gps_samples = gps_freq*burst_seconds
+    gpsGPIO = config.getInt('GPS', 'gpsGPIO')
+    gps_timeout = config.getInt('GPS','timeout')
 
     # #setup GPIO and initialize
     # GPIO.setmode(GPIO.BCM)
