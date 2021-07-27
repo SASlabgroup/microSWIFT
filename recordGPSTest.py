@@ -20,7 +20,6 @@ from utils.config3 import Config
 
 def recordGPS(configFilename):
     print('GPS recording')
-    print(configFilename)
     global GPSdataFilename
     GPSdataFilename = 'microSWIFT022_GPS_12Jul2021_202000UTC.dat'
 

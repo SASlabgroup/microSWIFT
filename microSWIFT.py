@@ -21,23 +21,10 @@ begin_script_time = datetime.datetime.now()
 
 ## ------------------- Test function section --------------------
 # this will be removed and each function will live in its own file as we start to make these functions work
-# def recordGPS():
-#     print('GPS recording')
 
 def recordIMU(configFilename):
     print('IMU recording')
     return 'IMUdataFilename'
-
-# # processGPS data test functions
-# def GPStoUVZ(fname):
-#     print('reading in GPS data and converting to UVZ')
-#     u = v = z = lat = lon = [] 
-#     return u, v, z, lat, lon
-
-# def GPSwaves(u,v,z,fs):
-#     print('Computing bulk waves parameters from GPSwaves algorithm')
-#     Hs = Tp = Dp = E = f = a1 = b1 = a2 = b2 = []
-#     return Hs, Tp, Dp, E, f, a1, b1, a2, b2
 
 # Telemetry test functions
 def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2):
@@ -49,6 +36,7 @@ def sendSBD(TX_fname):
     print('Sending SBD...')
     print('Sent SBD...')
 
+## ------------- Boot up Characteristics --------------------------------
 # Define Config file name
 configFilename = r'utils/Config.dat' 
 
