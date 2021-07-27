@@ -12,3 +12,12 @@ logs/ #log files
 
 # ignore pycache bytecode
 GPSwaves/__pycache__/ 
+__pycache__/
+GPIOEmulator/
+microSWIFT022_GPS_12Jul2021_202000UTC.dat
+
+# Raspberry pi emulator module files
+EmulatorGUI.py
+PIN.py
+tester2.py
+TypeChecker.py

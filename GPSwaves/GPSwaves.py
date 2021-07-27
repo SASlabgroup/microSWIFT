@@ -269,8 +269,8 @@ def GPSwaves(u, v, z, fs):
     # note tha 0 deg is for waves headed towards positive x (EAST, right hand system)
     dir1 = np.arctan2(b1, a1) # [rad], 4 quadrant
     dir2 = np.arctan2(b2, a2) / 2 # [rad], only 2 quadrant
-    spread1 = np.sqrt( 2 * (1 - np.sqrt(a1 ** 2 + b2 ** 2) ) )
-    spread2 = np.sqrt( np.abs( 0.5 - 0.5 * (a2 * np.cos(2 * dir2) + b2 * np.cos(2 * dir2) ) ) ) 
+    # spread1 = np.sqrt( 2 * (1 - np.sqrt(np.abs((a1 ** 2) + (b2 ** 2))) ) ) # Getting a strange value - commenting out for now
+    # spread2 = np.sqrt( np.abs( 0.5 - 0.5 * (a2 * np.cos(2 * dir2) + b2 * np.cos(2 * dir2) ) ) ) 
 
     # ----------- Screen for presence/absence of vertical data --------
     if zdummy == 1: 
@@ -313,7 +313,7 @@ def GPSwaves(u, v, z, fs):
     dir[ eastdirs ] = dir[ eastdirs ] + 180 # take reciprocal such wave direction is FROM, not TOWARDS
 
     # Directional Spread
-    spread = 180 / np.pi * spread1
+    # spread = 180 / np.pi * spread1
 
     # Compute Dominant Direction 
     Dp = dir[fpindex] 
@@ -332,7 +332,7 @@ def GPSwaves(u, v, z, fs):
     E = np.delete(E, ind_to_delete)
     Ezz = np.delete(Ezz, ind_to_delete)
     dir = np.delete(dir, ind_to_delete)
-    spread = np.delete( spread, ind_to_delete)
+    # spread = np.delete( spread, ind_to_delete)
     a1 = np.delete(a1, ind_to_delete)
     b1 = np.delete(b1, ind_to_delete)
     a2 = np.delete(a2, ind_to_delete)

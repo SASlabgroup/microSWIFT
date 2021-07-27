@@ -9,23 +9,25 @@ and IMU as well as schedules the processing scripts after they are done recordin
 """
 
 # Main import Statemennts
-from threading import Thread
+import concurrent.futures
 from recordGPSTest import recordGPS
 from GPSwaves.GPSwaves import GPSwaves
+from GPSwaves.GPStoUVZ import GPStoUVZ
 
 ## ------------------- Test function section --------------------
 # this will be removed and each function will live in its own file as we start to make these functions work
 # def recordGPS():
 #     print('GPS recording')
 
-def recordIMU():
+def recordIMU(configFilename):
     print('IMU recording')
+    return 'IMUdataFilename'
 
-# processGPS data test functions
-def GPStoUVZ(fname):
-    print('reading in GPS data and converting to UVZ')
-    u = v = z = lat = lon = [] 
-    return u, v, z, lat, lon
+# # processGPS data test functions
+# def GPStoUVZ(fname):
+#     print('reading in GPS data and converting to UVZ')
+#     u = v = z = lat = lon = [] 
+#     return u, v, z, lat, lon
 
 # def GPSwaves(u,v,z,fs):
 #     print('Computing bulk waves parameters from GPSwaves algorithm')
@@ -42,38 +44,30 @@ def sendSBD(TX_fname):
     print('Sending SBD...')
     print('Sent SBD...')
 
+# Define Config file name
+configFilename = r'utils/Config.dat' 
 
 # Boot up as soon as power is turned on and get microSWIFT characteristics
     # Get microSWIFT number 
     # setup log files
-GPS_fs = 4
+GPS_fs = 4 # need to get from config file
 IMU_fs = 4
 
 ## -------------- GPS and IMU Recording Section ---------------------------
-# Run recordGPS.py and recordIMU.py concurrently
-# Create threads to run concurrently 
-threads = []
-recordGPS_thread = Thread(target=recordGPS, args=[])
-recordIMU_thread = Thread(target=recordIMU, args=[])
+# Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
+with concurrent.futures.ThreadPoolExecutor() as executor:
+    # Submit Futures 
+    recordGPS_future = executor.submit(recordGPS, configFilename)
+    recordIMU_future = executor.submit(recordIMU, configFilename)
 
-# Start each recording thread 
-recordGPS_thread.start()
-recordIMU_thread.start()
-
-# Add each thread to the threads list
-threads.append(recordGPS_thread)
-threads.append(recordIMU_thread)
-
-# Wait to continue main thread until all recording threads have finished by "joining"
-for process in threads:
-    process.join()
+    # get results from Futures
+    GPSdataFilename = recordGPS_future.result()
+    IMUdataFilename = recordIMU_future.result()
 
 ## --------------- Data Processing Section ---------------------------------
 # Run processGPS
-fname = 'name from recording section'
-
 # Compute u, v and z from raw GPS data
-u, v, z, lat, lon = GPStoUVZ(fname)
+u, v, z, lat, lon = GPStoUVZ(GPSdataFilename)
 
 # Compute Wave Statistics from GPSwaves algorithm
 Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u, v, z, GPS_fs)
