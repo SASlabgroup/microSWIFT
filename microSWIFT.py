@@ -14,6 +14,11 @@ from recordGPSTest import recordGPS
 from GPSwaves.GPSwaves import GPSwaves
 from GPSwaves.GPStoUVZ import GPStoUVZ
 
+# Timing of Function test
+import datetime
+# Time entire script
+begin_script_time = datetime.datetime.now()
+
 ## ------------------- Test function section --------------------
 # this will be removed and each function will live in its own file as we start to make these functions work
 # def recordGPS():
@@ -54,6 +59,9 @@ GPS_fs = 4 # need to get from config file
 IMU_fs = 4
 
 ## -------------- GPS and IMU Recording Section ---------------------------
+# Time recording section
+begin_recording_time = datetime.datetime.now()
+
 # Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
 with concurrent.futures.ThreadPoolExecutor() as executor:
     # Submit Futures 
@@ -64,7 +72,13 @@ with concurrent.futures.ThreadPoolExecutor() as executor:
     GPSdataFilename = recordGPS_future.result()
     IMUdataFilename = recordIMU_future.result()
 
+# End Timing of recording
+print('Recording section took', datetime.datetime.now() - begin_recording_time)
+
 ## --------------- Data Processing Section ---------------------------------
+# Time processing section
+begin_processing_time = datetime.datetime.now()
+
 # Run processGPS
 # Compute u, v and z from raw GPS data
 u, v, z, lat, lon = GPStoUVZ(GPSdataFilename)
@@ -72,6 +86,8 @@ u, v, z, lat, lon = GPStoUVZ(GPSdataFilename)
 # Compute Wave Statistics from GPSwaves algorithm
 Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u, v, z, GPS_fs)
 
+# End Timing of recording
+print('Processing section took', datetime.datetime.now() - begin_processing_time)
 
 # Run processIMU
     # IMU data:
@@ -88,5 +104,7 @@ sendSBD(TX_fname)
 
 # Restart Recording
 
+# End Timing of entire Script
+print('microSWIFT.py took', datetime.datetime.now() - begin_script_time)
 
 
