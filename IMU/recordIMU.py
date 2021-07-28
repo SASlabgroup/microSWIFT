@@ -73,6 +73,7 @@ def recordIMU(configFilename):
             logger.info('end burst')
             logger.info('IMU samples %s' %isample) 
             print('IMU samples: ', isample)
+            print('IMU ending burst at: ', datetime.now())
 
             # Turn IMU Off   
             GPIO.output(imu_gpio,GPIO.LOW)

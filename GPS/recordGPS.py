@@ -119,6 +119,7 @@ def recordGPS(configFilename):
 
     ## -------- Define Record Function ----------------
     def record(ser,fname):
+        print('starting GPS burst at ', datetime.now())
         try:
             ser.flushInput()
             with open(fname, 'w',newline='\n') as gps_out:
@@ -155,6 +156,7 @@ def recordGPS(configFilename):
                     elif ipos == gps_samples and ivel == gps_samples:
                         break
             # Output logger information on samples
+            print('Ending GPS burst at ', datetime.now())
             logger.info('number of GPGGA samples = %s' %ipos)
             logger.info('number of GPVTG samples = %s' %ivel)
             logger.info('number of bad samples %d' %badpts)
@@ -236,7 +238,6 @@ def recordGPS(configFilename):
 
         # start recording
         logger.info("starting burst")
-        print('starting GPS burst at ', datetime.now())
 
         #create file name
         GPSdataFilename = dataDir + floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
