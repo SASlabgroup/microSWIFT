@@ -26,7 +26,7 @@ import IMU.adafruit_fxas21002c_microSWIFT
 
 def recordIMU(configFilename):
     ## --------- Define Initialize Functionn --------------
-    def init_imu():
+    def init():
         #initialize fxos and fxas devices (required after turning off device)
         logger.info('power on IMU')
         GPIO.output(imu_gpio,GPIO.HIGH)
@@ -86,6 +86,15 @@ def recordIMU(configFilename):
     #turn IMU on for script recognizes i2c address
     GPIO.output(imu_gpio,GPIO.HIGH)
 
+    ## --------------- Initialize IMU -----------------
+    logger.info('initializing IMU')
+    fxos, fxas = init()
+    logger.info('IMU initialized')
+
+    ## --------------- Record IMU ----------------------
+    
+
+
+    # Return IMUdataFilename to main microSWIFT.py
     IMUdataFilename = 'IMUfname'
     return IMUdataFilename
-
