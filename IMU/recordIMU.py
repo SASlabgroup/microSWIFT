@@ -13,13 +13,15 @@ import logging
 from logging import *
 from time import sleep
 
-#third party imports
+# Raspberry pi inputs
 import RPi.GPIO as GPIO
 
-#my imports 
-from config3 import Config
-import adafruit_fxos8700_microSWIFT
-import adafruit_fxas21002c_microSWIFT
+# Configuration imports
+from utils.config3 import Config
+
+# IMU sensor imports
+import IMU.adafruit_fxos8700_microSWIFT
+import IMU.adafruit_fxas21002c_microSWIFT
 
 
 def recordIMU(configFilename):
