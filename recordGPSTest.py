@@ -233,21 +233,24 @@ def recordGPS(configFilename):
     ## ------------- Record GPS ---------------------------
     if gps_initialized:
         logger.info('waiting for burst start')
+        print('waiting for burst start')
         while True:
             #burst start conditions
             now=datetime.utcnow()
             if now.minute % burst_int == 0 and now.second == 0:
                 
                 logger.info("starting burst")
+                print('starting burst')
                 #create file name
                 GPSdataFilename = dataDir + floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
                 logger.info("file name: %s" %GPSdataFilename)
                 #call record_gps	
                 record(ser,GPSdataFilename)
+                return GPSdataFilename 
             else:
                 sleep(0.25)		
     else:
         logger.info("GPS not initialized, exiting")
         # Return the GPS filename to be read into the onboard processing
-        return GPSdataFilename  
+        return 'NonInitializedFilename' # this needs to be added - it will be a standard file for when GPS is not initailized
         # sys.exit(1)
