@@ -16,7 +16,6 @@ import RPi.GPIO as GPIO
 
 # Import microSWIFT specific information
 from utils.config3 import Config
-# import process_data
 
 def recordGPS(configFilename):
     print('GPS recording...')
