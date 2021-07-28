@@ -23,7 +23,7 @@ begin_script_time = datetime.datetime.now()
 # this will be removed and each function will live in its own file as we start to make these functions work
 
 def recordIMU(configFilename):
-    print('IMU recording')
+    print('IMU recording...')
     return 'IMUdataFilename'
 
 # Telemetry test functions
