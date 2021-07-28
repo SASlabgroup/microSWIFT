@@ -25,6 +25,8 @@ import IMU.adafruit_fxas21002c_microSWIFT
 
 
 def recordIMU(configFilename):
+    logger.info('---------------recordIMU.py------------------')
+
     ## --------- Define Initialize Functionn --------------
     def init():
         #initialize fxos and fxas devices (required after turning off device)
@@ -37,6 +39,45 @@ def recordIMU(configFilename):
         return fxos, fxas
 
     ## ---------- Define Record Function -------------------
+    def record(IMUdataFilename):
+        logger.info('starting burst')
+             
+        with open(IMUdataFilename, 'w',newline='\n') as imu_out:
+            logger.info('open file for writing: %s' %IMUdataFilename)
+            t_end = time.time() + burst_seconds #get end time for burst
+            isample=0
+            while time.time() <= t_end or isample < imu_samples:
+        
+                try:
+                    accel_x, accel_y, accel_z = fxos.accelerometer
+                    mag_x, mag_y, mag_z = fxos.magnetometer
+                    gyro_x, gyro_y, gyro_z = fxas.gyroscope
+                except Exception as e:
+                    logger.info(e)
+                    logger.info('error reading IMU data')
+         
+                timestamp='{:%Y-%m-%d %H:%M:%S}'.format(datetime.utcnow())
+
+                imu_out.write('%s,%f,%f,%f,%f,%f,%f,%f,%f,%f\n' %(timestamp,accel_x,accel_y,accel_z,mag_x,mag_y,mag_z,gyro_x,gyro_y,gyro_z))
+                imu_out.flush()
+        
+                isample = isample + 1
+                
+               
+                if time.time() >= t_end and 0 < imu_samples-isample <= 40:
+                    continue
+                elif time.time() > t_end and imu_samples-isample > 40:
+                    break
+                
+                #hard coded sleep to control recording rate. NOT ideal but works for now    
+                sleep(0.065)
+            
+            logger.info('end burst')
+            logger.info('IMU samples %s' %isample)  
+            # Turn IMU Off   
+            GPIO.output(imu_gpio,GPIO.LOW)
+            logger.info('power down IMU')
+        
 
 
     ## ------------ Main Body of Function ------------------
@@ -92,9 +133,10 @@ def recordIMU(configFilename):
     logger.info('IMU initialized')
 
     ## --------------- Record IMU ----------------------
-
-
+    #create new file for to record IMU to 
+    IMUdataFilename = dataDir + floatID + '_IMU_'+'{:%d%b%Y_%H%M%SUTC.dat}'.format(datetime.utcnow())
+    logger.info('file name: %s' %IMUdataFilename)
+    record(IMUdataFilename)
 
     # Return IMUdataFilename to main microSWIFT.py
-    IMUdataFilename = 'IMUfname'
     return IMUdataFilename
