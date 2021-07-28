@@ -29,11 +29,6 @@ while True:
 
     ## ------------------- Test function section --------------------
     # this will be removed and each function will live in its own file as we start to make these functions work
-
-    # def recordIMU(configFilename):
-    #     print('IMU recording...')
-    #     return 'IMUdataFilename'
-
     # Telemetry test functions
     def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2):
         print('TX file created with the variables Hs, Tp, Dp, E, f, a1, b1, a2, b2')
