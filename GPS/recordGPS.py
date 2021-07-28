@@ -1,4 +1,7 @@
 ## recordGPS.py - centralized version
+'''
+author: @erainvil 
+'''
 
 # Package imports
 import serial, sys, os
