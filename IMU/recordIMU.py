@@ -31,8 +31,8 @@ def recordIMU(configFilename):
         logger.info('power on IMU')
         GPIO.output(imu_gpio,GPIO.HIGH)
         i2c = busio.I2C(board.SCL, board.SDA)
-        fxos = adafruit_fxos8700_microSWIFT.FXOS8700(i2c, accel_range=0x00)
-        fxas = adafruit_fxas21002c_microSWIFT.FXAS21002C(i2c, gyro_range=500)
+        fxos = IMU.adafruit_fxos8700_microSWIFT.FXOS8700(i2c, accel_range=0x00)
+        fxas = IMU.adafruit_fxas21002c_microSWIFT.FXAS21002C(i2c, gyro_range=500)
         
         return fxos, fxas
 
@@ -92,7 +92,7 @@ def recordIMU(configFilename):
     logger.info('IMU initialized')
 
     ## --------------- Record IMU ----------------------
-    
+
 
 
     # Return IMUdataFilename to main microSWIFT.py
