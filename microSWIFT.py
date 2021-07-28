@@ -16,85 +16,88 @@ from GPS.recordGPS import recordGPS
 from GPS.GPSwaves import GPSwaves
 from GPS.GPStoUVZ import GPStoUVZ
 
-# Timing of Function test
-import datetime
-# Time entire script
-begin_script_time = datetime.datetime.now()
+# Start running continuously
+while True:
 
-## ------------------- Test function section --------------------
-# this will be removed and each function will live in its own file as we start to make these functions work
+    # Timing of Function test
+    import datetime
+    # Time entire script
+    begin_script_time = datetime.datetime.now()
 
-def recordIMU(configFilename):
-    print('IMU recording...')
-    return 'IMUdataFilename'
+    ## ------------------- Test function section --------------------
+    # this will be removed and each function will live in its own file as we start to make these functions work
 
-# Telemetry test functions
-def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2):
-    print('TX file created with the variables Hs, Tp, Dp, E, f, a1, b1, a2, b2')
-    TX_fname = 'TX-file'
-    return TX_fname
+    def recordIMU(configFilename):
+        print('IMU recording...')
+        return 'IMUdataFilename'
 
-def sendSBD(TX_fname):
-    print('Sending SBD...')
-    print('Sent SBD...')
+    # Telemetry test functions
+    def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2):
+        print('TX file created with the variables Hs, Tp, Dp, E, f, a1, b1, a2, b2')
+        TX_fname = 'TX-file'
+        return TX_fname
 
-## ------------- Boot up Characteristics --------------------------------
-# Define Config file name
-configFilename = r'utils/Config.dat' 
+    def sendSBD(TX_fname):
+        print('Sending SBD...')
+        print('Sent SBD...')
 
-# Boot up as soon as power is turned on and get microSWIFT characteristics
-    # Get microSWIFT number 
-    # setup log files
-GPS_fs = 4 # need to get from config file
-IMU_fs = 4
+    ## ------------- Boot up Characteristics --------------------------------
+    # Define Config file name
+    configFilename = r'utils/Config.dat' 
 
-## -------------- GPS and IMU Recording Section ---------------------------
-# Time recording section
-begin_recording_time = datetime.datetime.now()
+    # Boot up as soon as power is turned on and get microSWIFT characteristics
+        # Get microSWIFT number 
+        # setup log files
+    GPS_fs = 4 # need to get from config file
+    IMU_fs = 4
 
-# Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
-with concurrent.futures.ThreadPoolExecutor() as executor:
-    # Submit Futures 
-    recordGPS_future = executor.submit(recordGPS, configFilename)
-    recordIMU_future = executor.submit(recordIMU, configFilename)
+    ## -------------- GPS and IMU Recording Section ---------------------------
+    # Time recording section
+    begin_recording_time = datetime.datetime.now()
 
-    # get results from Futures
-    GPSdataFilename = recordGPS_future.result()
-    IMUdataFilename = recordIMU_future.result()
+    # Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        # Submit Futures 
+        recordGPS_future = executor.submit(recordGPS, configFilename)
+        recordIMU_future = executor.submit(recordIMU, configFilename)
 
-# End Timing of recording
-print('Recording section took', datetime.datetime.now() - begin_recording_time)
+        # get results from Futures
+        GPSdataFilename = recordGPS_future.result()
+        IMUdataFilename = recordIMU_future.result()
 
-## --------------- Data Processing Section ---------------------------------
-# Time processing section
-begin_processing_time = datetime.datetime.now()
+    # End Timing of recording
+    print('Recording section took', datetime.datetime.now() - begin_recording_time)
 
-# Run processGPS
-# Compute u, v and z from raw GPS data
-u, v, z, lat, lon = GPStoUVZ(GPSdataFilename)
+    ## --------------- Data Processing Section ---------------------------------
+    # Time processing section
+    begin_processing_time = datetime.datetime.now()
 
-# Compute Wave Statistics from GPSwaves algorithm
-Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u, v, z, GPS_fs)
+    # Run processGPS
+    # Compute u, v and z from raw GPS data
+    u, v, z, lat, lon = GPStoUVZ(GPSdataFilename)
 
-# End Timing of recording
-print('Processing section took', datetime.datetime.now() - begin_processing_time)
+    # Compute Wave Statistics from GPSwaves algorithm
+    Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u, v, z, GPS_fs)
 
-# Run processIMU
-    # IMU data:
-    # read in IMU data from file 
-    # IMUtoXYZ(IMU data)
-    # XYZwaves( XYZ from above )
-    
-## -------------- Telemetry Section ----------------------------------
-# Create TX file from processData.py output from combined wave products
-TX_fname = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2)
+    # End Timing of recording
+    print('Processing section took', datetime.datetime.now() - begin_processing_time)
 
-# Send SBD over telemetry
-sendSBD(TX_fname)
+    # Run processIMU
+        # IMU data:
+        # read in IMU data from file 
+        # IMUtoXYZ(IMU data)
+        # XYZwaves( XYZ from above )
+        
+    ## -------------- Telemetry Section ----------------------------------
+    # Create TX file from processData.py output from combined wave products
+    TX_fname = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2)
 
-# Restart Recording
+    # Send SBD over telemetry
+    sendSBD(TX_fname)
 
-# End Timing of entire Script
-print('microSWIFT.py took', datetime.datetime.now() - begin_script_time)
+    # Restart Recording
+
+    # End Timing of entire Script
+    print('microSWIFT.py took', datetime.datetime.now() - begin_script_time)
 
 
