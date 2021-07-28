@@ -11,7 +11,6 @@ from logging import *
 from datetime import datetime
 import time as t
 import pynmea2
-# import struct # do we need this twice?
 from time import sleep
 
 # Raspberry pi GPIO
