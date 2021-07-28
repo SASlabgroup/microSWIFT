@@ -16,7 +16,10 @@ from GPS.recordGPS import recordGPS
 from GPS.GPSwaves import GPSwaves
 from GPS.GPStoUVZ import GPStoUVZ
 
-# Start running continuously
+# Import IMU functions
+from IMU.recordIMU import recordIMU
+
+# Start running continuously while raspberry pi is on
 while True:
 
     # Timing of Function test
@@ -27,9 +30,9 @@ while True:
     ## ------------------- Test function section --------------------
     # this will be removed and each function will live in its own file as we start to make these functions work
 
-    def recordIMU(configFilename):
-        print('IMU recording...')
-        return 'IMUdataFilename'
+    # def recordIMU(configFilename):
+    #     print('IMU recording...')
+    #     return 'IMUdataFilename'
 
     # Telemetry test functions
     def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2):
@@ -94,8 +97,6 @@ while True:
 
     # Send SBD over telemetry
     sendSBD(TX_fname)
-
-    # Restart Recording
 
     # End Timing of entire Script
     print('microSWIFT.py took', datetime.datetime.now() - begin_script_time)
