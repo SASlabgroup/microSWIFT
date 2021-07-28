@@ -128,6 +128,7 @@ def recordGPS(configFilename):
                 while t.time() <= t_end or ipos < gps_samples or ivel < gps_samples:
                     newline=ser.readline().decode()
                     gps_out.write(newline)
+                    print(newline) ## this will be removed after completion
                     gps_out.flush()
             
                     if "GPGGA" in newline:
@@ -161,9 +162,6 @@ def recordGPS(configFilename):
             logger.info(e, exc_info=True)
 
     ## ------------ Main body of function ------------------
-    # GPSdataFilename = 'microSWIFT022_GPS_12Jul2021_202000UTC.dat'
-
-
     # load config file and get parameters
     config = Config() # Create object and load file
     ok = config.loadFile( configFilename )
