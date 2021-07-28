@@ -233,11 +233,10 @@ def recordGPS(configFilename):
     # If GPS signal is initialized start recording
     if gps_initialized:
         logger.info('waiting for burst start')
-        print('waiting for burst start')
 
         # start recording
         logger.info("starting burst")
-        print('starting burst')
+        print('starting GPS burst at ', datetime.now())
 
         #create file name
         GPSdataFilename = dataDir + floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())

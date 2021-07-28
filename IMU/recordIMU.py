@@ -39,7 +39,7 @@ def recordIMU(configFilename):
     ## ---------- Define Record Function -------------------
     def record(IMUdataFilename):
         logger.info('starting burst')
-        print('starting IMU burst')
+        print('starting IMU burst at ', datetime.now())
         
         # Open the new IMU data file for logging
         with open(IMUdataFilename, 'w',newline='\n') as imu_out:
