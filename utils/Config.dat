@@ -69,7 +69,7 @@ payloadType=7
 badValue=999
 
 #length of burst in seconds
-burst_seconds=5 # test value
+burst_seconds=5
 
 #minute of the hour on which to start the burst
 burst_time=0
