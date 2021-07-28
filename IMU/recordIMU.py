@@ -46,7 +46,8 @@ def recordIMU(configFilename):
             logger.info('open file for writing: %s' %IMUdataFilename)
             t_end = time.time() + burst_seconds #get end time for burst
             isample=0
-            while time.time() <= t_end or isample < imu_samples:
+            while time.time() <= t_end:
+                # Gete values from IMU
                 try:
                     accel_x, accel_y, accel_z = fxos.accelerometer
                     mag_x, mag_y, mag_z = fxos.magnetometer
@@ -54,17 +55,21 @@ def recordIMU(configFilename):
                 except Exception as e:
                     logger.info(e)
                     logger.info('error reading IMU data')
-         
+
+                # Get current timestamp
                 timestamp='{:%Y-%m-%d %H:%M:%S}'.format(datetime.utcnow())
 
+                # Write data and timestamp to file
                 imu_out.write('%s,%f,%f,%f,%f,%f,%f,%f,%f,%f\n' %(timestamp,accel_x,accel_y,accel_z,mag_x,mag_y,mag_z,gyro_x,gyro_y,gyro_z))
                 imu_out.flush()
-        
+                
+                # Index up number of samples
                 isample = isample + 1
             
             # End of IMU sampling
             logger.info('end burst')
             logger.info('IMU samples %s' %isample) 
+            print('IMU samples: ', isample)
 
             # Turn IMU Off   
             GPIO.output(imu_gpio,GPIO.LOW)
