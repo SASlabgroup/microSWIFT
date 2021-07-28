@@ -10,7 +10,7 @@ and IMU as well as schedules the processing scripts after they are done recordin
 
 # Main import Statemennts
 import concurrent.futures
-from recordGPSTest import recordGPS
+from GPSwaves.recordGPSTest import recordGPS
 from GPSwaves.GPSwaves import GPSwaves
 from GPSwaves.GPStoUVZ import GPStoUVZ
 
