@@ -127,7 +127,6 @@ def recordGPS(configFilename):
                 while t.time() <= t_end or ipos < gps_samples or ivel < gps_samples:
                     newline=ser.readline().decode()
                     gps_out.write(newline)
-                    print(newline) ## this will be removed after completion
                     gps_out.flush()
             
                     if "GPGGA" in newline:
