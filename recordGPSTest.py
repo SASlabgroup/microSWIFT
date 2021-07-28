@@ -19,6 +19,8 @@ from utils.config3 import Config
 # import process_data
 
 def recordGPS(configFilename):
+    print('GPS recording...')
+
     ## -------- Define Initialize function ------------
     def init():
         nmea_time=''
@@ -115,19 +117,6 @@ def recordGPS(configFilename):
 
     ## -------- Define Record Function ----------------
     def record(ser,fname):
-
-        #initialize empty numpy array and fill with bad values
-        u = np.empty(gps_samples)
-        u.fill(badValue)
-        v = np.empty(gps_samples)
-        v.fill(badValue)
-        z = np.empty(gps_samples)
-        z.fill(badValue)
-        lat = np.empty(gps_samples)
-        lat.fill(badValue)
-        lon = np.empty(gps_samples)
-        lon.fill(badValue)
-        
         try:
             ser.flushInput()
             with open(fname, 'w',newline='\n') as gps_out:
@@ -149,16 +138,10 @@ def recordGPS(configFilename):
                             sleep(10)
                             ipos+=1
                             continue
-                        z[ipos] = gpgga.altitude #units are meters
-                        lat[ipos] = gpgga.latitude
-                        lon[ipos] = gpgga.longitude
                         ipos+=1
                     elif "GPVTG" in newline:
                         if gpgga.gps_qual < 1:
                             continue
-                        gpvtg = pynmea2.parse(newline,check=True)   #grab gpvtg sentence
-                        u[ivel] = 0.2778 * gpvtg.spd_over_grnd_kmph*np.cos(np.deg2rad(gpvtg.true_track)) #get u component of SOG and convert to m/s
-                        v[ivel] = 0.2778 * gpvtg.spd_over_grnd_kmph*np.sin(np.deg2rad(gpvtg.true_track)) #get v component of SOG and convert to m/s
                         ivel+=1
                     else: #if not GPGGA or GPVTG, continue to start of loop
                         continue
@@ -169,22 +152,16 @@ def recordGPS(configFilename):
                         continue
                     elif ipos == gps_samples and ivel == gps_samples:
                         break
-                    
-            badpts = len(np.where(z == 999)) #index of bad values if lost GPS fix. Should be same for u and v
-        
+            # Output logger information on samples
             logger.info('number of GPGGA samples = %s' %ipos)
             logger.info('number of GPVTG samples = %s' %ivel)
             logger.info('number of bad samples %d' %badpts)
-                            
-            return u,v,z,lat,lon
+
         except Exception as e:
             logger.info(e, exc_info=True)
-            return u,v,z,lat,lon
 
     ## ------------ Main body of function ------------------
-    print('GPS recording')
-    global GPSdataFilename
-    GPSdataFilename = 'microSWIFT022_GPS_12Jul2021_202000UTC.dat'
+    # GPSdataFilename = 'microSWIFT022_GPS_12Jul2021_202000UTC.dat'
 
 
     # load config file and get parameters
@@ -253,6 +230,24 @@ def recordGPS(configFilename):
     ## ------------ Initalize GPS -------------------------
     ser, gps_initialized, time, date = init()
 
-
-    # Return the GPS filename to be read into the onboard processing
-    return GPSdataFilename
+    ## ------------- Record GPS ---------------------------
+    if gps_initialized:
+        logger.info('waiting for burst start')
+        while True:
+            #burst start conditions
+            now=datetime.utcnow()
+            if now.minute % burst_int == 0 and now.second == 0:
+                
+                logger.info("starting burst")
+                #create file name
+                GPSdataFilename = dataDir + floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
+                logger.info("file name: %s" %GPSdataFilename)
+                #call record_gps	
+                record(ser,GPSdataFilename)
+            else:
+                sleep(0.25)		
+    else:
+        logger.info("GPS not initialized, exiting")
+        # Return the GPS filename to be read into the onboard processing
+        return GPSdataFilename  
+        # sys.exit(1)
