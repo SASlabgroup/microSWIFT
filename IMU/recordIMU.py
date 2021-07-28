@@ -51,7 +51,7 @@ def recordIMU(configFilename):
             t_end = time.time() + burst_seconds #get end time for burst
             isample=0
             while isample < imu_samples:
-                # Gete values from IMU
+                # Get values from IMU
                 try:
                     accel_x, accel_y, accel_z = fxos.accelerometer
                     mag_x, mag_y, mag_z = fxos.magnetometer
