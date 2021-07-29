@@ -25,7 +25,7 @@ import IMU.adafruit_fxas21002c_microSWIFT
 
 
 def recordIMU(configFilename):
-    ## --------- Define Initialize Functionn --------------
+    ## --------- Define Initialize Function --------------
     def init():
         #initialize fxos and fxas devices (required after turning off device)
         logger.info('power on IMU')
@@ -35,7 +35,7 @@ def recordIMU(configFilename):
         fxas = IMU.adafruit_fxas21002c_microSWIFT.FXAS21002C(i2c, gyro_range=500)
 
         # Sleep to start recording at same time as GPS
-        sleep(4.36)
+        sleep(4.4)
         
         # return initialized values
         return fxos, fxas
