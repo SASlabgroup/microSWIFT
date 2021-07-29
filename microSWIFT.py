@@ -10,6 +10,7 @@ and IMU as well as schedules the processing scripts after they are done recordin
 
 # Main import Statemennts
 import concurrent.futures
+import datetime
 
 # Import GPS functions
 from GPS.recordGPS import recordGPS
@@ -19,25 +20,15 @@ from GPS.GPStoUVZ import GPStoUVZ
 # Import IMU functions
 from IMU.recordIMU import recordIMU
 
+# Import SBD functions
+from SBD.sendSBD import createTX
+from SBD.sendSBD import sendSBD
+
 # Start running continuously while raspberry pi is on
 while True:
-
-    # Timing of Function test
-    import datetime
-    # Time entire script
+    # Start time of loop iteration
     begin_script_time = datetime.datetime.now()
-
-    ## ------------------- Test function section --------------------
-    # this will be removed and each function will live in its own file as we start to make these functions work
-    # Telemetry test functions
-    def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2):
-        print('TX file created with the variables Hs, Tp, Dp, E, f, a1, b1, a2, b2')
-        TX_fname = 'TX-file'
-        return TX_fname
-
-    def sendSBD(TX_fname):
-        print('Sending SBD...')
-        print('Sent SBD...')
+    print('Starting up')
 
     ## ------------- Boot up Characteristics --------------------------------
     # Define Config file name
