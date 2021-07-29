@@ -5,7 +5,7 @@ author: @erainvil
 '''
 
 # Import Statements
-import datetime
+from datetime import datetime
 from struct import *
 from logging import *
 import sys, os
