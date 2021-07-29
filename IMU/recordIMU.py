@@ -71,7 +71,7 @@ def recordIMU(configFilename):
                 isample = isample + 1
 
                 # hard coded sleep to control recording rate. NOT ideal but works for now    
-                sleep(0.058)
+                sleep(0.065)
             
             # End of IMU sampling
             logger.info('end burst')
