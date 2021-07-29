@@ -35,7 +35,7 @@ def recordIMU(configFilename):
         fxas = IMU.adafruit_fxas21002c_microSWIFT.FXAS21002C(i2c, gyro_range=500)
 
         # Sleep to start recording at same time as GPS
-        sleep(4.9)
+        sleep(5.1)
         
         # return initialized values
         return fxos, fxas
