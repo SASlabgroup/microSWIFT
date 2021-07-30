@@ -49,7 +49,7 @@ def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, u_mean, v_mean, z_mean, lat, lon,
         # Compute fmin fmax and fstep
         fmin = np.min(f)
         fmax = np.max(f)
-        fstep = (fmax - fmin)/41
+        fstep = (fmax - fmin)/f.shape
         
         # System configurations
         sensor_type = config.getInt('System', 'sensorType')
@@ -59,7 +59,13 @@ def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, u_mean, v_mean, z_mean, lat, lon,
         # Build Structure of binary bits 
         now=datetime.now()
         payload_size = struct.calcsize('<sbbhfff42fffffffffffiiiiii')
-        payload_data = (struct.pack('<sbbhfff', str(payload_type).encode(),sensor_type,port, payload_size,Hs,Tp,Dp) + 
+        payload_data = (struct.pack('<s', str(payload_type).encode()) +
+                        struct.pack('<b', sensor_type) +
+                        struct.pack('<b', port) +
+                        struct.pack('h', payload_size) +
+                        struct.pack('<f', Hs) +
+                        struct.pack('<f', Tp) + 
+                        struct.pack('<f', Dp) +
                         struct.pack('<42f', *E) +
                         struct.pack('<f', fmin) +
                         struct.pack('<f', fmax) +
