@@ -25,7 +25,6 @@ from IMU.recordIMU import recordIMU
 from SBD.sendSBD import createTX
 from SBD.sendSBD import sendSBD
 from SBD.sendSBD import checkTX
-from SBD.sendSBD import init_modem
 
 # Start running continuously while raspberry pi is on
 while True:
