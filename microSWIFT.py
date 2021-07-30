@@ -24,6 +24,7 @@ from IMU.recordIMU import recordIMU
 # Import SBD functions
 from SBD.sendSBD import createTX
 from SBD.sendSBD import sendSBD
+from SBD.microSWIFT_processor import *
 
 # Start running continuously while raspberry pi is on
 while True:
@@ -44,6 +45,9 @@ while True:
     ## -------------- GPS and IMU Recording Section ---------------------------
     # Time recording section
     begin_recording_time = datetime.datetime.now()
+
+    ## TODO Add in a feature that initialies both sensors then once they are both initialized - start recording at the same
+    ## time or keep trying to initialize 
 
     # Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
     with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -69,7 +73,7 @@ while True:
     # Compute Wave Statistics from GPSwaves algorithm
     Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u, v, z, GPS_fs)
     print('Hs = ', Hs)
-    
+
     # Compute mean velocities, elevation, lat and lon
     u_mean = np.mean(u)
     v_mean = np.mean(v)
@@ -93,6 +97,11 @@ while True:
     ## -------------- Telemetry Section ----------------------------------
     # Create TX file from processData.py output from combined wave products
     TX_fname = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, u_mean, v_mean, z_mean, lat_mean, lon_mean, temp, volt, configFilename)
+
+    # Decode contents of TX file and print out as a check - will be removed in final versions
+    with open(TX_fname, "rb") as binfile:
+        payload_data = bytearray(binfile.read())
+    processData(0, payload_data)
 
     # Send SBD over telemetry
     sendSBD(TX_fname)
