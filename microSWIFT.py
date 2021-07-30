@@ -95,8 +95,9 @@ while True:
         
     ## -------------- Telemetry Section ----------------------------------
     # Create TX file from processData.py output from combined wave products
-    TX_fname = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, u_mean, v_mean, z_mean, lat_mean, lon_mean, temp, volt, configFilename)
-
+    TX_fname, payload_size = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, u_mean, v_mean, z_mean, lat_mean, lon_mean, temp, volt, configFilename)
+    print('payload size = ', payload_size)
+    
     # Decode contents of TX file and print out as a check - will be removed in final versions
     checkTX(TX_fname)
 
