@@ -62,7 +62,7 @@ def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, u_mean, v_mean, z_mean, lat, lon,
         payload_data = (struct.pack('<s', str(payload_type).encode()) +
                         struct.pack('<b', sensor_type) +
                         struct.pack('<b', port) +
-                        struct.pack('h', payload_size) +
+                        struct.pack('<h', payload_size) +
                         struct.pack('<f', Hs) +
                         struct.pack('<f', Tp) + 
                         struct.pack('<f', Dp) +
