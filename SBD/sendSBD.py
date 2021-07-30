@@ -98,7 +98,9 @@ def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, u_mean, v_mean, z_mean, lat, lon,
     return TX_fname, payload_data, payload_size, payload_size_true
 
 def checkTX(payload_data):
-    print('data = ', struct.unpack('<sbbhfff42fffffffffffiiiiii', payload_data))
+    data = struct.unpack('<sbbhfff42fffffffffffiiiiii', payload_data)
+    print('data = ', data)
+    print(type(data))
 
 def sendSBD(TX_fname):
     print('Sending SBD...')
