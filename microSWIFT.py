@@ -72,7 +72,6 @@ while True:
 
     # Compute Wave Statistics from GPSwaves algorithm
     Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u, v, z, GPS_fs)
-    print('f = ', f)
 
     # Compute mean velocities, elevation, lat and lon
     u_mean = np.mean(u)
