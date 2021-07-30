@@ -97,8 +97,10 @@ def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, u_mean, v_mean, z_mean, lat, lon,
     print(TX_fname)
     return TX_fname, payload_data, payload_size, payload_size_true
 
-def checkTX(payload_data):
-    data = struct.unpack('<sbbhfff42fffffffffffiiiiii', payload_data)
+def checkTX(TX_fname):
+    with open(TX_fname, mode='rb') as file: # b is important -> binary
+        fileContent = file.read()
+    data = struct.unpack('<sbbhfff42fffffffffffiiiiii', fileContent)
     print('data = ', data)
     print(type(data))
 
