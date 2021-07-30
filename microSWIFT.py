@@ -70,9 +70,9 @@ while True:
     Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u, v, z, GPS_fs)
 
     # Compute mean velocities and elevation
-    umean = np.mean(u)
-    vmean = np.mean(v)
-    zmean = np.mean(z)
+    u_mean = np.mean(u)
+    v_mean = np.mean(v)
+    z_mean = np.mean(z)
 
     # Temperature and Voltage recordings - will be added in later versions
     temp = 0
@@ -89,7 +89,7 @@ while True:
         
     ## -------------- Telemetry Section ----------------------------------
     # Create TX file from processData.py output from combined wave products
-    TX_fname = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, umean, vmean, zmean, temp, volt, configFilename)
+    TX_fname = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, u_mean, v_mean, z_mean, lat, lon, temp, volt, configFilename)
 
     # Send SBD over telemetry
     sendSBD(TX_fname)
