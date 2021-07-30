@@ -85,7 +85,7 @@ def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, u_mean, v_mean, z_mean, lat, lon,
                         struct.pack('<i', int(now.second)))
 
         # Compute actual size of file 
-        payload_size_true = struct.size(payload_data)
+        payload_size_true = sys.getsizeof(payload_data)
 
         # Write the binary packed data to a file 
         logger.info('writing data to file')
