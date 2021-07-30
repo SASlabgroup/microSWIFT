@@ -24,7 +24,7 @@ from IMU.recordIMU import recordIMU
 # Import SBD functions
 from SBD.sendSBD import createTX
 from SBD.sendSBD import sendSBD
-from SBD.microSWIFT_processor import *
+from SBD.sendSBD import checkTX
 
 # Start running continuously while raspberry pi is on
 while True:
@@ -72,7 +72,7 @@ while True:
 
     # Compute Wave Statistics from GPSwaves algorithm
     Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u, v, z, GPS_fs)
-    print('Hs = ', Hs)
+    print('f = ', f)
 
     # Compute mean velocities, elevation, lat and lon
     u_mean = np.mean(u)
@@ -99,9 +99,7 @@ while True:
     TX_fname = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, u_mean, v_mean, z_mean, lat_mean, lon_mean, temp, volt, configFilename)
 
     # Decode contents of TX file and print out as a check - will be removed in final versions
-    with open(TX_fname, "rb") as binfile:
-        payload_data = bytearray(binfile.read())
-    processData(0, payload_data)
+    checkTX(TX_fname)
 
     # Send SBD over telemetry
     sendSBD(TX_fname)

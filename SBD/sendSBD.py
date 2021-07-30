@@ -88,6 +88,10 @@ def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, u_mean, v_mean, z_mean, lat, lon,
     print(TX_fname)
     return TX_fname
 
+def checkTX(TX_fname):
+    
+    print('Hs')
+
 def sendSBD(TX_fname):
     print('Sending SBD...')
     print('Sent SBD...')
