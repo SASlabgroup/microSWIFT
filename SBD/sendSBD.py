@@ -78,6 +78,12 @@ def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, u_mean, v_mean, z_mean, lat, lon,
                         struct.pack('<i', int(now.minute)) +
                         struct.pack('<i', int(now.second)))
 
+        # Write the binary packed data to a file 
+        logger.info('writing data to file')
+        file.write(payload_data)
+        logger.info('done')
+        file.flush()
+
     print('TX file created with the variables Hs, Tp, Dp, E, f, a1, b1, a2, b2, umean, vmean, zmean, temp, volt')
     print(TX_fname)
     return TX_fname
