@@ -93,13 +93,12 @@ def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, u_mean, v_mean, z_mean, lat, lon,
         logger.info('done')
         file.flush()
 
-    print('TX file created with the variables Hs, Tp, Dp, E, f, a1, b1, a2, b2, umean, vmean, zmean, temp, volt')
+    print('TX file created with the variables Hs, Tp, Dp, E, f, a1, b1, a2, b2, umean, vmean, zmean, temp, volt, lat, lon, and date')
     print(TX_fname)
-    return TX_fname, payload_size, payload_size_true
+    return TX_fname, payload_data, payload_size, payload_size_true
 
-def checkTX(TX_fname):
-
-    print('Hs')
+def checkTX(payload_data):
+    print('data = ', struct.unpack('<sbbhfff42fffffffffffiiiiii', payload_data))
 
 def sendSBD(TX_fname):
     print('Sending SBD...')

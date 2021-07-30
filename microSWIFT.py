@@ -95,12 +95,12 @@ while True:
         
     ## -------------- Telemetry Section ----------------------------------
     # Create TX file from processData.py output from combined wave products
-    TX_fname, payload_size, payload_size_true = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, u_mean, v_mean, z_mean, lat_mean, lon_mean, temp, volt, configFilename)
+    TX_fname, payload_data, payload_size, payload_size_true = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, u_mean, v_mean, z_mean, lat_mean, lon_mean, temp, volt, configFilename)
     print('payload size = ', payload_size)
     print('True payload size = ', payload_size_true)
-    
+
     # Decode contents of TX file and print out as a check - will be removed in final versions
-    checkTX(TX_fname)
+    checkTX(payload_data)
 
     # Send SBD over telemetry
     sendSBD(TX_fname)
