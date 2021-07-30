@@ -100,7 +100,7 @@ while True:
     print('True payload size = ', payload_size_true)
 
     # Decode contents of TX file and print out as a check - will be removed in final versions
-    checkTX(payload_data)
+    checkTX(TX_fname)
 
     # Send SBD over telemetry
     sendSBD(TX_fname)
