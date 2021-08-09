@@ -28,6 +28,7 @@ import datetime
 import numpy as np
 from utils.config3 import Config
 from datetime import datetime
+import os
 
 # Import GPS functions
 import GPS.recordGPS as recordGPS
