@@ -31,7 +31,7 @@ from datetime import datetime
 import os
 
 # Import GPS functions
-import GPS.recordGPS as recordGPS
+from GPS.recordGPS import recordGPS
 from GPS.GPSwaves import GPSwaves
 from GPS.GPStoUVZ import GPStoUVZ
 
