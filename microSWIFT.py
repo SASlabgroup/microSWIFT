@@ -1,24 +1,24 @@
 ## microSWIFT.py 
 """
 author: @edwinrainville
-		adapted heavily from previous functions and scripts written by Alex de Klerk and Vivano Castillo
+adapted heavily from previous functions and scripts written by Alex de Klerk and Vivano Castillo
 
 Description: This script is the main operational script that runs on the microSWIFT. It is the scheduler that runs the recording of the GPS
 and IMU as well as schedules the processing scripts after they are done recording.
 
-Outline: 
-1. Load modules
-2. Start main loop 
-3. Submit concurrent jobs to recordGPS and recordIMU separetely
-4. End recording
-5. Read-in GPS data from file
-6. Process GPS data using the current GPSwaves algorithm
-7. Compute mean values of lat, lon and other characteristics
-8. createTX file and pack payload data
-9. Send SBD over telemetry
-
 Stable version that does not include sendSBD yet - 08/09/21
 
+Outline: 
+1. Load modules
+2. Define Configuration of sampling
+3. Intialize GPS and IMU sensors
+4. Begin recording GPS and IMU data
+5. End recording at length of burst interval
+6. Begin Processing data from GPS 
+7. Create wave products from GPS data
+8. Build binary data packet to send via Iridum modem 
+9. Send data packet to shore-side server
+10. Restart at recording 
 
 """
 
@@ -29,7 +29,7 @@ import numpy as np
 from utils.config3 import Config
 
 # Import GPS functions
-from GPS.recordGPS import recordGPS
+import GPS.recordGPS as recordGPS
 from GPS.GPSwaves import GPSwaves
 from GPS.GPStoUVZ import GPStoUVZ
 
