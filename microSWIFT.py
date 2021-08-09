@@ -26,7 +26,6 @@ from IMU.recordIMU import recordIMU
 from SBD.sendSBD import createTX
 from SBD.sendSBD import sendSBD
 from SBD.sendSBD import checkTX
-from SBD.sendSBD import init_modem
 
 # Start running continuously while raspberry pi is on
 while True:
@@ -103,7 +102,7 @@ while True:
     checkTX(TX_fname)
 
     # Send SBD over telemetry
-    sendSBD(payload_data, configFilename)
+    # sendSBD(payload_data, configFilename)
 
     # End Timing of entire Script
     print('microSWIFT.py took', datetime.datetime.now() - begin_script_time)
