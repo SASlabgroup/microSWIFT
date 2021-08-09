@@ -163,7 +163,7 @@ def recordGPS(configFilename):
 
         except Exception as e:
             logger.info(e, exc_info=True)
-            
+
         # Output logger information on samples
         print('Ending GPS burst at ', datetime.now())
         logger.info('number of GPGGA samples = %s' %ipos)
@@ -257,4 +257,4 @@ def recordGPS(configFilename):
         logger.info("GPS not initialized, exiting")
 
         # Return the GPS filename to be read into the onboard processing
-        return 'NonInitializedFilename' # this needs to be added - it will be a standard file for when GPS is not initailized
+        return 999 # this needs to be added - it will be a standard file for when GPS is not initailized
