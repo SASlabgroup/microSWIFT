@@ -256,5 +256,9 @@ def recordGPS(configFilename):
     else:
         logger.info("GPS not initialized, exiting")
 
+        #create file name
+        GPSdataFilename = dataDir + floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
+        logger.info("file name: %s" %GPSdataFilename)
+
         # Return the GPS filename to be read into the onboard processing
-        return 999 # this needs to be added - it will be a standard file for when GPS is not initailized
+        return GPSdataFilename
