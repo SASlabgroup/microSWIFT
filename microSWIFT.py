@@ -1,6 +1,6 @@
 ## microSWIFT.py 
 """
-author: @erainvil
+author: @edwinrainville
 		adapted heavily from previous functions and scripts written by Alex de Klerk and Vivano Castillo
 
 Description: This script is the main operational script that runs on the microSWIFT. It is the scheduler that runs the recording of the GPS
@@ -15,6 +15,7 @@ Stable version that does not include sendSBD yet - 08/09/21
 import concurrent.futures
 import datetime
 import numpy as np
+from utils.config3 import Config
 
 # Import GPS functions
 from GPS.recordGPS import recordGPS
@@ -28,6 +29,9 @@ from IMU.recordIMU import recordIMU
 from SBD.sendSBD import createTX
 from SBD.sendSBD import sendSBD
 from SBD.sendSBD import checkTX
+
+# Define config file isntance
+config = Config() # Create object and load file
 
 # Start running continuously while raspberry pi is on
 while True:
