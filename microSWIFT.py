@@ -4,7 +4,9 @@ author: @erainvil
 		adapted heavily from previous functions and scripts written by Alex de Klerk and Vivano Castillo
 
 Description: This script is the main operational script that runs on the microSWIFT. It is the scheduler that runs the recording of the GPS
-and IMU as well as schedules the processing scripts after they are done recording. 
+and IMU as well as schedules the processing scripts after they are done recording.
+
+Stable version that does not include sendSBD yet - 08/09/21
 
 
 """
