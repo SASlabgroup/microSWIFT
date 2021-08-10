@@ -6,6 +6,17 @@ author: @edwinrainville
 Description: This script is the main operational script that runs on the microSWIFT. It is the scheduler that runs the recording of the GPS
 and IMU as well as schedules the processing scripts after they are done recording.
 
+Outline: 
+1. Load modules
+2. Start main loop 
+3. Submit concurrent jobs to recordGPS and recordIMU separetely
+4. End recording
+5. Read-in GPS data from file
+6. Process GPS data using the current GPSwaves algorithm
+7. Compute mean values of lat, lon and other characteristics
+8. createTX file and pack payload data
+9. Send SBD over telemetry
+
 Stable version that does not include sendSBD yet - 08/09/21
 
 
@@ -30,9 +41,6 @@ from SBD.sendSBD import createTX
 from SBD.sendSBD import sendSBD
 from SBD.sendSBD import checkTX
 
-# Define config file isntance
-config = Config() # Create object and load file
-
 # Start running continuously while raspberry pi is on
 while True:
     # Start time of loop iteration
@@ -52,9 +60,6 @@ while True:
     ## -------------- GPS and IMU Recording Section ---------------------------
     # Time recording section
     begin_recording_time = datetime.datetime.now()
-
-    ## TODO Add in a feature that initialies both sensors then once they are both initialized - start recording at the same
-    ## time or keep trying to initialize 
 
     # Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
     with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -93,12 +98,6 @@ while True:
 
     # End Timing of recording
     print('Processing section took', datetime.datetime.now() - begin_processing_time)
-
-    # Run processIMU
-        # IMU data:
-        # read in IMU data from file 
-        # IMUtoXYZ(IMU data)
-        # XYZwaves( XYZ from above )
         
     ## -------------- Telemetry Section ----------------------------------
     # Create TX file from processData.py output from combined wave products
