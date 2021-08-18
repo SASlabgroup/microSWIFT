@@ -40,6 +40,7 @@ from IMU.recordIMU import recordIMU
 from SBD.sendSBD import createTX
 from SBD.sendSBD import sendSBD
 from SBD.sendSBD import checkTX
+from SBD.sendSBD import initModem
 
 # Start running continuously while raspberry pi is on
 print('Starting up at ', datetime.datetime.now())
@@ -106,6 +107,9 @@ while True:
 
     # Decode contents of TX file and print out as a check - will be removed in final versions
     checkTX(TX_fname)
+
+    # Initialize Iridium Modem
+    ser, modem_initialized = initModem()
 
     # Send SBD over telemetry
     sendSBD(payload_data, configFilename)

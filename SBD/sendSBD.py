@@ -106,6 +106,50 @@ def checkTX(TX_fname):
     print('data = ', data)
     print(type(data))
 
+def initModem():
+    # Iridium parameters - fixed for now
+    modemPort = '/dev/ttyUSB0' #config.getString('Iridium', 'port')
+    modemBaud = 19200 #config.getInt('Iridium', 'baud')
+    modemGPIO =  16 #config.getInt('Iridium', 'modemGPIO')
+    formatType = 10 #config.getInt('Iridium', 'formatType')
+    call_interval = 60 #config.getInt('Iridium', 'call_interval')
+    call_time = 10 #config.getInt('Iridium', 'call_time')
+    timeout=60 #some commands can take a long time to complete
+
+    # logger = getLogger('system_logger.'+__name__)  
+    sbdlogger = logging.getLogger('send_sbd.py')
+    sbdlogger.setLevel(logging.INFO)
+
+    try:
+        GPIO.output(modemGPIO,GPIO.HIGH) #power on GPIO enable pin
+        sbdlogger.info('power on modem...')
+        sleep(3)
+        sbdlogger.info('done')
+    except Exception as e:
+        sbdlogger.info('error powering on modem')
+        sbdlogger.info(e)
+        
+    #open serial port
+    sbdlogger.info('opening serial port with modem at {0} on port {1}...'.format(modemBaud,modemPort))
+    try:
+        ser=serial.Serial(modemPort,modemBaud,timeout=timeout)
+        sbdlogger.info('done')
+    except serial.SerialException as e:
+        sbdlogger.info('unable to open serial port: {}'.format(e))
+        return ser, False
+        sys.exit(1)
+
+    sbdlogger.info('command = AT')
+    if get_response(ser,'AT'): #send AT command
+        sbdlogger.info('command = AT&F')
+        if get_response(ser,'AT&F'): #set default parameters with AT&F command 
+            sbdlogger.info('command = AT&K=0')  
+            if get_response(ser,'AT&K=0'): #important, disable flow control
+                sbdlogger.info('modem initialized')
+                return ser, True
+    else:
+        return ser, False
+
 def sendSBD(payload_data, configFilename):
     # Load in Configuration data
     config = Config() # Create object and load file
@@ -145,36 +189,6 @@ def sendSBD(payload_data, configFilename):
     sbdFileHandler.setFormatter(Formatter('%(asctime)s, %(name)s - [%(levelname)s] - %(message)s'))
     sbdlogger.addHandler(sbdFileHandler)
 
-    def init_modem():
-        try:
-            GPIO.output(modemGPIO,GPIO.HIGH) #power on GPIO enable pin
-            sbdlogger.info('power on modem...')
-            sleep(3)
-            sbdlogger.info('done')
-        except Exception as e:
-            sbdlogger.info('error powering on modem')
-            sbdlogger.info(e)
-            
-        #open serial port
-        sbdlogger.info('opening serial port with modem at {0} on port {1}...'.format(modemBaud,modemPort))
-        try:
-            ser=serial.Serial(modemPort,modemBaud,timeout=timeout)
-            sbdlogger.info('done')
-        except serial.SerialException as e:
-            sbdlogger.info('unable to open serial port: {}'.format(e))
-            return ser, False
-            sys.exit(1)
-    
-        sbdlogger.info('command = AT')
-        if get_response(ser,'AT'): #send AT command
-            sbdlogger.info('command = AT&F')
-            if get_response(ser,'AT&F'): #set default parameters with AT&F command 
-                sbdlogger.info('command = AT&K=0')  
-                if get_response(ser,'AT&K=0'): #important, disable flow control
-                    sbdlogger.info('modem initialized')
-                    return ser, True
-        else:
-            return ser, False
 
     def get_response(ser,command, response='OK'):
         ser.flushInput()
