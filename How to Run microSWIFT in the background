@@ -1,0 +1,7 @@
+How to Run microSWIFT.py in the background:
+
+python3 -u microSWIFT.py > onboardlog.txt &
+
+* The -u flag makes it so that the print statements are unbuffered and so they do not print to the terminal even when running in the background. 
+
+To view the onboardlog.txt in real time use the command: tail -F onboardlog.txt, to exit from this view use the keyboard shortcut ctrl-c

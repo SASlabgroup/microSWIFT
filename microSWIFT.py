@@ -49,7 +49,7 @@ while True:
 
     ## ------------- Boot up Characteristics --------------------------------
     # Define Config file name
-    configFilename = r'utils/Config.dat' 
+    configFilename = r'./utils/Config.dat' 
 
     # Boot up as soon as power is turned on and get microSWIFT characteristics
         # Get microSWIFT number 
