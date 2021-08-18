@@ -42,10 +42,11 @@ from SBD.sendSBD import sendSBD
 from SBD.sendSBD import checkTX
 
 # Start running continuously while raspberry pi is on
+print('Starting up at ', datetime.datetime.now())
 while True:
     # Start time of loop iteration
     begin_script_time = datetime.datetime.now()
-    print('Starting up')
+    print('At start of loop')
 
     ## ------------- Boot up Characteristics --------------------------------
     # Define Config file name
