@@ -1,5 +1,8 @@
 How to Run microSWIFT.py in the background:
 
+Enter to following commands into the file /etc/rc.local to run at boot
+
+cd /home/pi/microSWIFT
 python3 -u microSWIFT.py > onboardlog.txt &
 
 * The -u flag makes it so that the print statements are unbuffered and so they do not print to the terminal even when running in the background. 
