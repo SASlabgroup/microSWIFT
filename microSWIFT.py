@@ -108,7 +108,7 @@ while True:
     checkTX(TX_fname)
 
     # Send SBD over telemetry
-    # sendSBD(payload_data, configFilename)
+    sendSBD(payload_data, configFilename)
 
     # End Timing of entire Script
     print('microSWIFT.py took', datetime.datetime.now() - begin_script_time)

@@ -144,7 +144,6 @@ def sendSBD(payload_data, configFilename):
     sbdFileHandler.setLevel(logging.INFO)
     sbdFileHandler.setFormatter(Formatter('%(asctime)s, %(name)s - [%(levelname)s] - %(message)s'))
     sbdlogger.addHandler(sbdFileHandler)
-
     print('Made it through sendSBD loading')
 
     # def init_modem():
