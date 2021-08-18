@@ -107,43 +107,45 @@ def checkTX(TX_fname):
     print(type(data))
 
 def sendSBD(payload_data, configFilename):
-    # # Load in Configuration data
-    # config = Config() # Create object and load file
-    # ok = config.loadFile( configFilename )        
-    # burst_seconds = config.getInt('System', 'burst_seconds')   
-    # burst_time = config.getInt('System', 'burst_time')
-    # burst_int = config.getInt('System', 'burst_interval')
-    # call_int = config.getInt('Iridium', 'call_interval')
-    # call_time = config.getInt('Iridium', 'call_time')
+    # Load in Configuration data
+    config = Config() # Create object and load file
+    ok = config.loadFile( configFilename )        
+    burst_seconds = config.getInt('System', 'burst_seconds')   
+    burst_time = config.getInt('System', 'burst_time')
+    burst_int = config.getInt('System', 'burst_interval')
+    call_int = config.getInt('Iridium', 'call_interval')
+    call_time = config.getInt('Iridium', 'call_time')
         
-    # call_duration = burst_int*60-burst_seconds #time between burst end and burst start to make a call
+    call_duration = burst_int*60-burst_seconds #time between burst end and burst start to make a call
 
-    # #Iridium parameters - fixed for now
-    # modemPort = '/dev/ttyUSB0' #config.getString('Iridium', 'port')
-    # modemBaud = 19200 #config.getInt('Iridium', 'baud')
-    # modemGPIO =  16 #config.getInt('Iridium', 'modemGPIO')
-    # formatType = 10 #config.getInt('Iridium', 'formatType')
-    # call_interval = 60 #config.getInt('Iridium', 'call_interval')
-    # call_time = 10 #config.getInt('Iridium', 'call_time')
-    # timeout=60 #some commands can take a long time to complete
+    #Iridium parameters - fixed for now
+    modemPort = '/dev/ttyUSB0' #config.getString('Iridium', 'port')
+    modemBaud = 19200 #config.getInt('Iridium', 'baud')
+    modemGPIO =  16 #config.getInt('Iridium', 'modemGPIO')
+    formatType = 10 #config.getInt('Iridium', 'formatType')
+    call_interval = 60 #config.getInt('Iridium', 'call_interval')
+    call_time = 10 #config.getInt('Iridium', 'call_time')
+    timeout=60 #some commands can take a long time to complete
 
-    # id = 0 #arbitrary message counter
+    id = 0 #arbitrary message counter
 
-    # #set up GPIO pins for modem control
-    # GPIO.setmode(GPIO.BCM)
-    # GPIO.setwarnings(False)
-    # GPIO.setup(modemGPIO,GPIO.OUT)
+    #set up GPIO pins for modem control
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+    GPIO.setup(modemGPIO,GPIO.OUT)
 
-    # #logger = getLogger('system_logger.'+__name__)  
-    # sbdlogger = logging.getLogger('send_sbd.py')
-    # sbdlogger.setLevel(logging.INFO)
+    #logger = getLogger('system_logger.'+__name__)  
+    sbdlogger = logging.getLogger('send_sbd.py')
+    sbdlogger.setLevel(logging.INFO)
 
-    # #set up logging to file or sdout:
-    # LOG_FILE = ('/home/pi/microSWIFT/logs' + '/' + 'send_sbd' + '_' + datetime.strftime(datetime.now(), '%d%b%Y') + '.log')
-    # sbdFileHandler = FileHandler(LOG_FILE)
-    # sbdFileHandler.setLevel(logging.INFO)
-    # sbdFileHandler.setFormatter(Formatter('%(asctime)s, %(name)s - [%(levelname)s] - %(message)s'))
-    # sbdlogger.addHandler(sbdFileHandler)
+    #set up logging to file or sdout:
+    LOG_FILE = ('/home/pi/microSWIFT/logs' + '/' + 'send_sbd' + '_' + datetime.strftime(datetime.now(), '%d%b%Y') + '.log')
+    sbdFileHandler = FileHandler(LOG_FILE)
+    sbdFileHandler.setLevel(logging.INFO)
+    sbdFileHandler.setFormatter(Formatter('%(asctime)s, %(name)s - [%(levelname)s] - %(message)s'))
+    sbdlogger.addHandler(sbdFileHandler)
+
+    print('Made it through sendSBD loading')
 
     # def init_modem():
     #     try:
