@@ -9,3 +9,9 @@ python3 -u microSWIFT.py >> onboardlog.txt &
 
 To view the onboardlog.txt in real time use the command: tail -F onboardlog.txt, to exit from this view use the keyboard shortcut ctrl-c
 
+----------------- GPStoUVZ notes ----------------------
+getting the following error on occasion: 
+
+UnboundLocalError: local variable 'gpgga' referenced before assignment
+ 
+- it doesnt happen all the time but it does need to be addressed as a possible failure mode 

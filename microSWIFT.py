@@ -1,7 +1,7 @@
 ## microSWIFT.py 
 """
 author: @edwinrainville
-		adapted heavily from previous functions and scripts written by Alex de Klerk and Vivano Castillo
+		adapted heavily from previous functions and scripts written by Alex de Klerk and Viviana Castillo
 
 Description: This script is the main operational script that runs on the microSWIFT. It is the scheduler that runs the recording of the GPS
 and IMU as well as schedules the processing scripts after they are done recording.
@@ -60,10 +60,8 @@ while True:
     # Define Config file name
     configFilename = r'./utils/Config.dat' 
 
-    # Boot up as soon as power is turned on and get microSWIFT characteristics
-        # Get microSWIFT number 
-        # setup log files
-    GPS_fs = 4 # need to get from config file
+    # Sampling Characteristics
+    GPS_fs = 4 
     IMU_fs = 4
 
     ## -------------- GPS and IMU Recording Section ---------------------------

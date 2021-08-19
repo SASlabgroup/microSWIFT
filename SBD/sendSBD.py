@@ -160,6 +160,7 @@ def initModem():
     try:
         ser=serial.Serial(modemPort,modemBaud,timeout=timeout)
         sbdlogger.info('done')
+        print('serial port opened successfully')
     except serial.SerialException as e:
         sbdlogger.info('unable to open serial port: {}'.format(e))
         print('unable to open serial port: {}'.format(e))
