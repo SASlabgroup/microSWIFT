@@ -141,14 +141,17 @@ def initModem():
     try:
         GPIO.output(modemGPIO,GPIO.HIGH) #power on GPIO enable pin
         sbdlogger.info('power on modem...')
+        print('modem powered on')
         sleep(3)
         sbdlogger.info('done')
     except Exception as e:
         sbdlogger.info('error powering on modem')
+        print('error powering on modem')
         sbdlogger.info(e)
         
     #open serial port
     sbdlogger.info('opening serial port with modem at {0} on port {1}...'.format(modemBaud,modemPort))
+    print('opening serial port with modem at {0} on port {1}...'.format(modemBaud,modemPort))
     try:
         ser=serial.Serial(modemPort,modemBaud,timeout=timeout)
         sbdlogger.info('done')
@@ -164,6 +167,7 @@ def initModem():
             sbdlogger.info('command = AT&K=0')  
             if get_response(ser,'AT&K=0'): #important, disable flow control
                 sbdlogger.info('modem initialized')
+                print('modem initialized')
                 return ser, True
     else:
         return ser, False
