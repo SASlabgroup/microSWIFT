@@ -1,7 +1,7 @@
 ## Send Short Burst Data (SBD) Functions 
 '''
 author: @edwinrainville
-All functions are heavily adapted from Viviano Castillo and Alex de Klerk.
+All functions are heavily adapted from Viviana Castillo and Alex de Klerk.
 
 '''
 

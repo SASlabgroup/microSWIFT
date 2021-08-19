@@ -1,32 +1,28 @@
-
-
-import numpy as np
-import pynmea2
-
-gps_samples=2048
-badValue=999
-
 def GPStoUVZ(gpsfile):
-    
-    # u = np.empty(gps_samples)
-    # u.fill(badValue)
-    # v = np.empty(gps_samples)
-    # v.fill(badValue)
-    # z = np.empty(gps_samples)
-    # z.fill(badValue)
-    # lat = np.empty(gps_samples)
-    # lat.fill(badValue)
-    # lon = np.empty(gps_samples)
-    # lon.fill(badValue)
+    '''
+    Author: @AlexdeKlerk
+    Edited: @edwinrainville
+
+    This function reads in data from the GPS files and saves it as python variables to be used in calculations 
+    for wave properties. 
+
+    '''
+    # Import Statements
+    import numpy as np
+    import pynmea2
+
+    # Define empty lists of variables to append
     u = []
     v = []
     z = []
     lat = []
     lon = []
-    
     ipos=0
     ivel=0
     
+    # Define Constants 
+    badValue=999
+
     with open(gpsfile, 'r') as file:
     
         for line in file:
@@ -60,15 +56,3 @@ def GPStoUVZ(gpsfile):
     print('GPVTG lines: {}'.format(ivel))
 
     return u,v,z,lat,lon
-
-# if __name__ == "__main__":
-
-#     import sys
-
-#     if len(sys.argv) != 2:
-#         print("Provide the path to the GPS file.")
-#         sys.exit(1)
-
-#     gpsfile = sys.argv[1]
-    
-#     u,v,z,lat,lon = getUVZ(gpsfile)
