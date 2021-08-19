@@ -44,11 +44,12 @@ from SBD.sendSBD import initModem
 from SBD.sendSBD import sendSBD
 
 # Start running continuously while raspberry pi is on
+print('-----------------------------------------')
 print('Starting up at ', datetime.datetime.now())
 while True:
     # Start time of loop iteration
     begin_script_time = datetime.datetime.now()
-    print('At start of loop')
+    print('At start of loop at ', begin_script_time)
 
     ## ------------- Boot up Characteristics --------------------------------
     # Define Config file name
@@ -113,7 +114,10 @@ while True:
     ser, modem_initialized = initModem()
 
     # Send SBD over telemetry
-    sendSBD(ser, payload_data)
+    if modem_initialized == True:
+        sendSBD(ser, payload_data)
+    else:
+        print('Modem did not initialize')
 
     # End Timing of entire Script
     print('microSWIFT.py took', datetime.datetime.now() - begin_script_time)
