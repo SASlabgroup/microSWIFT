@@ -113,7 +113,7 @@ while True:
     ser, modem_initialized = initModem()
 
     # Send SBD over telemetry
-    # sendSBD(payload_data, configFilename)
+    sendSBD(ser, payload_data)
 
     # End Timing of entire Script
     print('microSWIFT.py took', datetime.datetime.now() - begin_script_time)
