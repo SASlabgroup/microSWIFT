@@ -53,7 +53,7 @@ i = 1
 while True:
     # Start time of loop iteration
     begin_script_time = datetime.datetime.now()
-    print('------------------- Iteration ', i, '--------------------')
+    print('------- Iteration ', i, '---------------')
     print('At start of loop at ', begin_script_time)
 
     ## ------------- Boot up Characteristics --------------------------------
@@ -129,6 +129,7 @@ while True:
 
     # End Timing of entire Script
     print('microSWIFT.py took', datetime.datetime.now() - begin_script_time)
+    print('\n')
 
 
 
