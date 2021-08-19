@@ -107,22 +107,26 @@ def checkTX(TX_fname):
     print(type(data))
 
 def get_response(ser,command, response='OK'):
-        ser.flushInput()
-        command=(command+'\r').encode()
-        ser.write(command)
-        sleep(1)
-        try:
-            while ser.in_waiting > 0:
-                r=ser.readline().decode().strip('\r\n')
-                if response in r:
-                    sbdlogger.info('response = {}'.format(r))
-                    return True
-                elif 'ERROR' in response:
-                    sbdlogger.info('response = ERROR')
-                    return False
-        except serial.SerialException as e:
-            sbdlogger.info('error: {}'.format(e))
-            return False
+    # logger = getLogger('system_logger.'+__name__)  
+    sbdlogger = logging.getLogger('send_sbd.py')
+    sbdlogger.setLevel(logging.INFO)
+
+    ser.flushInput()
+    command=(command+'\r').encode()
+    ser.write(command)
+    sleep(1)
+    try:
+        while ser.in_waiting > 0:
+            r=ser.readline().decode().strip('\r\n')
+            if response in r:
+                sbdlogger.info('response = {}'.format(r))
+                return True
+            elif 'ERROR' in response:
+                sbdlogger.info('response = ERROR')
+                return False
+    except serial.SerialException as e:
+        sbdlogger.info('error: {}'.format(e))
+        return False
 
 def initModem():
     # Iridium parameters - fixed for now
