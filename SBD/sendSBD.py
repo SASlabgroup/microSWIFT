@@ -104,7 +104,6 @@ def checkTX(TX_fname):
         fileContent = file.read()
     data = struct.unpack('<sbbhfff42fffffffffffiiiiii', fileContent)
     print('data = ', data)
-    print(type(data))
 
 def getResponse(ser,command, response='OK'):
     # logger = getLogger('system_logger.'+__name__)  
