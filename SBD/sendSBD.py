@@ -139,6 +139,7 @@ def initModem():
     sbdlogger.setLevel(logging.INFO)
 
     try:
+        GPIO.setup(modemGPIO, GPIO.OUT)
         GPIO.output(modemGPIO,GPIO.HIGH) #power on GPIO enable pin
         sbdlogger.info('power on modem...')
         print('modem powered on')
