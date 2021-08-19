@@ -106,6 +106,24 @@ def checkTX(TX_fname):
     print('data = ', data)
     print(type(data))
 
+def get_response(ser,command, response='OK'):
+        ser.flushInput()
+        command=(command+'\r').encode()
+        ser.write(command)
+        sleep(1)
+        try:
+            while ser.in_waiting > 0:
+                r=ser.readline().decode().strip('\r\n')
+                if response in r:
+                    sbdlogger.info('response = {}'.format(r))
+                    return True
+                elif 'ERROR' in response:
+                    sbdlogger.info('response = ERROR')
+                    return False
+        except serial.SerialException as e:
+            sbdlogger.info('error: {}'.format(e))
+            return False
+
 def initModem():
     # Iridium parameters - fixed for now
     modemPort = '/dev/ttyUSB0' #config.getString('Iridium', 'port')
@@ -188,25 +206,6 @@ def sendSBD(payload_data, configFilename):
     sbdFileHandler.setLevel(logging.INFO)
     sbdFileHandler.setFormatter(Formatter('%(asctime)s, %(name)s - [%(levelname)s] - %(message)s'))
     sbdlogger.addHandler(sbdFileHandler)
-
-
-    def get_response(ser,command, response='OK'):
-        ser.flushInput()
-        command=(command+'\r').encode()
-        ser.write(command)
-        sleep(1)
-        try:
-            while ser.in_waiting > 0:
-                r=ser.readline().decode().strip('\r\n')
-                if response in r:
-                    sbdlogger.info('response = {}'.format(r))
-                    return True
-                elif 'ERROR' in response:
-                    sbdlogger.info('response = ERROR')
-                    return False
-        except serial.SerialException as e:
-            sbdlogger.info('error: {}'.format(e))
-            return False
 
     #Get signal quality using AT+CSQF command (see AT command reference).
     #Returns signal quality, default range is 0-5. Returns -1 for an error or no response
