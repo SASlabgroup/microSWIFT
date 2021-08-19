@@ -148,6 +148,7 @@ def initModem():
         sbdlogger.info('error powering on modem')
         print('error powering on modem')
         sbdlogger.info(e)
+        print(e)
         
     #open serial port
     sbdlogger.info('opening serial port with modem at {0} on port {1}...'.format(modemBaud,modemPort))
@@ -157,6 +158,7 @@ def initModem():
         sbdlogger.info('done')
     except serial.SerialException as e:
         sbdlogger.info('unable to open serial port: {}'.format(e))
+        print('unable to open serial port: {}'.format(e))
         return ser, False
         sys.exit(1)
 
