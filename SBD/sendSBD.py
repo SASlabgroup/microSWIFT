@@ -105,7 +105,7 @@ def checkTX(TX_fname):
     data = struct.unpack('<sbbhfff42fffffffffffiiiiii', fileContent)
     print('data = ', data)
 
-def getResponse(ser,command, response='OK'):
+def getResponse(ser,command, response='bad'):
     # logger = getLogger('system_logger.'+__name__)  
     sbdlogger = logging.getLogger('send_sbd.py')
     sbdlogger.setLevel(logging.INFO)
