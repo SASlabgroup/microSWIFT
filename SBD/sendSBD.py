@@ -119,12 +119,15 @@ def getResponse(ser,command, response='OK'):
             r=ser.readline().decode().strip('\r\n')
             if response in r:
                 sbdlogger.info('response = {}'.format(r))
+                print('response = {}'.format(r))
                 return True
             elif 'ERROR' in response:
                 sbdlogger.info('response = ERROR')
+                print('response = ERROR')
                 return False
     except serial.SerialException as e:
         sbdlogger.info('error: {}'.format(e))
+        print('error: {}'.format(e))
         return False
 
 def initModem():
@@ -167,11 +170,15 @@ def initModem():
         return ser, False
         sys.exit(1)
 
+    # Test Open Port and configure with commands 
+    print('command = AT')
     sbdlogger.info('command = AT')
     if getResponse(ser,'AT'): #send AT command
         sbdlogger.info('command = AT&F')
+        print('command = AT&F')
         if getResponse(ser,'AT&F'): #set default parameters with AT&F command 
             sbdlogger.info('command = AT&K=0')  
+            print('command = AT&K=0')
             if getResponse(ser,'AT&K=0'): #important, disable flow control
                 sbdlogger.info('modem initialized')
                 print('modem initialized')
