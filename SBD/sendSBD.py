@@ -106,7 +106,7 @@ def checkTX(TX_fname):
     print('data = ', data)
     print(type(data))
 
-def get_response(ser,command, response='OK'):
+def getResponse(ser,command, response='OK'):
     # logger = getLogger('system_logger.'+__name__)  
     sbdlogger = logging.getLogger('send_sbd.py')
     sbdlogger.setLevel(logging.INFO)
@@ -180,7 +180,6 @@ def initModem():
         return ser, False
 
 def sendSBD(ser, payload_data):
-    print(type(payload_data))
     ser.write(payload_data)
     # Final print statement that it sent
-    print('Sent SBD...')
+    print('Sent SBD successfully')
