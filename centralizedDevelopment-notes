@@ -15,3 +15,11 @@ getting the following error on occasion:
 UnboundLocalError: local variable 'gpgga' referenced before assignment
  
 - it doesnt happen all the time but it does need to be addressed as a possible failure mode 
+
+SBD notes:
+
+installed the termianl program screen using the command: "sudo apt install screen"
+this is used to test the modem based on this article: https://learn.adafruit.com/using-the-rockblock-iridium-modem?view=all
+
+Random Notes: 
+installed ipython to test some of the python functionality more onboard rather than within the python interpreter

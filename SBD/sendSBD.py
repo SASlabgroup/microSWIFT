@@ -132,61 +132,54 @@ def getResponse(ser,command, response='bad'):
 
 def initModem():
     # Iridium parameters - fixed for now
-    modemPort = '/dev/ttyUSB0' #config.getString('Iridium', 'port')
-    modemBaud = 19200 #config.getInt('Iridium', 'baud')
-    modemGPIO =  16 #config.getInt('Iridium', 'modemGPIO')
-    formatType = 10 #config.getInt('Iridium', 'formatType')
-    call_interval = 60 #config.getInt('Iridium', 'call_interval')
-    call_time = 10 #config.getInt('Iridium', 'call_time')
-    timeout=60 #some commands can take a long time to complete
+    modemPort = '/dev/ttyUSB0'
+    modemBaud = 19200
+    modemGPIO =  16 
+    timeout=60
 
-    # logger = getLogger('system_logger.'+__name__)  
-    sbdlogger = logging.getLogger('send_sbd.py')
-    sbdlogger.setLevel(logging.INFO)
-
+    # Turn on the pin to power on the modem
     try:
         GPIO.setup(modemGPIO, GPIO.OUT)
         GPIO.output(modemGPIO,GPIO.HIGH) #power on GPIO enable pin
-        sbdlogger.info('power on modem...')
         print('modem powered on')
         sleep(3)
-        sbdlogger.info('done')
     except Exception as e:
-        sbdlogger.info('error powering on modem')
         print('error powering on modem')
-        sbdlogger.info(e)
         print(e)
         
     #open serial port
-    sbdlogger.info('opening serial port with modem at {0} on port {1}...'.format(modemBaud,modemPort))
     print('opening serial port with modem at {0} on port {1}...'.format(modemBaud,modemPort))
     try:
         ser=serial.Serial(modemPort,modemBaud,timeout=timeout)
-        sbdlogger.info('done')
         print('serial port opened successfully')
     except serial.SerialException as e:
-        sbdlogger.info('unable to open serial port: {}'.format(e))
         print('unable to open serial port: {}'.format(e))
         return ser, False
-        sys.exit(1)
-
-    # Test Open Port and configure with commands 
-    print('command = AT')
-    sbdlogger.info('command = AT')
-    if getResponse(ser,'AT'): #send AT command
-        sbdlogger.info('command = AT&F')
-        print('command = AT&F')
-        if getResponse(ser,'AT&F'): #set default parameters with AT&F command 
-            sbdlogger.info('command = AT&K=0')  
-            print('command = AT&K=0')
-            if getResponse(ser,'AT&K=0'): #important, disable flow control
-                sbdlogger.info('modem initialized')
-                print('modem initialized')
-                return ser, True
-    else:
-        return ser, False
+    
+    # If the try statement passed
+    return ser, True
 
 def sendSBD(ser, payload_data):
-    ser.write(payload_data)
-    # Final print statement that it sent
-    print('Sent SBD successfully')
+    import time
+    from adafruit_rockblock import RockBlock
+
+    # Setup instance of RockBlock 
+    rockblock = RockBlock(ser)
+
+    # Send payload data through the RockBlock
+    rockblock.data_out = payload_data
+    print('Talking to Satellite')
+    retry = 0
+    status = rockblock.satellite_transfer()
+    while status[0] > 4 and retry < 10:
+        time.sleep(10)
+        status = rockblock.satellite_transfer()
+        print('Retry number = ', retry)
+        print('status = ', status)
+        retry += 1
+    
+    if status[0] <= 4:
+        # Final print statement that it sent
+        print('Sent SBD successfully')
+    else:
+        print('Could not send SBD')
