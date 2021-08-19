@@ -168,11 +168,11 @@ def initModem():
         sys.exit(1)
 
     sbdlogger.info('command = AT')
-    if get_response(ser,'AT'): #send AT command
+    if getResponse(ser,'AT'): #send AT command
         sbdlogger.info('command = AT&F')
-        if get_response(ser,'AT&F'): #set default parameters with AT&F command 
+        if getResponse(ser,'AT&F'): #set default parameters with AT&F command 
             sbdlogger.info('command = AT&K=0')  
-            if get_response(ser,'AT&K=0'): #important, disable flow control
+            if getResponse(ser,'AT&K=0'): #important, disable flow control
                 sbdlogger.info('modem initialized')
                 print('modem initialized')
                 return ser, True
