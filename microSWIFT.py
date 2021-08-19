@@ -41,7 +41,7 @@ from SBD.sendSBD import createTX
 from SBD.sendSBD import sendSBD
 from SBD.sendSBD import checkTX
 from SBD.sendSBD import initModem
-import SBD.sendSBD as sendSBD
+# import SBD.sendSBD as sendSBD
 
 # Start running continuously while raspberry pi is on
 print('Starting up at ', datetime.datetime.now())
@@ -113,7 +113,7 @@ while True:
     ser, modem_initialized = initModem()
 
     # Send SBD over telemetry
-    sendSBD(ser, payload_data)
+    # sendSBD(ser, payload_data)
 
     # End Timing of entire Script
     print('microSWIFT.py took', datetime.datetime.now() - begin_script_time)
