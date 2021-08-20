@@ -51,3 +51,4 @@ FileNotFoundError: [Errno 2] No such file or directory: '/home/pi/microSWIFT/dat
 This is most likely because the GPS is not initializing and I need some more checks within the record GPS function to see why this is happening - It is strange that the GPS wont initialize now
 even though it has been consitenstly for weeks.
 
+When this happens we can make a fake file for GPStoUVZ to read or output the initialization status as well to skip processing if it did not initialize.
