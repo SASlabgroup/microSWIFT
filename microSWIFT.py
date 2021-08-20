@@ -1,24 +1,24 @@
 ## microSWIFT.py 
 """
 author: @edwinrainville
-adapted heavily from previous functions and scripts written by Alex de Klerk and Vivano Castillo
+		adapted heavily from previous functions and scripts written by Alex de Klerk and Viviana Castillo
 
 Description: This script is the main operational script that runs on the microSWIFT. It is the scheduler that runs the recording of the GPS
 and IMU as well as schedules the processing scripts after they are done recording.
 
-Stable version that does not include sendSBD yet - 08/09/21
-
 Outline: 
 1. Load modules
-2. Define Configuration of sampling
-3. Intialize GPS and IMU sensors
-4. Begin recording GPS and IMU data
-5. End recording at length of burst interval
-6. Begin Processing data from GPS 
-7. Create wave products from GPS data
-8. Build binary data packet to send via Iridum modem 
-9. Send data packet to shore-side server
-10. Restart at recording 
+2. Start main loop 
+3. Submit concurrent jobs to record GPS and record IMU separetely
+4. End recording
+5. Read-in GPS data from file
+6. Process GPS data using the current GPSwaves algorithm (GPS velocity based algorithm)
+7. Compute mean values of lat, lon and other characteristics
+8. createTX file and pack payload data
+9. Send SBD over telemetry
+
+Stable version that does not include sendSBD yet - 08/09/21
+Stable version that does include sendSBD - 08/20/21
 
 """
 
@@ -42,21 +42,28 @@ from IMU.recordIMU import recordIMU
 from SBD.sendSBD import createTX
 from SBD.sendSBD import sendSBD
 from SBD.sendSBD import checkTX
+from SBD.sendSBD import initModem
+from SBD.sendSBD import sendSBD
 
 # Start running continuously while raspberry pi is on
+print('-----------------------------------------')
+print('Booted up at ', datetime.datetime.now())
+
+# Define loop counter
+i = 1
+
 while True:
     # Start time of loop iteration
     begin_script_time = datetime.datetime.now()
-    print('Starting up')
+    print('----------- Iteration ', i, '-----------')
+    print('At start of loop at ', begin_script_time)
 
     ## ------------- Boot up Characteristics --------------------------------
     # Define Config file name
-    configFilename = r'utils/Config.dat' 
+    configFilename = r'./utils/Config.dat' 
 
-    # Boot up as soon as power is turned on and get microSWIFT characteristics
-        # Get microSWIFT number 
-        # setup log files
-    GPS_fs = 4 # need to get from config file
+    # Sampling Characteristics
+    GPS_fs = 4 
     IMU_fs = 4
 
     ## -------------- GPS and IMU Recording Section ---------------------------
@@ -98,6 +105,13 @@ while True:
     temp = 0
     volt = 0
 
+    # Print some values of interest
+    print('Hs = ', Hs)
+    print('Tp = ', Tp)
+    print('Dp = ', Dp)
+    print('u_mean = ', u_mean)
+    print('v_mean = ', v_mean)
+
     # End Timing of recording
     print('Processing section took', datetime.datetime.now() - begin_processing_time)
         
@@ -106,12 +120,20 @@ while True:
     TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat_mean, lon_mean, temp, volt, configFilename)
 
     # Decode contents of TX file and print out as a check - will be removed in final versions
-    checkTX(TX_fname)
+    # checkTX(TX_fname)
+
+    # Initialize Iridium Modem
+    ser, modem_initialized = initModem()
 
     # Send SBD over telemetry
-    # sendSBD(payload_data, configFilename)
+    if modem_initialized == True:
+        sendSBD(ser, payload_data)
+    else:
+        print('Modem did not initialize')
+
+    # Increment up the loop counter
+    i += 1
 
     # End Timing of entire Script
     print('microSWIFT.py took', datetime.datetime.now() - begin_script_time)
-
-
+    print('\n')
