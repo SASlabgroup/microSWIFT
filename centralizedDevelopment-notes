@@ -3,7 +3,7 @@ How to Run microSWIFT.py in the background:
 Enter to following commands into the file /etc/rc.local to run at boot
 
 cd /home/pi/microSWIFT
-python3 -u microSWIFT.py >> onboardlog.txt &
+python3 -u microSWIFT.py >> onboardlog.txt 2>&1 &
 
 * The -u flag makes it so that the print statements are unbuffered and so they do not print to the terminal even when running in the background. 
 
@@ -15,11 +15,21 @@ getting the following error on occasion:
 UnboundLocalError: local variable 'gpgga' referenced before assignment
  
 - it doesnt happen all the time but it does need to be addressed as a possible failure mode 
+- this defintiely needs some checks around it and this error needs to be fixed!
 
-SBD notes:
+
+
+------------------ SBD notes: --------------------------
 
 installed the termianl program screen using the command: "sudo apt install screen"
 this is used to test the modem based on this article: https://learn.adafruit.com/using-the-rockblock-iridium-modem?view=all
+to install the rockblock package use the command: "sudo pip3 install adafruit-circuitpython-rockblock"
 
-Random Notes: 
+
+---------------- Random Notes: --------------------------
 installed ipython to test some of the python functionality more onboard rather than within the python interpreter
+
+End of day 08/19/21: microSWIFT.py runs well when you run it manually but it seems to get hung up at the sending function 
+                     when you try to run it from boot. This is strange and will need some more experimetnation. We also need to 
+                     see where the messages are going that are being sent and how to access them. 
+                    '/home/pi/.local/lib/python3.7/site-packages/adafruit_rockblock.py'

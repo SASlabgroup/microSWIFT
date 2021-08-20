@@ -40,11 +40,6 @@ def GPStoUVZ(gpsfile):
                 lon.append(gpgga.longitude)
                 ipos+=1
             elif "GPVTG" in line:
-                if gpgga.gps_qual < 1:
-                    u.append(badValue)
-                    v.append(badValue)
-                    ivel+=1
-                    continue
                 gpvtg = pynmea2.parse(line,check=True)   #grab gpvtg sentence
                 u.append( 0.2777 * gpvtg.spd_over_grnd_kmph*np.sin(np.deg2rad(gpvtg.true_track)))#units are m/s
                 v.append( 0.2777 * gpvtg.spd_over_grnd_kmph*np.cos(np.deg2rad(gpvtg.true_track))) #units are m/s
