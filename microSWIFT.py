@@ -103,6 +103,13 @@ while True:
     temp = 0
     volt = 0
 
+    # Print some values of interest
+    print('Hs = ', Hs)
+    print('Tp = ', Tp)
+    print('Dp = ', Dp)
+    print('u_mean = ', u_mean)
+    print('v_mean = ', v_mean)
+
     # End Timing of recording
     print('Processing section took', datetime.datetime.now() - begin_processing_time)
         
@@ -111,7 +118,7 @@ while True:
     TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat_mean, lon_mean, temp, volt, configFilename)
 
     # Decode contents of TX file and print out as a check - will be removed in final versions
-    checkTX(TX_fname)
+    # checkTX(TX_fname)
 
     # Initialize Iridium Modem
     ser, modem_initialized = initModem()
