@@ -170,8 +170,10 @@ def sendSBD(ser, payload_data):
     rockblock.data_out = payload_data
     print('Talking to Satellite')
     retry = 0
+    max_retry = 10
+    sent_status_val = 4 # any returned status value less than this means the message sent successfully.
     status = rockblock.satellite_transfer()
-    while status[0] > 4 and retry < 10:
+    while status[0] > sent_status_val and retry < max_retry:
         time.sleep(10)
         status = rockblock.satellite_transfer()
         print('Retry number = ', retry)
