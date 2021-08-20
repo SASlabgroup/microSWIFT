@@ -15,7 +15,11 @@ getting the following error on occasion:
 UnboundLocalError: local variable 'gpgga' referenced before assignment
  
 - it doesnt happen all the time but it does need to be addressed as a possible failure mode 
-- this defintiely needs some checks around it and this error needs to be fixed!
+- this defintiely needs some checks around it and this error needs to be fixed! 
+** This error has been fixed - removed line regarding signal quality check with the GPVTG line since there is no signal quality there
+
+New Error: 
+    NonInitialied filename - this was put in as a placeholder and is being removed from the script since it leads to some errors
 
 
 
