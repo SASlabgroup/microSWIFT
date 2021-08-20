@@ -1,6 +1,7 @@
 ## recordGPS.py - centralized version
 '''
 author: @erainvil 
+Adapted Heavily from the original version written by Alex de Klerk and Viviana Castillo 
 '''
 
 # Package imports
@@ -20,8 +21,6 @@ import RPi.GPIO as GPIO
 from utils.config3 import Config
 
 def recordGPS(configFilename):
-    print('GPS recording...')
-
     ## -------- Define Initialize function ------------
     def init():
         nmea_time=''
@@ -52,12 +51,8 @@ def recordGPS(configFilename):
                 sleep(1)
             except Exception as e:
                 return ser, False, nmea_time, nmea_date
-                logger.info("error setting up serial port")
-                logger.info(e)
         except Exception as e:
             return ser, False, nmea_time, nmea_date
-            logger.info("error opening serial port")
-            logger.info(e)
                         
         #read lines from GPS serial port and wait for fix
         try:

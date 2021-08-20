@@ -45,7 +45,7 @@ from SBD.sendSBD import sendSBD
 
 # Start running continuously while raspberry pi is on
 print('-----------------------------------------')
-print('Starting up at ', datetime.datetime.now())
+print('Booted up at ', datetime.datetime.now())
 
 # Define loop counter
 i = 1

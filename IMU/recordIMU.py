@@ -1,6 +1,7 @@
 ## recordIMU.py 
 '''
 author: @erainvil
+Adapted heavily from function written by Alex de Klerk and Viviana Castillo
 
 '''
 
@@ -84,7 +85,6 @@ def recordIMU(configFilename):
             logger.info('power down IMU')
         
     ## ------------ Main Body of Function ------------------
-    print('IMU recording...')
 
     # System and logging parameters
     config = Config() # Create object and load file
