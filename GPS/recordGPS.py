@@ -9,7 +9,7 @@ import serial, sys, os
 import numpy as np
 from struct import *
 from logging import *
-from datetime import datetime
+import datetime
 import time as t
 import pynmea2
 from time import sleep
