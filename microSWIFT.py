@@ -9,15 +9,16 @@ and IMU as well as schedules the processing scripts after they are done recordin
 Outline: 
 1. Load modules
 2. Start main loop 
-3. Submit concurrent jobs to recordGPS and recordIMU separetely
+3. Submit concurrent jobs to record GPS and record IMU separetely
 4. End recording
 5. Read-in GPS data from file
-6. Process GPS data using the current GPSwaves algorithm
+6. Process GPS data using the current GPSwaves algorithm (GPS velocity based algorithm)
 7. Compute mean values of lat, lon and other characteristics
 8. createTX file and pack payload data
 9. Send SBD over telemetry
 
 Stable version that does not include sendSBD yet - 08/09/21
+Stable version that does include sendSBD - 08/20/21
 
 
 """
