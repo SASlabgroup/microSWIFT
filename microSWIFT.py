@@ -77,7 +77,7 @@ while True:
         recordIMU_future = executor.submit(recordIMU, configFilename)
 
         # get results from Futures
-        GPSdataFilename = recordGPS_future.result()
+        GPSdataFilename, gps_intitialized = recordGPS_future.result()
         IMUdataFilename = recordIMU_future.result()
 
     # End Timing of recording
@@ -87,12 +87,22 @@ while True:
     # Time processing section
     begin_processing_time = datetime.datetime.now()
 
-    # Run processGPS
-    # Compute u, v and z from raw GPS data
-    u, v, z, lat, lon = GPStoUVZ(GPSdataFilename)
+    if gps_intitialized==True:
 
-    # Compute Wave Statistics from GPSwaves algorithm
-    Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u, v, z, GPS_fs)
+        # Run processGPS
+        # Compute u, v and z from raw GPS data
+        u, v, z, lat, lon = GPStoUVZ(GPSdataFilename)
+
+        # Compute Wave Statistics from GPSwaves algorithm
+        Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u, v, z, GPS_fs)
+
+    else:
+        # Bad Values of the GPS did not initialize
+        u = 999
+        v = 999
+        z = 999
+        lat = 999
+        lon = 999
 
     # Compute mean velocities, elevation, lat and lon
     u_mean = np.mean(u)
@@ -100,7 +110,6 @@ while True:
     z_mean = np.mean(z)
     lat_mean = np.mean(lat)
     lon_mean = np.mean(lon)
-
     # Temperature and Voltage recordings - will be added in later versions
     temp = 0
     volt = 0

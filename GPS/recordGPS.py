@@ -232,7 +232,6 @@ def recordGPS(configFilename):
 
     ## ------------ Initalize GPS -------------------------
     ser, gps_initialized, time, date = init()
-    print('GPS initialized')
 
     ## ------------- Record GPS ---------------------------
     # If GPS signal is initialized start recording
@@ -248,7 +247,7 @@ def recordGPS(configFilename):
 
         #call record_gps	
         record(ser,GPSdataFilename)
-        return GPSdataFilename 		
+        return GPSdataFilename, gps_initialized	
     # If GPS signal is not initialized exit 
     else:
         logger.info("GPS not initialized, exiting")
@@ -259,7 +258,7 @@ def recordGPS(configFilename):
         logger.info("file name: %s" %GPSdataFilename)
 
         # Return the GPS filename to be read into the onboard processing
-        return GPSdataFilename
+        return GPSdataFilename, gps_initialized
 
 def recordGPS_test(configFilename):
     print('GPS recording')
