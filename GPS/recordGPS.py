@@ -170,7 +170,7 @@ def recordGPS(configFilename):
         print('Ending GPS burst at ', datetime.now())
         logger.info('number of GPGGA samples = %s' %ipos)
         logger.info('number of GPVTG samples = %s' %ivel)
-        logger.info('number of bad samples %d' %badpts)
+        # logger.info('number of bad samples %d' %badpts)
 
     ## ------------ Main body of function ------------------
     # load config file and get parameters
