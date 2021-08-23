@@ -20,7 +20,7 @@ import RPi.GPIO as GPIO
 # Import microSWIFT specific information
 from utils.config3 import Config
 
-def recordGPS_original(configFilename):
+def recordGPS(configFilename):
     ## -------- Define Initialize function ------------
     def init():
         nmea_time=''
@@ -259,5 +259,5 @@ def recordGPS_original(configFilename):
         # Return the GPS filename to be read into the onboard processing
         return GPSdataFilename
 
-def recordGPS(configFilename):
+def recordGPS_test(configFilename):
     print('GPS recording')
