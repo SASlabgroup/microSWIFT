@@ -205,6 +205,7 @@ def recordGPS(configFilename):
     #GPIO.setup(modemGPIO,GPIO.OUT)
     GPIO.setup(gpsGPIO,GPIO.OUT)
     GPIO.output(gpsGPIO,GPIO.HIGH) #set GPS enable pin high to turn on and start acquiring signal
+    print('GPS pin turned on')
 
     #set up logging
     logDir = config.getString('Loggers', 'logDir')
@@ -231,6 +232,7 @@ def recordGPS(configFilename):
 
     ## ------------ Initalize GPS -------------------------
     ser, gps_initialized, time, date = init()
+    print('GPS initialized')
 
     ## ------------- Record GPS ---------------------------
     # If GPS signal is initialized start recording
