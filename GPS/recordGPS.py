@@ -1,6 +1,6 @@
 ## recordGPS.py - centralized version
 '''
-author: @erainvil 
+author: @edwinrainville 
 Adapted Heavily from the original version written by Alex de Klerk and Viviana Castillo 
 '''
 
@@ -20,7 +20,7 @@ import RPi.GPIO as GPIO
 # Import microSWIFT specific information
 from utils.config3 import Config
 
-def recordGPS(configFilename):
+def recordGPS_original(configFilename):
     ## -------- Define Initialize function ------------
     def init():
         nmea_time=''
@@ -258,3 +258,6 @@ def recordGPS(configFilename):
 
         # Return the GPS filename to be read into the onboard processing
         return GPSdataFilename
+
+def recordGPS(configFilename):
+    print('GPS recording')
