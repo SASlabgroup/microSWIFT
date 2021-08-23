@@ -156,7 +156,7 @@ def sig_qual(ser, command='AT+CSQ'):
 
 #send binary message to modem buffer and transmits
 #returns true if trasmit command is sent, but does not mean a successful transmission
-#checksum is least significant 2 bytes of sum of message, with hgiher order byte sent first
+#checksum is least significant 2 bytes of sum of message, with higher order byte sent first
 #returns false if anything goes wrong
 def transmit_bin(ser,msg):
     

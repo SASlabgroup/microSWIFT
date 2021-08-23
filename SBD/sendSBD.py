@@ -1,6 +1,7 @@
 ## Send Short Burst Data (SBD) Functions 
 '''
-author: @erainvil
+author: @edwinrainville
+All functions are heavily adapted from Viviana Castillo and Alex de Klerk.
 
 '''
 
@@ -103,117 +104,84 @@ def checkTX(TX_fname):
         fileContent = file.read()
     data = struct.unpack('<sbbhfff42fffffffffffiiiiii', fileContent)
     print('data = ', data)
-    print(type(data))
 
-def sendSBD(payload_data, configFilename):
-    # Load in Configuration data
-    config = Config() # Create object and load file
-    ok = config.loadFile( configFilename )        
-    burst_seconds = config.getInt('System', 'burst_seconds')   
-    burst_time = config.getInt('System', 'burst_time')
-    burst_int = config.getInt('System', 'burst_interval')
-    call_int = config.getInt('Iridium', 'call_interval')
-    call_time = config.getInt('Iridium', 'call_time')
-        
-    call_duration = burst_int*60-burst_seconds #time between burst end and burst start to make a call
-
-    #Iridium parameters - fixed for now
-    modemPort = '/dev/ttyUSB0' #config.getString('Iridium', 'port')
-    modemBaud = 19200 #config.getInt('Iridium', 'baud')
-    modemGPIO =  16 #config.getInt('Iridium', 'modemGPIO')
-    formatType = 10 #config.getInt('Iridium', 'formatType')
-    call_interval = 60 #config.getInt('Iridium', 'call_interval')
-    call_time = 10 #config.getInt('Iridium', 'call_time')
-    timeout=60 #some commands can take a long time to complete
-
-    id = 0 #arbitrary message counter
-
-    #set up GPIO pins for modem control
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setwarnings(False)
-    GPIO.setup(modemGPIO,GPIO.OUT)
-
-    #logger = getLogger('system_logger.'+__name__)  
+def getResponse(ser,command, response='bad'):
+    # logger = getLogger('system_logger.'+__name__)  
     sbdlogger = logging.getLogger('send_sbd.py')
     sbdlogger.setLevel(logging.INFO)
 
-    #set up logging to file or sdout:
-    LOG_FILE = ('/home/pi/microSWIFT/logs' + '/' + 'send_sbd' + '_' + datetime.strftime(datetime.now(), '%d%b%Y') + '.log')
-    sbdFileHandler = FileHandler(LOG_FILE)
-    sbdFileHandler.setLevel(logging.INFO)
-    sbdFileHandler.setFormatter(Formatter('%(asctime)s, %(name)s - [%(levelname)s] - %(message)s'))
-    sbdlogger.addHandler(sbdFileHandler)
+    ser.flushInput()
+    command=(command+'\r').encode()
+    ser.write(command)
+    sleep(1)
+    try:
+        while ser.in_waiting > 0:
+            r=ser.readline().decode().strip('\r\n')
+            if response in r:
+                sbdlogger.info('response = {}'.format(r))
+                print('response = {}'.format(r))
+                return True
+            elif 'ERROR' in response:
+                sbdlogger.info('response = ERROR')
+                print('response = ERROR')
+                return False
+    except serial.SerialException as e:
+        sbdlogger.info('error: {}'.format(e))
+        print('error: {}'.format(e))
+        return False
 
-    def init_modem():
-        try:
-            GPIO.output(modemGPIO,GPIO.HIGH) #power on GPIO enable pin
-            sbdlogger.info('power on modem...')
-            sleep(3)
-            sbdlogger.info('done')
-        except Exception as e:
-            sbdlogger.info('error powering on modem')
-            sbdlogger.info(e)
-            
-        #open serial port
-        sbdlogger.info('opening serial port with modem at {0} on port {1}...'.format(modemBaud,modemPort))
-        try:
-            ser=serial.Serial(modemPort,modemBaud,timeout=timeout)
-            sbdlogger.info('done')
-        except serial.SerialException as e:
-            sbdlogger.info('unable to open serial port: {}'.format(e))
-            return ser, False
-            sys.exit(1)
+def initModem():
+    # Iridium parameters - fixed for now
+    modemPort = '/dev/ttyUSB0'
+    modemBaud = 19200
+    modemGPIO =  16 
+    timeout=60
+
+    # Turn on the pin to power on the modem
+    try:
+        GPIO.setup(modemGPIO, GPIO.OUT)
+        GPIO.output(modemGPIO,GPIO.HIGH) #power on GPIO enable pin
+        print('modem powered on')
+        sleep(3)
+    except Exception as e:
+        print('error powering on modem')
+        print(e)
+        
+    #open serial port
+    print('opening serial port with modem at {0} on port {1}...'.format(modemBaud,modemPort))
+    try:
+        ser=serial.Serial(modemPort,modemBaud,timeout=timeout)
+        print('serial port opened successfully')
+    except serial.SerialException as e:
+        print('unable to open serial port: {}'.format(e))
+        return ser, False
     
-        sbdlogger.info('command = AT')
-        if get_response(ser,'AT'): #send AT command
-            sbdlogger.info('command = AT&F')
-            if get_response(ser,'AT&F'): #set default parameters with AT&F command 
-                sbdlogger.info('command = AT&K=0')  
-                if get_response(ser,'AT&K=0'): #important, disable flow control
-                    sbdlogger.info('modem initialized')
-                    return ser, True
-        else:
-            return ser, False
+    # If the try statement passed
+    return ser, True
 
-    def get_response(ser,command, response='OK'):
-        ser.flushInput()
-        command=(command+'\r').encode()
-        ser.write(command)
-        sleep(1)
-        try:
-            while ser.in_waiting > 0:
-                r=ser.readline().decode().strip('\r\n')
-                if response in r:
-                    sbdlogger.info('response = {}'.format(r))
-                    return True
-                elif 'ERROR' in response:
-                    sbdlogger.info('response = ERROR')
-                    return False
-        except serial.SerialException as e:
-            sbdlogger.info('error: {}'.format(e))
-            return False
+def sendSBD(ser, payload_data):
+    import time
+    from adafruit_rockblock import RockBlock
 
-    #Get signal quality using AT+CSQF command (see AT command reference).
-    #Returns signal quality, default range is 0-5. Returns -1 for an error or no response
-    #Example modem output: AT+CSQF +CSQF:0 OK    
-    def sig_qual(ser, command='AT+CSQ'):
-        ser.flushInput()
-        ser.write((command+'\r').encode())
-        sbdlogger.info('command = {} '.format(command))
-        r=ser.read(23).decode()
-        if 'CSQ:' in r:
-            response=r[9:15]
-            qual = r[14]
-            sbdlogger.info('response = {}'.format(response))
-            return int(qual) #return signal quality (0-5)
-        elif 'ERROR' in r:
-            sbdlogger.info('Response = ERROR')
-            return -1
-        elif r == '':
-            sbdlogger.info('No response from modem')
-            return -1
-        else:
-            sbdlogger.info('Unexpected response: {}'.format(r))  
-            return -1
+    # Setup instance of RockBlock 
+    rockblock = RockBlock(ser)
 
-    print('Sent SBD...')
+    # Send payload data through the RockBlock
+    rockblock.data_out = payload_data
+    print('Talking to Satellite')
+    retry = 0
+    max_retry = 10
+    sent_status_val = 4 # any returned status value less than this means the message sent successfully.
+    status = rockblock.satellite_transfer()
+    while status[0] > sent_status_val and retry < max_retry:
+        time.sleep(10)
+        status = rockblock.satellite_transfer()
+        print('Retry number = ', retry)
+        print('status = ', status)
+        retry += 1
+    
+    if status[0] <= 4:
+        # Final print statement that it sent
+        print('Sent SBD successfully')
+    else:
+        print('Could not send SBD')

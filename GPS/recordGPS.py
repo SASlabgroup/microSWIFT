@@ -1,6 +1,7 @@
 ## recordGPS.py - centralized version
 '''
 author: @erainvil 
+Adapted Heavily from the original version written by Alex de Klerk and Viviana Castillo 
 '''
 
 # Package imports
@@ -20,8 +21,6 @@ import RPi.GPIO as GPIO
 from utils.config3 import Config
 
 def recordGPS(configFilename):
-    print('GPS recording...')
-
     ## -------- Define Initialize function ------------
     def init():
         nmea_time=''
@@ -52,12 +51,8 @@ def recordGPS(configFilename):
                 sleep(1)
             except Exception as e:
                 return ser, False, nmea_time, nmea_date
-                logger.info("error setting up serial port")
-                logger.info(e)
         except Exception as e:
             return ser, False, nmea_time, nmea_date
-            logger.info("error opening serial port")
-            logger.info(e)
                         
         #read lines from GPS serial port and wait for fix
         try:
@@ -132,25 +127,26 @@ def recordGPS(configFilename):
                     gps_out.write(newline)
                     gps_out.flush()
             
-                    if "GPGGA" in newline:
-                        gpgga = pynmea2.parse(newline,check=True)   #grab gpgga sentence and parse
-                        #check to see if we have lost GPS fix, and if so, continue to loop start. a badValue will remain at this index
-                        if gpgga.gps_qual < 1:
-                            logger.info('lost GPS fix, sample not recorded. Waiting 10 seconds')
-                            sleep(10)
-                            ipos+=1
-                            continue
+            logger.info('open file for writing: %s' %GPSdataFilename)
+            t_end = t.time() + burst_seconds #get end time for burst
+            ipos=0
+            ivel=0
+            while t.time() <= t_end or ipos < gps_samples or ivel < gps_samples:
+                newline=ser.readline().decode()
+                gps_out.write(newline)
+                gps_out.flush()
+        
+                if "GPGGA" in newline:
+                    gpgga = pynmea2.parse(newline,check=True)   #grab gpgga sentence and parse
+                    #check to see if we have lost GPS fix, and if so, continue to loop start. a badValue will remain at this index
+                    if gpgga.gps_qual < 1:
+                        logger.info('lost GPS fix, sample not recorded. Waiting 10 seconds')
+                        sleep(10)
                         ipos+=1
-                    elif "GPVTG" in newline:
-                        if gpgga.gps_qual < 1:
-                            continue
-                        ivel+=1
-                    else: #if not GPGGA or GPVTG, continue to start of loop
                         continue
-                
-                    #if burst has ended but we are close to getting the right number of samples, continue for as short while
-                    if t.time() >= t_end and 0 < gps_samples-ipos <= 10:
-                        
+                    ipos+=1
+                elif "GPVTG" in newline:
+                    if gpgga.gps_qual < 1:
                         continue
                     elif ipos == gps_samples and ivel == gps_samples:
                         break
@@ -158,10 +154,16 @@ def recordGPS(configFilename):
             print('Ending GPS burst at ', datetime.now())
             logger.info('number of GPGGA samples = %s' %ipos)
             logger.info('number of GPVTG samples = %s' %ivel)
-            logger.info('number of bad samples %d' %badpts)
+            # logger.info('number of bad samples %d' %badpts)
 
         except Exception as e:
             logger.info(e, exc_info=True)
+
+        # Output logger information on samples
+        print('Ending GPS burst at ', datetime.now())
+        logger.info('number of GPGGA samples = %s' %ipos)
+        logger.info('number of GPVTG samples = %s' %ivel)
+        logger.info('number of bad samples %d' %badpts)
 
     ## ------------ Main body of function ------------------
     # load config file and get parameters
@@ -248,6 +250,11 @@ def recordGPS(configFilename):
     # If GPS signal is not initialized exit 
     else:
         logger.info("GPS not initialized, exiting")
+        print("GPS not initialized, exiting")
+
+        #create file name
+        GPSdataFilename = dataDir + floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
+        logger.info("file name: %s" %GPSdataFilename)
 
         # Return the GPS filename to be read into the onboard processing
-        return 'NonInitializedFilename' # this needs to be added - it will be a standard file for when GPS is not initailized
+        return GPSdataFilename
