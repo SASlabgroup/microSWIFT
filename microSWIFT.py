@@ -86,6 +86,7 @@ while True:
     ## --------------- Data Processing Section ---------------------------------
     # Time processing section
     begin_processing_time = datetime.datetime.now()
+    print('Starting Processing')
 
     if gps_intitialized==True:
 
