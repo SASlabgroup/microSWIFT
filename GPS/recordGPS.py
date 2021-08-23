@@ -119,15 +119,16 @@ def recordGPS(configFilename):
             with open(fname, 'w',newline='\n') as gps_out:
                 print('open file for writing')
                 
-                logger.info('open file for writing: %s' %fname)
-                t_end = t.time() + burst_seconds #get end time for burst
-                ipos=0
-                ivel=0
-                while t.time() <= t_end or ipos < gps_samples or ivel < gps_samples:
-                    newline=ser.readline().decode()
-                    gps_out.write(newline)
-                    gps_out.flush()
-                    print('Writing first line')
+                # logger.info('open file for writing: %s' %fname)
+                # burst_seconds=5
+                # t_end = t.time() + burst_seconds #get end time for burst
+                # ipos=0
+                # ivel=0
+                # while t.time() <= t_end or ipos < gps_samples or ivel < gps_samples:
+                #     newline=ser.readline().decode()
+                #     gps_out.write(newline)
+                #     gps_out.flush()
+                #     print('Writing line)
             
             logger.info('open file for writing: %s' %GPSdataFilename)
             t_end = t.time() + burst_seconds #get end time for burst
@@ -266,4 +267,46 @@ def recordGPS(configFilename):
         return GPSdataFilename, gps_initialized
 
 def recordGPS_test(configFilename):
-    print('GPS recording')
+    # ------- GPS Parameters -------------
+    # load config file and get parameters
+    config = Config() # Create object and load file
+    ok = config.loadFile( configFilename )
+    if( not ok ):
+        logger.info ('Error loading config file: "%s"' % configFilename)
+        sys.exit(1)
+    
+    #system parameters
+    dataDir = config.getString('System', 'dataDir')
+    floatID = os.uname()[1]
+    #floatID = config.getString('System', 'floatID') 
+    sensor_type = config.getInt('System', 'sensorType')
+    badValue = config.getInt('System', 'badValue')
+    numCoef = config.getInt('System', 'numCoef')
+    port = config.getInt('System', 'port')
+    payload_type = config.getInt('System', 'payloadType')
+    burst_seconds = config.getInt('System', 'burst_seconds')
+    burst_time = config.getInt('System', 'burst_time')
+    burst_int = config.getInt('System', 'burst_interval')
+    call_int = config.getInt('Iridium', 'call_interval')
+    call_time = config.getInt('Iridium', 'call_time')
+
+
+    #GPS parameters 
+    gps_port = config.getString('GPS', 'port')
+    baud = config.getInt('GPS', 'baud')
+    startBaud = config.getInt('GPS', 'startBaud')
+    gps_freq = config.getInt('GPS', 'GPS_frequency') #currently not used, hardcoded at 4 Hz (see init_gps function) 
+    #numSamplesConst = config.getInt('System', 'numSamplesConst')
+    gps_samples = gps_freq*burst_seconds
+    gpsGPIO = config.getInt('GPS', 'gpsGPIO')
+    gps_timeout = config.getInt('GPS','timeout')
+
+
+    # ------- Initialize GPS -------------
+    # Turn on GPS pin
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+    GPIO.setup(gpsGPIO,GPIO.OUT)
+    GPIO.output(gpsGPIO,GPIO.HIGH) #set GPS enable pin high to turn on and start acquiring signal
+
+    # ------- Record GPS -----------------
