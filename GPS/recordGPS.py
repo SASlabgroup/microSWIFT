@@ -117,6 +117,7 @@ def recordGPS(configFilename):
         try:
             ser.flushInput()
             with open(fname, 'w',newline='\n') as gps_out:
+                print('open file for writing')
                 
                 logger.info('open file for writing: %s' %fname)
                 t_end = t.time() + burst_seconds #get end time for burst
@@ -126,6 +127,7 @@ def recordGPS(configFilename):
                     newline=ser.readline().decode()
                     gps_out.write(newline)
                     gps_out.flush()
+                    print('Writing first line')
             
             logger.info('open file for writing: %s' %GPSdataFilename)
             t_end = t.time() + burst_seconds #get end time for burst
@@ -135,21 +137,25 @@ def recordGPS(configFilename):
                 newline=ser.readline().decode()
                 gps_out.write(newline)
                 gps_out.flush()
+                print('writing new line')
         
                 if "GPGGA" in newline:
                     gpgga = pynmea2.parse(newline,check=True)   #grab gpgga sentence and parse
                     #check to see if we have lost GPS fix, and if so, continue to loop start. a badValue will remain at this index
                     if gpgga.gps_qual < 1:
                         logger.info('lost GPS fix, sample not recorded. Waiting 10 seconds')
+                        print('lost GPS fix, sample not recorded. Waiting 10 seconds')
                         sleep(10)
                         ipos+=1
                         continue
                     ipos+=1
                 elif "GPVTG" in newline:
-                    if gpgga.gps_qual < 1:
-                        continue
-                    elif ipos == gps_samples and ivel == gps_samples:
+                    # if gpgga.gps_qual < 1:
+                        # continue
+                    if ipos == gps_samples and ivel == gps_samples:
                         break
+                    else:
+                        continue
             # Output logger information on samples
             print('Ending GPS burst at ', datetime.now())
             logger.info('number of GPGGA samples = %s' %ipos)
@@ -205,7 +211,6 @@ def recordGPS(configFilename):
     #GPIO.setup(modemGPIO,GPIO.OUT)
     GPIO.setup(gpsGPIO,GPIO.OUT)
     GPIO.output(gpsGPIO,GPIO.HIGH) #set GPS enable pin high to turn on and start acquiring signal
-    print('GPS pin turned on')
 
     #set up logging
     logDir = config.getString('Loggers', 'logDir')
