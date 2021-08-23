@@ -31,7 +31,7 @@ import datetime
 import os
 
 # Import GPS functions
-from GPS.recordGPS import recordGPS_test
+from GPS.recordGPS import recordGPS
 from GPS.GPSwaves import GPSwaves
 from GPS.GPStoUVZ import GPStoUVZ
 
@@ -73,7 +73,7 @@ while True:
     # Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
     with concurrent.futures.ThreadPoolExecutor() as executor:
         # Submit Futures 
-        recordGPS_future = executor.submit(recordGPS_test, configFilename)
+        recordGPS_future = executor.submit(recordGPS, configFilename)
         recordIMU_future = executor.submit(recordIMU, configFilename)
 
         # get results from Futures
