@@ -117,7 +117,6 @@ def recordGPS(configFilename):
         try:
             ser.flushInput()
             with open(fname, 'w',newline='\n') as gps_out:
-                print('open file for writing')
                 logger.info('open file for writing: %s' %GPSdataFilename)
                 t_end = t.time() + burst_seconds #get end time for burst
                 ipos=0
@@ -126,7 +125,6 @@ def recordGPS(configFilename):
                     newline=ser.readline().decode()
                     gps_out.write(newline)
                     gps_out.flush()
-                    print('writing new line')
             
                     if "GPGGA" in newline:
                         gpgga = pynmea2.parse(newline,check=True)   #grab gpgga sentence and parse
