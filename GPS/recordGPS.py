@@ -141,10 +141,13 @@ def recordGPS(configFilename):
                     elif "GPVTG" in newline:
                         # if gpgga.gps_qual < 1:
                             # continue
-                        if ipos == gps_samples and ivel == gps_samples:
-                            break
-                        else:
-                            continue
+                        ivel+=1
+                    
+                    # If the number of position and velocity samples is enough then and the loop
+                    if ipos == gps_samples and ivel == gps_samples:
+                        break
+                    else:
+                        continue
                 # Output logger information on samples
                 print('Ending GPS burst at ', datetime.now())
                 logger.info('number of GPGGA samples = %s' %ipos)
