@@ -118,50 +118,38 @@ def recordGPS(configFilename):
             ser.flushInput()
             with open(fname, 'w',newline='\n') as gps_out:
                 print('open file for writing')
-                
-                # logger.info('open file for writing: %s' %fname)
-                # burst_seconds=5
-                # t_end = t.time() + burst_seconds #get end time for burst
-                # ipos=0
-                # ivel=0
-                # while t.time() <= t_end or ipos < gps_samples or ivel < gps_samples:
-                #     newline=ser.readline().decode()
-                #     gps_out.write(newline)
-                #     gps_out.flush()
-                #     print('Writing line)
+                logger.info('open file for writing: %s' %GPSdataFilename)
+                t_end = t.time() + burst_seconds #get end time for burst
+                ipos=0
+                ivel=0
+                while t.time() <= t_end or ipos < gps_samples or ivel < gps_samples:
+                    newline=ser.readline().decode()
+                    gps_out.write(newline)
+                    gps_out.flush()
+                    print('writing new line')
             
-            logger.info('open file for writing: %s' %GPSdataFilename)
-            t_end = t.time() + burst_seconds #get end time for burst
-            ipos=0
-            ivel=0
-            while t.time() <= t_end or ipos < gps_samples or ivel < gps_samples:
-                newline=ser.readline().decode()
-                gps_out.write(newline)
-                gps_out.flush()
-                print('writing new line')
-        
-                if "GPGGA" in newline:
-                    gpgga = pynmea2.parse(newline,check=True)   #grab gpgga sentence and parse
-                    #check to see if we have lost GPS fix, and if so, continue to loop start. a badValue will remain at this index
-                    if gpgga.gps_qual < 1:
-                        logger.info('lost GPS fix, sample not recorded. Waiting 10 seconds')
-                        print('lost GPS fix, sample not recorded. Waiting 10 seconds')
-                        sleep(10)
+                    if "GPGGA" in newline:
+                        gpgga = pynmea2.parse(newline,check=True)   #grab gpgga sentence and parse
+                        #check to see if we have lost GPS fix, and if so, continue to loop start. a badValue will remain at this index
+                        if gpgga.gps_qual < 1:
+                            logger.info('lost GPS fix, sample not recorded. Waiting 10 seconds')
+                            print('lost GPS fix, sample not recorded. Waiting 10 seconds')
+                            sleep(10)
+                            ipos+=1
+                            continue
                         ipos+=1
-                        continue
-                    ipos+=1
-                elif "GPVTG" in newline:
-                    # if gpgga.gps_qual < 1:
-                        # continue
-                    if ipos == gps_samples and ivel == gps_samples:
-                        break
-                    else:
-                        continue
-            # Output logger information on samples
-            print('Ending GPS burst at ', datetime.now())
-            logger.info('number of GPGGA samples = %s' %ipos)
-            logger.info('number of GPVTG samples = %s' %ivel)
-            # logger.info('number of bad samples %d' %badpts)
+                    elif "GPVTG" in newline:
+                        # if gpgga.gps_qual < 1:
+                            # continue
+                        if ipos == gps_samples and ivel == gps_samples:
+                            break
+                        else:
+                            continue
+                # Output logger information on samples
+                print('Ending GPS burst at ', datetime.now())
+                logger.info('number of GPGGA samples = %s' %ipos)
+                logger.info('number of GPVTG samples = %s' %ivel)
+                # logger.info('number of bad samples %d' %badpts)
 
         except Exception as e:
             logger.info(e, exc_info=True)

@@ -105,11 +105,11 @@ while True:
         lon = 999
 
     # Compute mean velocities, elevation, lat and lon
-    u_mean = np.mean(u)
-    v_mean = np.mean(v)
-    z_mean = np.mean(z)
-    lat_mean = np.mean(lat)
-    lon_mean = np.mean(lon)
+    u_mean = np.nanmean(u)
+    v_mean = np.nanmean(v)
+    z_mean = np.nanmean(z)
+    lat_mean = np.nanmean(lat)
+    lon_mean = np.nanmean(lon)
 
     # Temperature and Voltage recordings - will be added in later versions
     temp = 0
