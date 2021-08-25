@@ -47,15 +47,16 @@ from SBD.sendSBD import checkTX
 from SBD.sendSBD import initModem
 from SBD.sendSBD import sendSBD
 
-# Start running continuously while raspberry pi is on
-print('-----------------------------------------')
-print('Booted up at ', datetime.datetime.now())
-
-# Define loop counter
-i = 1
-
 # Main body of microSWIFT.py
 if __name__=="__main__":
+
+    # Start running continuously while raspberry pi is on
+    print('-----------------------------------------')
+    print('Booted up at ', datetime.datetime.now())
+
+    # Define loop counter
+    i = 1
+    
     while True:
         # Start time of loop iteration
         begin_script_time = datetime.datetime.now()
