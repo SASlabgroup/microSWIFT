@@ -70,6 +70,12 @@ if __name__=="__main__":
     burst_seconds = config.getInt('System', 'burst_seconds')
     burst_time = config.getInt('System', 'burst_time')
     burst_int = config.getInt('System', 'burst_interval')
+    
+    # GPS parameters
+    GPS_fs = config.getInt('GPS', 'gps_frequency') #currently not used, hardcoded at 4 Hz (see init_gps function)
+
+    # IMU parameters
+    IMU_fs = config.getFloat('IMU', 'imu_frequency')
 
     # Set-up logging based on config file parameters
     logger = getLogger('microSWIFT')
@@ -106,10 +112,6 @@ if __name__=="__main__":
         ## ------------- Boot up Characteristics --------------------------------
         # Define Config file name
         configFilename = r'./utils/Config.dat' 
-
-        # Sampling Characteristics
-        GPS_fs = 4 
-        IMU_fs = 4
 
         ## -------------- GPS and IMU Recording Section ---------------------------
         # Time recording section
