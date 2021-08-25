@@ -31,7 +31,6 @@ import datetime
 import numpy as np
 from utils.config3 import Config
 import datetime
-import os
 
 # Import GPS functions
 from GPS.recordGPS import recordGPS
