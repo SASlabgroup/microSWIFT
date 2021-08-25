@@ -112,10 +112,6 @@ if __name__=="__main__":
         logger.info('----------- Iteration {} -----------'.format(i))
         logger.info('At start of loop at {}'.format(begin_script_time))
 
-        ## ------------- Boot up Characteristics --------------------------------
-        # Define Config file name
-        configFilename = r'./utils/Config.dat' 
-
         ## -------------- GPS and IMU Recording Section ---------------------------
         # Time recording section
         begin_recording_time = datetime.datetime.now()
