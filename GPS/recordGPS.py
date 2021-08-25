@@ -165,25 +165,6 @@ def recordGPS(configFilename):
     # Set up module level logger
     logger = getLogger('microSWIFT.'+__name__)  
 
-    # load config file and get parameters
-    config = Config() # Create object and load file
-    ok = config.loadFile( configFilename )
-    if( not ok ):
-        sys.exit(1)
-    
-    #system parameters
-    dataDir = config.getString('System', 'dataDir')
-    floatID = os.uname()[1]
-    #floatID = config.getString('System', 'floatID') 
-    sensor_type = config.getInt('System', 'sensorType')
-    payload_type = config.getInt('System', 'payloadType')
-    burst_seconds = config.getInt('System', 'burst_seconds')
-    burst_time = config.getInt('System', 'burst_time')
-    burst_int = config.getInt('System', 'burst_interval')
-    call_int = config.getInt('Iridium', 'call_interval')
-    call_time = config.getInt('Iridium', 'call_time')
-
-
     #GPS parameters 
     gps_port = config.getString('GPS', 'port')
     baud = config.getInt('GPS', 'baud')
@@ -200,21 +181,6 @@ def recordGPS(configFilename):
     #GPIO.setup(modemGPIO,GPIO.OUT)
     GPIO.setup(gpsGPIO,GPIO.OUT)
     GPIO.output(gpsGPIO,GPIO.HIGH) #set GPS enable pin high to turn on and start acquiring signal
-
-    #set up logging
-    logDir = config.getString('Loggers', 'logDir')
-    LOG_LEVEL = config.getString('Loggers', 'DefaultLogLevel')
-    #format log messages (example: 2020-11-23 14:31:00,578, recordGPS - info - this is a log message)
-    #NOTE: TIME IS SYSTEM TIME
-    LOG_FORMAT = ('%(asctime)s, %(filename)s - [%(levelname)s] - %(message)s')
-    #log file name (example: home/pi/microSWIFT/recordGPS_23Nov2020.log)
-    LOG_FILE = (logDir + '/' + 'recordGPS' + '_' + datetime.strftime(datetime.now(), '%d%b%Y') + '.log')
-    logger = getLogger('system_logger')
-    logger.setLevel(LOG_LEVEL)
-    logFileHandler = FileHandler(LOG_FILE)
-    logFileHandler.setLevel(LOG_LEVEL)
-    logFileHandler.setFormatter(Formatter(LOG_FORMAT))
-    logger.addHandler(logFileHandler)
 
     logger.info("---------------recordGPS.py------------------")
 
