@@ -162,6 +162,12 @@ def recordGPS(configFilename):
 
     ## ------------ Main body of function ------------------
 
+    # Configuration
+    config = Config() # Create object and load file
+    ok = config.loadFile( configFilename )
+    if( not ok ):
+        sys.exit(1)
+
     # Set up module level logger
     logger = getLogger('microSWIFT.'+__name__)  
 
