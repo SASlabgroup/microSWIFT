@@ -30,6 +30,8 @@ import datetime
 import numpy as np
 from utils.config3 import Config
 import datetime
+from logging import *
+import sys, os
 
 # Import GPS functions
 from GPS.recordGPS import recordGPS
@@ -49,13 +51,54 @@ from SBD.sendSBD import sendSBD
 # Main body of microSWIFT.py
 if __name__=="__main__":
 
-    # Start running continuously while raspberry pi is on
+    # ------------ Logging Characteristics ---------------
+    # Define Config file name
+    configFilename = r'utils/Config.dat'
+    config = Config() # Create object and load file
+    ok = config.loadFile( configFilename )
+    if( not ok ):
+        sys.exit(1)
+
+    # System Parameters
+    dataDir = config.getString('System', 'dataDir')
+    floatID = os.uname()[1]
+    sensor_type = config.getInt('System', 'sensorType')
+    badValue = config.getInt('System', 'badValue')
+    numCoef = config.getInt('System', 'numCoef')
+    port = config.getInt('System', 'port')
+    payload_type = config.getInt('System', 'payloadType')
+    burst_seconds = config.getInt('System', 'burst_seconds')
+    burst_time = config.getInt('System', 'burst_time')
+    burst_int = config.getInt('System', 'burst_interval')
+
+    # Set-up logging based on config file parameters
+    logger = getLogger('microSWIFT')
+    logDir = config.getString('Loggers', 'logDir')
+    LOG_LEVEL = config.getString('Loggers', 'DefaultLogLevel')
+    LOG_FORMAT = ('%(asctime)s, %(name)s - [%(levelname)s] - %(message)s')
+    LOG_FILE = (logDir  + '%(name)s' + '.log')
+    logger.setLevel(LOG_LEVEL)
+    logFileHandler = FileHandler(LOG_FILE)
+    logFileHandler.setLevel(LOG_LEVEL)
+    logFileHandler.setFormatter(Formatter(LOG_FORMAT))
+    logger.addHandler(logFileHandler)
+
+    #Output configuration parameters to log file
+    logger.info('microSWIFT configuration:')
+    logger.info('float ID: {0}, payload type: {1}, sensors type: {2}, '.format(floatID, payload_type, sensor_type))
+    logger.info('burst seconds: {0}, burst interval: {1}, burst time: {2}'.format(burst_seconds, burst_int, burst_time))
+    logger.info('gps sample rate: {0}, call interval {1}, call time: {2}'.format(gps_freq, call_int, call_time))
+
+
+
+    # Output Booted up time to log 
     print('-----------------------------------------')
     print('Booted up at ', datetime.datetime.now())
 
     # Define loop counter
     i = 1
 
+    # --------------- Main Loop -------------------------
     while True:
         # Start time of loop iteration
         begin_script_time = datetime.datetime.now()
