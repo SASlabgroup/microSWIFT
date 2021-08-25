@@ -1,3 +1,5 @@
+#! /usr/bin/python3
+
 ## microSWIFT.py 
 """
 author: @edwinrainville
