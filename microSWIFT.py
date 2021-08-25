@@ -100,7 +100,7 @@ if __name__=="__main__":
 
     # Output Booted up time to log 
     logger.info('-----------------------------------------')
-    logger.info('Booted up at ' + datetime.datetime.now())
+    logger.info('Booted up at {}'.format(datetime.datetime.now()))
 
     # Define loop counter
     i = 1
@@ -109,7 +109,7 @@ if __name__=="__main__":
     while True:
         # Start time of loop iteration
         begin_script_time = datetime.datetime.now()
-        logger.info('----------- Iteration ' + i + '-----------')
+        logger.info('----------- Iteration {} -----------'.format(i))
         logger.info('At start of loop at ' + begin_script_time)
 
         ## ------------- Boot up Characteristics --------------------------------
@@ -131,7 +131,7 @@ if __name__=="__main__":
             IMUdataFilename = recordIMU_future.result()
 
         # End Timing of recording
-        logger.info('Recording section took' + (datetime.datetime.now() - begin_recording_time))
+        logger.info('Recording section took {}'.format(datetime.datetime.now() - begin_recording_time))
 
         ## --------------- Data Processing Section ---------------------------------
         # Time processing section
@@ -174,7 +174,7 @@ if __name__=="__main__":
         logger.info('v_mean = {}'.format(v_mean))
 
         # End Timing of recording
-        logger.info('Processing section took', datetime.datetime.now() - begin_processing_time)
+        logger.info('Processing section took {}'.format(datetime.datetime.now() - begin_processing_time))
             
         ## -------------- Telemetry Section ----------------------------------
         # Create TX file from processData.py output from combined wave products
@@ -196,5 +196,5 @@ if __name__=="__main__":
         i += 1
 
         # End Timing of entire Script
-        logger.info('microSWIFT.py took', datetime.datetime.now() - begin_script_time)
+        logger.info('microSWIFT.py took {}'.format(datetime.datetime.now() - begin_script_time))
         logger.info('\n')
