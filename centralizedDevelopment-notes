@@ -21,8 +21,6 @@ UnboundLocalError: local variable 'gpgga' referenced before assignment
 New Error: 
     NonInitialied filename - this was put in as a placeholder and is being removed from the script since it leads to some errors
 
-
-
 ------------------ SBD notes: --------------------------
 
 installed the termianl program screen using the command: "sudo apt install screen"
@@ -68,3 +66,4 @@ getting this erorr only on the first iteration of GPSwaves sometimes:
 
 Not quite sure what is means and it doesn't seem to cause any issues necessaily but it is strange and should potentially be fixed - can be backburned to now but noted. 
 
+-------------- Instead of print statements, replace with all logging to a single log file using the logging package -------------------------
