@@ -85,7 +85,7 @@ if __name__=="__main__":
     logDir = config.getString('Loggers', 'logDir')
     LOG_LEVEL = config.getString('Loggers', 'DefaultLogLevel')
     LOG_FORMAT = ('%(asctime)s, %(name)s - [%(levelname)s] - %(message)s')
-    LOG_FILE = (logDir  + 'microSWIFT' + '.log')
+    LOG_FILE = (logDir  + logger.name + '.log')
     logger.setLevel(LOG_LEVEL)
     logFileHandler = FileHandler(LOG_FILE)
     logFileHandler.setLevel(LOG_LEVEL)
@@ -100,7 +100,7 @@ if __name__=="__main__":
 
     # Output Booted up time to log 
     logger.info('-----------------------------------------')
-    logger.info('Booted up at ', datetime.datetime.now())
+    logger.info('Booted up at ' + datetime.datetime.now())
 
     # Define loop counter
     i = 1
@@ -131,7 +131,7 @@ if __name__=="__main__":
             IMUdataFilename = recordIMU_future.result()
 
         # End Timing of recording
-        logger.info('Recording section took', datetime.datetime.now() - begin_recording_time)
+        logger.info('Recording section took' + (datetime.datetime.now() - begin_recording_time))
 
         ## --------------- Data Processing Section ---------------------------------
         # Time processing section
@@ -167,11 +167,11 @@ if __name__=="__main__":
         volt = 0
 
         # Print some values of interest
-        logger.info('Hs = ', Hs)
-        logger.info('Tp = ', Tp)
-        logger.info('Dp = ', Dp)
-        logger.info('u_mean = ', u_mean)
-        logger.info('v_mean = ', v_mean)
+        logger.info('Hs = {}'.format(Hs))
+        logger.info('Tp = {}'.format(Tp))
+        logger.info('Dp = {}'.format(Dp))
+        logger.info('u_mean = {}'.format(u_mean))
+        logger.info('v_mean = {}'.format(v_mean))
 
         # End Timing of recording
         logger.info('Processing section took', datetime.datetime.now() - begin_processing_time)
