@@ -2,8 +2,7 @@
 
 ## microSWIFT.py 
 """
-author: @edwinrainville
-		adapted heavily from previous functions and scripts written by Alex de Klerk and Viviana Castillo
+authors: @edwinrainville, @AlexdeKlerk and @VivianaCastillo
 
 Description: This script is the main operational script that runs on the microSWIFT. It is the scheduler that runs the recording of the GPS
 and IMU as well as schedules the processing scripts after they are done recording.
@@ -56,7 +55,7 @@ if __name__=="__main__":
 
     # Define loop counter
     i = 1
-    
+
     while True:
         # Start time of loop iteration
         begin_script_time = datetime.datetime.now()
