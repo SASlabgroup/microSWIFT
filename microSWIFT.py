@@ -48,6 +48,9 @@ from SBD.sendSBD import checkTX
 from SBD.sendSBD import initModem
 from SBD.sendSBD import sendSBD
 
+# Import Configuration functions
+from utils.config3 import Config
+
 # Main body of microSWIFT.py
 if __name__=="__main__":
 
