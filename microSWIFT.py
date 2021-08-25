@@ -109,8 +109,8 @@ if __name__=="__main__":
     while True:
         # Start time of loop iteration
         begin_script_time = datetime.datetime.now()
-        logger.info('----------- Iteration ', i, '-----------')
-        logger.info('At start of loop at ', begin_script_time)
+        logger.info('----------- Iteration ' + i + '-----------')
+        logger.info('At start of loop at ' + begin_script_time)
 
         ## ------------- Boot up Characteristics --------------------------------
         # Define Config file name
