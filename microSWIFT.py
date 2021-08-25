@@ -19,6 +19,8 @@ Outline:
 
 Stable version that does not include sendSBD yet - 08/09/21
 Stable version that does include sendSBD - 08/20/21
+Successfully merged all fixes/ bugs into microSWIFT.py-Centralized - 08/25/21
+
 
 """
 
