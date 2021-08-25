@@ -54,99 +54,101 @@ print('Booted up at ', datetime.datetime.now())
 # Define loop counter
 i = 1
 
-while True:
-    # Start time of loop iteration
-    begin_script_time = datetime.datetime.now()
-    print('----------- Iteration ', i, '-----------')
-    print('At start of loop at ', begin_script_time)
+# Main body of microSWIFT.py
+if __name__=="__main__":
+    while True:
+        # Start time of loop iteration
+        begin_script_time = datetime.datetime.now()
+        print('----------- Iteration ', i, '-----------')
+        print('At start of loop at ', begin_script_time)
 
-    ## ------------- Boot up Characteristics --------------------------------
-    # Define Config file name
-    configFilename = r'./utils/Config.dat' 
+        ## ------------- Boot up Characteristics --------------------------------
+        # Define Config file name
+        configFilename = r'./utils/Config.dat' 
 
-    # Sampling Characteristics
-    GPS_fs = 4 
-    IMU_fs = 4
+        # Sampling Characteristics
+        GPS_fs = 4 
+        IMU_fs = 4
 
-    ## -------------- GPS and IMU Recording Section ---------------------------
-    # Time recording section
-    begin_recording_time = datetime.datetime.now()
+        ## -------------- GPS and IMU Recording Section ---------------------------
+        # Time recording section
+        begin_recording_time = datetime.datetime.now()
 
-    # Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        # Submit Futures 
-        recordGPS_future = executor.submit(recordGPS, configFilename)
-        recordIMU_future = executor.submit(recordIMU, configFilename)
+        # Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            # Submit Futures 
+            recordGPS_future = executor.submit(recordGPS, configFilename)
+            recordIMU_future = executor.submit(recordIMU, configFilename)
 
-        # get results from Futures
-        GPSdataFilename, gps_intitialized = recordGPS_future.result()
-        IMUdataFilename = recordIMU_future.result()
+            # get results from Futures
+            GPSdataFilename, gps_intitialized = recordGPS_future.result()
+            IMUdataFilename = recordIMU_future.result()
 
-    # End Timing of recording
-    print('Recording section took', datetime.datetime.now() - begin_recording_time)
+        # End Timing of recording
+        print('Recording section took', datetime.datetime.now() - begin_recording_time)
 
-    ## --------------- Data Processing Section ---------------------------------
-    # Time processing section
-    begin_processing_time = datetime.datetime.now()
-    print('Starting Processing')
+        ## --------------- Data Processing Section ---------------------------------
+        # Time processing section
+        begin_processing_time = datetime.datetime.now()
+        print('Starting Processing')
 
-    if gps_intitialized==True:
+        if gps_intitialized==True:
 
-        # Run processGPS
-        # Compute u, v and z from raw GPS data
-        u, v, z, lat, lon = GPStoUVZ(GPSdataFilename)
+            # Run processGPS
+            # Compute u, v and z from raw GPS data
+            u, v, z, lat, lon = GPStoUVZ(GPSdataFilename)
 
-        # Compute Wave Statistics from GPSwaves algorithm
-        Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u, v, z, GPS_fs)
+            # Compute Wave Statistics from GPSwaves algorithm
+            Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u, v, z, GPS_fs)
 
-    else:
-        # Bad Values of the GPS did not initialize
-        u = 999
-        v = 999
-        z = 999
-        lat = 999
-        lon = 999
+        else:
+            # Bad Values of the GPS did not initialize
+            u = 999
+            v = 999
+            z = 999
+            lat = 999
+            lon = 999
 
-    # Compute mean velocities, elevation, lat and lon
-    u_mean = np.nanmean(u)
-    v_mean = np.nanmean(v)
-    z_mean = np.nanmean(z)
-    lat_mean = np.nanmean(lat)
-    lon_mean = np.nanmean(lon)
+        # Compute mean velocities, elevation, lat and lon
+        u_mean = np.nanmean(u)
+        v_mean = np.nanmean(v)
+        z_mean = np.nanmean(z)
+        lat_mean = np.nanmean(lat)
+        lon_mean = np.nanmean(lon)
 
-    # Temperature and Voltage recordings - will be added in later versions
-    temp = 0
-    volt = 0
+        # Temperature and Voltage recordings - will be added in later versions
+        temp = 0
+        volt = 0
 
-    # Print some values of interest
-    print('Hs = ', Hs)
-    print('Tp = ', Tp)
-    print('Dp = ', Dp)
-    print('u_mean = ', u_mean)
-    print('v_mean = ', v_mean)
+        # Print some values of interest
+        print('Hs = ', Hs)
+        print('Tp = ', Tp)
+        print('Dp = ', Dp)
+        print('u_mean = ', u_mean)
+        print('v_mean = ', v_mean)
 
-    # End Timing of recording
-    print('Processing section took', datetime.datetime.now() - begin_processing_time)
-        
-    ## -------------- Telemetry Section ----------------------------------
-    # Create TX file from processData.py output from combined wave products
-    TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat_mean, lon_mean, temp, volt, configFilename)
+        # End Timing of recording
+        print('Processing section took', datetime.datetime.now() - begin_processing_time)
+            
+        ## -------------- Telemetry Section ----------------------------------
+        # Create TX file from processData.py output from combined wave products
+        TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat_mean, lon_mean, temp, volt, configFilename)
 
-    # Decode contents of TX file and print out as a check - will be removed in final versions
-    # checkTX(TX_fname)
+        # Decode contents of TX file and print out as a check - will be removed in final versions
+        # checkTX(TX_fname)
 
-    # Initialize Iridium Modem
-    ser, modem_initialized = initModem()
+        # Initialize Iridium Modem
+        ser, modem_initialized = initModem()
 
-    # Send SBD over telemetry
-    if modem_initialized == True:
-        sendSBD(ser, payload_data)
-    else:
-        print('Modem did not initialize')
+        # Send SBD over telemetry
+        if modem_initialized == True:
+            sendSBD(ser, payload_data)
+        else:
+            print('Modem did not initialize')
 
-    # Increment up the loop counter
-    i += 1
+        # Increment up the loop counter
+        i += 1
 
-    # End Timing of entire Script
-    print('microSWIFT.py took', datetime.datetime.now() - begin_script_time)
-    print('\n')
+        # End Timing of entire Script
+        print('microSWIFT.py took', datetime.datetime.now() - begin_script_time)
+        print('\n')
