@@ -89,11 +89,9 @@ if __name__=="__main__":
     logger.info('burst seconds: {0}, burst interval: {1}, burst time: {2}'.format(burst_seconds, burst_int, burst_time))
     logger.info('gps sample rate: {0}, call interval {1}, call time: {2}'.format(gps_freq, call_int, call_time))
 
-
-
     # Output Booted up time to log 
-    print('-----------------------------------------')
-    print('Booted up at ', datetime.datetime.now())
+    logger.info('-----------------------------------------')
+    logger.info('Booted up at ', datetime.datetime.now())
 
     # Define loop counter
     i = 1
@@ -102,8 +100,8 @@ if __name__=="__main__":
     while True:
         # Start time of loop iteration
         begin_script_time = datetime.datetime.now()
-        print('----------- Iteration ', i, '-----------')
-        print('At start of loop at ', begin_script_time)
+        logger.info('----------- Iteration ', i, '-----------')
+        logger.info('At start of loop at ', begin_script_time)
 
         ## ------------- Boot up Characteristics --------------------------------
         # Define Config file name
@@ -128,12 +126,12 @@ if __name__=="__main__":
             IMUdataFilename = recordIMU_future.result()
 
         # End Timing of recording
-        print('Recording section took', datetime.datetime.now() - begin_recording_time)
+        logger.info('Recording section took', datetime.datetime.now() - begin_recording_time)
 
         ## --------------- Data Processing Section ---------------------------------
         # Time processing section
         begin_processing_time = datetime.datetime.now()
-        print('Starting Processing')
+        logger.info('Starting Processing')
 
         if gps_intitialized==True:
 
@@ -164,14 +162,14 @@ if __name__=="__main__":
         volt = 0
 
         # Print some values of interest
-        print('Hs = ', Hs)
-        print('Tp = ', Tp)
-        print('Dp = ', Dp)
-        print('u_mean = ', u_mean)
-        print('v_mean = ', v_mean)
+        logger.info('Hs = ', Hs)
+        logger.info('Tp = ', Tp)
+        logger.info('Dp = ', Dp)
+        logger.info('u_mean = ', u_mean)
+        logger.info('v_mean = ', v_mean)
 
         # End Timing of recording
-        print('Processing section took', datetime.datetime.now() - begin_processing_time)
+        logger.info('Processing section took', datetime.datetime.now() - begin_processing_time)
             
         ## -------------- Telemetry Section ----------------------------------
         # Create TX file from processData.py output from combined wave products
@@ -187,11 +185,11 @@ if __name__=="__main__":
         if modem_initialized == True:
             sendSBD(ser, payload_data)
         else:
-            print('Modem did not initialize')
+            logger.info('Modem did not initialize')
 
         # Increment up the loop counter
         i += 1
 
         # End Timing of entire Script
-        print('microSWIFT.py took', datetime.datetime.now() - begin_script_time)
-        print('\n')
+        logger.info('microSWIFT.py took', datetime.datetime.now() - begin_script_time)
+        logger.info('\n')
