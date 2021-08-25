@@ -62,7 +62,6 @@ def recordGPS(configFilename):
                 ser.flushInput()
                 ser.read_until('\n'.encode())
                 newline=ser.readline().decode('utf-8')
-                logger.info(newline)
                 if not 'GPGGA' in newline:
                     newline=ser.readline().decode('utf-8')
                     if 'GPGGA' in newline:
@@ -113,7 +112,7 @@ def recordGPS(configFilename):
 
     ## -------- Define Record Function ----------------
     def record(ser,fname):
-        print('starting GPS burst at ', datetime.now())
+        logger.info('starting GPS burst at ', datetime.now())
         try:
             ser.flushInput()
             with open(fname, 'w',newline='\n') as gps_out:
@@ -131,7 +130,7 @@ def recordGPS(configFilename):
                         #check to see if we have lost GPS fix, and if so, continue to loop start. a badValue will remain at this index
                         if gpgga.gps_qual < 1:
                             logger.info('lost GPS fix, sample not recorded. Waiting 10 seconds')
-                            print('lost GPS fix, sample not recorded. Waiting 10 seconds')
+                            logger.info('lost GPS fix, sample not recorded. Waiting 10 seconds')
                             sleep(10)
                             ipos+=1
                             continue
@@ -147,7 +146,7 @@ def recordGPS(configFilename):
                     else:
                         continue
                 # Output logger information on samples
-                print('Ending GPS burst at ', datetime.now())
+                logger.info('Ending GPS burst at ', datetime.now())
                 logger.info('number of GPGGA samples = %s' %ipos)
                 logger.info('number of GPVTG samples = %s' %ivel)
                 # logger.info('number of bad samples %d' %badpts)
@@ -156,17 +155,20 @@ def recordGPS(configFilename):
             logger.info(e, exc_info=True)
 
         # Output logger information on samples
-        print('Ending GPS burst at ', datetime.now())
+        logger.info('Ending GPS burst at ', datetime.now())
         logger.info('number of GPGGA samples = %s' %ipos)
         logger.info('number of GPVTG samples = %s' %ivel)
         # logger.info('number of bad samples %d' %badpts)
 
     ## ------------ Main body of function ------------------
+
+    # Set up module level logger
+    logger = getLogger('microSWIFT.'+__name__)  
+
     # load config file and get parameters
     config = Config() # Create object and load file
     ok = config.loadFile( configFilename )
     if( not ok ):
-        logger.info ('Error loading config file: "%s"' % configFilename)
         sys.exit(1)
     
     #system parameters
@@ -174,9 +176,6 @@ def recordGPS(configFilename):
     floatID = os.uname()[1]
     #floatID = config.getString('System', 'floatID') 
     sensor_type = config.getInt('System', 'sensorType')
-    badValue = config.getInt('System', 'badValue')
-    numCoef = config.getInt('System', 'numCoef')
-    port = config.getInt('System', 'port')
     payload_type = config.getInt('System', 'payloadType')
     burst_seconds = config.getInt('System', 'burst_seconds')
     burst_time = config.getInt('System', 'burst_time')
@@ -218,12 +217,6 @@ def recordGPS(configFilename):
     logger.addHandler(logFileHandler)
 
     logger.info("---------------recordGPS.py------------------")
-    logger.info('python version {}'.format(sys.version))
-
-    logger.info('microSWIFT configuration:')
-    logger.info('float ID: {0}, payload type: {1}, sensors type: {2}, '.format(floatID, payload_type, sensor_type))
-    logger.info('burst seconds: {0}, burst interval: {1}, burst time: {2}'.format(burst_seconds, burst_int, burst_time))
-    logger.info('gps sample rate: {0}, call interval {1}, call time: {2}'.format(gps_freq, call_int, call_time))
 
     ## ------------ Initalize GPS -------------------------
     ser, gps_initialized, time, date = init()
@@ -238,7 +231,7 @@ def recordGPS(configFilename):
 
         #create file name
         GPSdataFilename = dataDir + floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
-        logger.info("file name: %s" %GPSdataFilename)
+        logger.info("file name: {}".format(GPSdataFilename))
 
         #call record_gps	
         record(ser,GPSdataFilename)
@@ -246,11 +239,9 @@ def recordGPS(configFilename):
     # If GPS signal is not initialized exit 
     else:
         logger.info("GPS not initialized, exiting")
-        print("GPS not initialized, exiting")
 
-        #create file name
+        #create file name but it is a placeholder
         GPSdataFilename = dataDir + floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
-        logger.info("file name: %s" %GPSdataFilename)
 
         # Return the GPS filename to be read into the onboard processing
         return GPSdataFilename, gps_initialized
