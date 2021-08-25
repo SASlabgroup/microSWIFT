@@ -85,7 +85,7 @@ if __name__=="__main__":
     logDir = config.getString('Loggers', 'logDir')
     LOG_LEVEL = config.getString('Loggers', 'DefaultLogLevel')
     LOG_FORMAT = ('%(asctime)s, %(name)s - [%(levelname)s] - %(message)s')
-    LOG_FILE = (logDir  + '%(name)s' + '.log')
+    LOG_FILE = (logDir  + 'microSWIFT' + '.log')
     logger.setLevel(LOG_LEVEL)
     logFileHandler = FileHandler(LOG_FILE)
     logFileHandler.setLevel(LOG_LEVEL)
