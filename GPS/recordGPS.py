@@ -173,17 +173,17 @@ def recordGPS(configFilename):
                     else:
                         continue
                 # Output logger information on samples
-                logger.info('Ending GPS burst at ', datetime.now())
-                logger.info('number of GPGGA samples = %s' %ipos)
-                logger.info('number of GPVTG samples = %s' %ivel)
+                logger.info('Ending GPS burst at {}'.format(datetime.now()))
+                logger.info('number of GPGGA samples = {}'.format(ipos))
+                logger.info('number of GPVTG samples = {}'.format(ivel))
 
         except Exception as e:
             logger.info(e, exc_info=True)
 
         # Output logger information on samples
         logger.info('Ending GPS burst at ', datetime.now())
-        logger.info('number of GPGGA samples = %s' %ipos)
-        logger.info('number of GPVTG samples = %s' %ivel)
+        logger.info('number of GPGGA samples = {}'.format(ipos))
+        logger.info('number of GPVTG samples = {}'.format(ivel))
         return GPSdataFilename, gps_initialized
 
     # If GPS signal is not initialized exit 
