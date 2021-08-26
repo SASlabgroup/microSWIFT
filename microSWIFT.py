@@ -43,6 +43,7 @@ from IMU.recordIMU import recordIMU
 from SBD.sendSBD import createTX
 from SBD.sendSBD import sendSBD
 from SBD.sendSBD import checkTX
+from SBD.sendSBD import initModem
 
 # Import Configuration functions
 from utils.config3 import Config
