@@ -43,12 +43,11 @@ def recordIMU(configFilename):
 
     ## ---------- Define Record Function -------------------
     def record(IMUdataFilename):
-        logger.info('starting burst')
-        print('starting IMU burst at ', datetime.now())
+        logger.info('starting IMU burst at {}'.format(datetime.now()))
         
         # Open the new IMU data file for logging
         with open(IMUdataFilename, 'w',newline='\n') as imu_out:
-            logger.info('open file for writing: %s' %IMUdataFilename)
+            logger.info('open file for writing: {}'.format(IMUdataFilename))
             t_end = time.time() + burst_seconds #get end time for burst
             isample=0
             while isample < imu_samples:
@@ -76,9 +75,8 @@ def recordIMU(configFilename):
             
             # End of IMU sampling
             logger.info('end burst')
-            logger.info('IMU samples %s' %isample) 
-            print('IMU samples: ', isample)
-            print('IMU ending burst at: ', datetime.now())
+            logger.info('IMU samples {}'.format(isample)) 
+            logger.info('IMU ending burst at: {}'.format(datetime.now()))
 
             # Turn IMU Off   
             GPIO.output(imu_gpio,GPIO.LOW)
@@ -92,31 +90,15 @@ def recordIMU(configFilename):
     if( not ok ):
         sys.exit(0)
 
-    #set up logging
-    logDir = config.getString('Loggers', 'logDir')
-    LOG_LEVEL = config.getString('Loggers', 'DefaultLogLevel')
-    #format log messages (example: 2020-11-23 14:31:00,578, recordIMU - info - this is a log message)
-    #NOTE: TIME IS SYSTEM TIME
-    LOG_FORMAT = ('%(asctime)s, %(filename)s - [%(levelname)s] - %(message)s')
-    #log file name (example: home/pi/microSWIFT/recordIMU_23Nov2020.log)
-    LOG_FILE = (logDir + '/' + 'recordIMU' + '_' + datetime.strftime(datetime.now(), '%d%b%Y') + '.log')
-    logger = getLogger('system_logger')
-    logger.setLevel(LOG_LEVEL)
-    logFileHandler = FileHandler(LOG_FILE)
-    logFileHandler.setLevel(LOG_LEVEL)
-    logFileHandler.setFormatter(Formatter(LOG_FORMAT))
-    logger.addHandler(logFileHandler)
+    # Set up module level logger
+    logger = getLogger('microSWIFT.'+__name__)  
 
-    #load parameters from Config.dat
     #system parameters 
     floatID = os.uname()[1]
-    #floatID = config.getString('System', 'floatID')
-
     dataDir = config.getString('System', 'dataDir')
     burst_interval=config.getInt('System', 'burst_interval')
     burst_time=config.getInt('System', 'burst_time')
     burst_seconds=config.getInt('System', 'burst_seconds')
-
     bad = config.getInt('System', 'badValue')
 
     #IMU parameters
@@ -139,7 +121,7 @@ def recordIMU(configFilename):
     #create new file for to record IMU to 
     logger.info('---------------recordIMU.py------------------')
     IMUdataFilename = dataDir + floatID + '_IMU_'+'{:%d%b%Y_%H%M%SUTC.dat}'.format(datetime.utcnow())
-    logger.info('file name: %s' %IMUdataFilename)
+    logger.info('file name: {}'.format(IMUdataFilename))
     record(IMUdataFilename)
 
     # Return IMUdataFilename to main microSWIFT.py

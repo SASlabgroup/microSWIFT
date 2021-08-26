@@ -27,6 +27,9 @@ Successfully merged all fixes/ bugs into microSWIFT.py-Centralized - 08/25/21
 import concurrent.futures
 import datetime
 import numpy as np
+import datetime
+from logging import *
+import sys, os
 
 # Import GPS functions
 from GPS.recordGPS import recordGPS
@@ -41,95 +44,152 @@ from SBD.sendSBD import createTX
 from SBD.sendSBD import sendSBD
 from SBD.sendSBD import checkTX
 
-# Start running continuously while raspberry pi is on
-while True:
-    # Start time of loop iteration
-    begin_script_time = datetime.datetime.now()
-    print('Starting up')
+# Import Configuration functions
+from utils.config3 import Config
 
-    ## ------------- Boot up Characteristics --------------------------------
+# Main body of microSWIFT.py
+if __name__=="__main__":
+
+    # ------------ Logging Characteristics ---------------
     # Define Config file name
-    configFilename = r'utils/Config.dat' 
+    configFilename = r'utils/Config.dat'
+    config = Config() # Create object and load file
+    ok = config.loadFile( configFilename )
+    if( not ok ):
+        sys.exit(1)
 
-    # Boot up as soon as power is turned on and get microSWIFT characteristics
-        # Get microSWIFT number 
-        # setup log files
-    GPS_fs = 4 # need to get from config file
-    IMU_fs = 4
+    # System Parameters
+    dataDir = config.getString('System', 'dataDir')
+    floatID = os.uname()[1]
+    sensor_type = config.getInt('System', 'sensorType')
+    badValue = config.getInt('System', 'badValue')
+    numCoef = config.getInt('System', 'numCoef')
+    port = config.getInt('System', 'port')
+    payload_type = config.getInt('System', 'payloadType')
+    burst_seconds = config.getInt('System', 'burst_seconds')
+    burst_time = config.getInt('System', 'burst_time')
+    burst_int = config.getInt('System', 'burst_interval')
+    
+    # GPS parameters
+    GPS_fs = config.getInt('GPS', 'gps_frequency') #currently not used, hardcoded at 4 Hz (see init_gps function)
 
-    ## -------------- GPS and IMU Recording Section ---------------------------
-    # Time recording section
-    begin_recording_time = datetime.datetime.now()
+    # IMU parameters
+    IMU_fs = config.getFloat('IMU', 'imuFreq')
 
-    ## TODO Add in a feature that initialies both sensors then once they are both initialized - start recording at the same
-    ## time or keep trying to initialize 
+    # Set-up logging based on config file parameters
+    logger = getLogger('microSWIFT')
+    logDir = config.getString('Loggers', 'logDir')
+    LOG_LEVEL = config.getString('Loggers', 'DefaultLogLevel')
+    LOG_FORMAT = ('%(asctime)s, %(name)s - [%(levelname)s] - %(message)s')
+    LOG_FILE = (logDir  + logger.name + '.log')
+    logger.setLevel(LOG_LEVEL)
+    logFileHandler = FileHandler(LOG_FILE)
+    logFileHandler.setLevel(LOG_LEVEL)
+    logFileHandler.setFormatter(Formatter(LOG_FORMAT))
+    logger.addHandler(logFileHandler)
 
-    # Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        # Submit Futures 
-        recordGPS_future = executor.submit(recordGPS, configFilename)
-        recordIMU_future = executor.submit(recordIMU, configFilename)
+    # Output Booted up time to log 
+    logger.info('-----------------------------------------')
+    logger.info('Booted up at {}'.format(datetime.datetime.now()))
 
-        # get results from Futures
-        GPSdataFilename, gps_intitialized = recordGPS_future.result()
-        IMUdataFilename = recordIMU_future.result()
+    #Output configuration parameters to log file
+    logger.info('microSWIFT configuration:')
+    logger.info('float ID: {0}, payload type: {1}, sensors type: {2}, '.format(floatID, payload_type, sensor_type))
+    logger.info('burst seconds: {0}, burst interval: {1}, burst time: {2}'.format(burst_seconds, burst_int, burst_time))
+    # logger.info('gps sample rate: {0}, call interval {1}, call time: {2}'.format(GPS_fs, call_int, call_time)) # Burst Int and burst time have not been defined yet
 
-    # End Timing of recording
-    print('Recording section took', datetime.datetime.now() - begin_recording_time)
+    # Define loop counter
+    i = 1
 
-    ## --------------- Data Processing Section ---------------------------------
-    # Time processing section
-    begin_processing_time = datetime.datetime.now()
-    print('Starting Processing')
+    # --------------- Main Loop -------------------------
+    while True:
+        # Start time of loop iteration
+        begin_script_time = datetime.datetime.now()
+        logger.info('----------- Iteration {} -----------'.format(i))
+        logger.info('At start of loop at {}'.format(begin_script_time))
 
-    if gps_intitialized==True:
+        ## -------------- GPS and IMU Recording Section ---------------------------
+        # Time recording section
+        begin_recording_time = datetime.datetime.now()
 
-        # Run processGPS
-        # Compute u, v and z from raw GPS data
-        u, v, z, lat, lon = GPStoUVZ(GPSdataFilename)
+        # Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            # Submit Futures 
+            recordGPS_future = executor.submit(recordGPS, configFilename)
+            recordIMU_future = executor.submit(recordIMU, configFilename)
 
-        # Compute Wave Statistics from GPSwaves algorithm
-        Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u, v, z, GPS_fs)
+            # get results from Futures
+            GPSdataFilename, gps_intitialized = recordGPS_future.result()
+            IMUdataFilename = recordIMU_future.result()
 
-    else:
-        # Bad Values of the GPS did not initialize
-        u = 999
-        v = 999
-        z = 999
-        lat = 999
-        lon = 999
+        # End Timing of recording
+        logger.info('Recording section took {}'.format(datetime.datetime.now() - begin_recording_time))
 
-    # Compute mean velocities, elevation, lat and lon
-    u_mean = np.nanmean(u)
-    v_mean = np.nanmean(v)
-    z_mean = np.nanmean(z)
-    lat_mean = np.nanmean(lat)
-    lon_mean = np.nanmean(lon)
+        ## --------------- Data Processing Section ---------------------------------
+        # Time processing section
+        begin_processing_time = datetime.datetime.now()
+        logger.info('Starting Processing')
 
-    # Temperature and Voltage recordings - will be added in later versions
-    temp = 0
-    volt = 0
+        if gps_intitialized==True:
 
-    # End Timing of recording
-    print('Processing section took', datetime.datetime.now() - begin_processing_time)
+            # Run processGPS
+            # Compute u, v and z from raw GPS data
+            u, v, z, lat, lon = GPStoUVZ(GPSdataFilename)
 
-    # Run processIMU
-        # IMU data:
-        # read in IMU data from file 
-        # IMUtoXYZ(IMU data)
-        # XYZwaves( XYZ from above )
-        
-    ## -------------- Telemetry Section ----------------------------------
-    # Create TX file from processData.py output from combined wave products
-    TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat_mean, lon_mean, temp, volt, configFilename)
+            # Compute Wave Statistics from GPSwaves algorithm
+            Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u, v, z, GPS_fs)
 
-    # Decode contents of TX file and print out as a check - will be removed in final versions
-    checkTX(TX_fname)
+        else:
+            # Bad Values of the GPS did not initialize
+            u = 999
+            v = 999
+            z = 999
+            lat = 999
+            lon = 999
 
-    # Send SBD over telemetry
-    sendSBD(payload_data, configFilename)
+        # Compute mean velocities, elevation, lat and lon
+        u_mean = np.nanmean(u)
+        v_mean = np.nanmean(v)
+        z_mean = np.nanmean(z)
+        lat_mean = np.nanmean(lat)
+        lon_mean = np.nanmean(lon)
 
-    # End Timing of entire Script
-    print('microSWIFT.py took', datetime.datetime.now() - begin_script_time)
+        # Temperature and Voltage recordings - will be added in later versions
+        temp = 0
+        volt = 0
 
+        # Print some values of interest
+        logger.info('Hs = {}'.format(Hs))
+        logger.info('Tp = {}'.format(Tp))
+        logger.info('Dp = {}'.format(Dp))
+        logger.info('u_mean = {}'.format(u_mean))
+        logger.info('v_mean = {}'.format(v_mean))
 
+        # End Timing of recording
+        logger.info('Processing section took {}'.format(datetime.datetime.now() - begin_processing_time))
+            
+        ## -------------- Telemetry Section ----------------------------------
+        # Create TX file from processData.py output from combined wave products
+        logger.info('Creating TX file and packing payload data')
+        TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat_mean, lon_mean, temp, volt, configFilename)
+
+        # Decode contents of TX file and print out as a check - will be removed in final versions
+        # checkTX(TX_fname)
+
+        # Initialize Iridium Modem
+        logger.info('Intializing Modem now')
+        ser, modem_initialized = initModem()
+
+        # Send SBD over telemetry
+        if modem_initialized == True:
+            logger.info('entering sendSBD function now')
+            sendSBD(ser, payload_data)
+        else:
+            logger.info('Modem did not initialize')
+
+        # Increment up the loop counter
+        i += 1
+
+        # End Timing of entire Script
+        logger.info('microSWIFT.py took {}'.format(datetime.datetime.now() - begin_script_time))
+        logger.info('\n')
