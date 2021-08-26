@@ -28,7 +28,6 @@ Stable version with sendSBD and recordGPS fixes added and merged into microSWIFT
 import concurrent.futures
 import datetime
 import numpy as np
-from utils.config3 import Config
 import datetime
 from logging import *
 import sys, os
