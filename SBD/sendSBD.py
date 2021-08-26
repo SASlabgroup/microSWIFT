@@ -14,12 +14,11 @@ from utils.config3 import Config
 import numpy as np
 import RPi.GPIO as GPIO
 from time import sleep
-import logging
+from logging import getLogger
 import serial
 
 # Telemetry test functions
 def createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat, lon,  temp, volt, configFilename):
-    from logging import getLogger
     #load config file and get parameters
     config = Config() # Create object and load file
     ok = config.loadFile( configFilename )
@@ -27,16 +26,15 @@ def createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat, lon,  temp, volt, co
     floatID = os.uname()[1]
 
     # Create the TX file named for the current time
-    logger = getLogger('system_logger.'+__name__)   
+    logger = getLogger('microSWIFT.'+__name__)   
     now=datetime.utcnow()
     TX_fname = dataDir + floatID+'_TX_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(now)
     logger.info('telemetry file = %s' %TX_fname)
 
     # Open the TX file and start to write to it
     with open(TX_fname, 'wb') as file:
-        from logging import getLogger
         # Setup loging 
-        logger = getLogger('system_logger.'+__name__) 
+        logger = getLogger('microSWIFT.'+__name__) 
         logger.info('create telemetry file: {}'.format(TX_fname))
         
         #payload size in bytes: 16 4-byte floats, 7 arrays of 42 4-byte floats, three 1-byte ints, and one 2-byte int   
@@ -103,9 +101,8 @@ def createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat, lon,  temp, volt, co
     return TX_fname, payload_data
 
 def checkTX(TX_fname):
-    from logging import getLogger
     # Setup loging 
-    logger = getLogger('system_logger.'+__name__) 
+    logger = getLogger('microSWIFT.'+__name__) 
 
     with open(TX_fname, mode='rb') as file: # b is important -> binary
         fileContent = file.read()
@@ -113,9 +110,8 @@ def checkTX(TX_fname):
     logger.info('data = ', data)
 
 def getResponse(ser,command, response='bad'):
-    from logging import getLogger
     # Setup loging 
-    logger = getLogger('system_logger.'+__name__) 
+    logger = getLogger('microSWIFT.'+__name__) 
 
     ser.flushInput()
     command=(command+'\r').encode()
@@ -138,10 +134,8 @@ def getResponse(ser,command, response='bad'):
         return False
 
 def initModem():
-    from logging import getLogger
-
     # Setup loging 
-    logger = getLogger('system_logger.'+__name__) 
+    logger = getLogger('microSWIFT.'+__name__) 
 
     # Iridium parameters - fixed for now
     modemPort = '/dev/ttyUSB0'
@@ -174,10 +168,9 @@ def initModem():
 def sendSBD(ser, payload_data):
     import time
     from adafruit_rockblock import RockBlock
-    from logging import getLogger
     
     # Setup loging 
-    logger = getLogger('system_logger.'+__name__) 
+    logger = getLogger('microSWIFT.'+__name__) 
 
     # Setup instance of RockBlock 
     rockblock = RockBlock(ser)
