@@ -1,6 +1,6 @@
 ## microSWIFT.py 
 """
-author: @erainvil
+author: @EJ Rainville, @Alex de Klerk, @Viviana Castillo
 
 Description: This script is the main operational script that runs on the microSWIFT. It is the scheduler that runs the recording of the GPS
 and IMU as well as schedules the processing scripts after they are done recording.
