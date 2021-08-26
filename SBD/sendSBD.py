@@ -189,7 +189,7 @@ def sendSBD(ser, payload_data):
         logger.info('status = {}'.format(status))
         retry += 1
     
-    if status[0] <= 4:
+    if status[0] == 0:
         # Final print statement that it sent
         logger.info('Sent SBD successfully')
     else:
