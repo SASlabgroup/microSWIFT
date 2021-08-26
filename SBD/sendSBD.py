@@ -19,6 +19,7 @@ import serial
 
 # Telemetry test functions
 def createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat, lon,  temp, volt, configFilename):
+    from logging import getLogger
     #load config file and get parameters
     config = Config() # Create object and load file
     ok = config.loadFile( configFilename )
@@ -33,6 +34,9 @@ def createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat, lon,  temp, volt, co
 
     # Open the TX file and start to write to it
     with open(TX_fname, 'wb') as file:
+        from logging import getLogger
+        # Setup loging 
+        logger = getLogger('system_logger.'+__name__) 
         logger.info('create telemetry file: {}'.format(TX_fname))
         
         #payload size in bytes: 16 4-byte floats, 7 arrays of 42 4-byte floats, three 1-byte ints, and one 2-byte int   
@@ -99,6 +103,7 @@ def createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat, lon,  temp, volt, co
     return TX_fname, payload_data
 
 def checkTX(TX_fname):
+    from logging import getLogger
     # Setup loging 
     logger = getLogger('system_logger.'+__name__) 
 
@@ -108,6 +113,7 @@ def checkTX(TX_fname):
     logger.info('data = ', data)
 
 def getResponse(ser,command, response='bad'):
+    from logging import getLogger
     # Setup loging 
     logger = getLogger('system_logger.'+__name__) 
 
@@ -132,7 +138,9 @@ def getResponse(ser,command, response='bad'):
         return False
 
 def initModem():
-        # Setup loging 
+    from logging import getLogger
+
+    # Setup loging 
     logger = getLogger('system_logger.'+__name__) 
 
     # Iridium parameters - fixed for now
@@ -166,6 +174,7 @@ def initModem():
 def sendSBD(ser, payload_data):
     import time
     from adafruit_rockblock import RockBlock
+    from logging import getLogger
     
     # Setup loging 
     logger = getLogger('system_logger.'+__name__) 
