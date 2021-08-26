@@ -95,20 +95,21 @@ def createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat, lon,  temp, volt, co
         logger.info('done')
         file.flush()
 
-    print('TX file created with the variables Hs, Tp, Dp, E, fmin, fmax, fstep, lat, lon, temp, volt, umean, vmean, zmean and date')
-    print(TX_fname)
+    logger.info('TX file created with the variables Hs, Tp, Dp, E, fmin, fmax, fstep, lat, lon, temp, volt, umean, vmean, zmean and date')
     return TX_fname, payload_data
 
 def checkTX(TX_fname):
+    # Setup loging 
+    logger = getLogger('system_logger.'+__name__) 
+
     with open(TX_fname, mode='rb') as file: # b is important -> binary
         fileContent = file.read()
     data = struct.unpack('<sbbhfff42fffffffffffiiiiii', fileContent)
-    print('data = ', data)
+    logger.info('data = ', data)
 
 def getResponse(ser,command, response='bad'):
-    # logger = getLogger('system_logger.'+__name__)  
-    sbdlogger = logging.getLogger('send_sbd.py')
-    sbdlogger.setLevel(logging.INFO)
+    # Setup loging 
+    logger = getLogger('system_logger.'+__name__) 
 
     ser.flushInput()
     command=(command+'\r').encode()
@@ -119,18 +120,21 @@ def getResponse(ser,command, response='bad'):
             r=ser.readline().decode().strip('\r\n')
             if response in r:
                 sbdlogger.info('response = {}'.format(r))
-                print('response = {}'.format(r))
+                logger.info('response = {}'.format(r))
                 return True
             elif 'ERROR' in response:
                 sbdlogger.info('response = ERROR')
-                print('response = ERROR')
+                logger.info('response = ERROR')
                 return False
     except serial.SerialException as e:
         sbdlogger.info('error: {}'.format(e))
-        print('error: {}'.format(e))
+        logger.info('error: {}'.format(e))
         return False
 
 def initModem():
+        # Setup loging 
+    logger = getLogger('system_logger.'+__name__) 
+
     # Iridium parameters - fixed for now
     modemPort = '/dev/ttyUSB0'
     modemBaud = 19200
@@ -141,19 +145,19 @@ def initModem():
     try:
         GPIO.setup(modemGPIO, GPIO.OUT)
         GPIO.output(modemGPIO,GPIO.HIGH) #power on GPIO enable pin
-        print('modem powered on')
+        logger.info('modem powered on')
         sleep(3)
     except Exception as e:
-        print('error powering on modem')
-        print(e)
+        logger.info('error powering on modem')
+        logger.info(e)
         
     #open serial port
-    print('opening serial port with modem at {0} on port {1}...'.format(modemBaud,modemPort))
+    logger.info('opening serial port with modem at {0} on port {1}...'.format(modemBaud,modemPort))
     try:
         ser=serial.Serial(modemPort,modemBaud,timeout=timeout)
-        print('serial port opened successfully')
+        logger.info('serial port opened successfully')
     except serial.SerialException as e:
-        print('unable to open serial port: {}'.format(e))
+        logger.info('unable to open serial port: {}'.format(e))
         return ser, False
     
     # If the try statement passed
@@ -162,13 +166,16 @@ def initModem():
 def sendSBD(ser, payload_data):
     import time
     from adafruit_rockblock import RockBlock
+    
+    # Setup loging 
+    logger = getLogger('system_logger.'+__name__) 
 
     # Setup instance of RockBlock 
     rockblock = RockBlock(ser)
 
     # Send payload data through the RockBlock
     rockblock.data_out = payload_data
-    print('Talking to Satellite')
+    logger.info('Talking to Satellite')
     retry = 0
     max_retry = 10
     sent_status_val = 4 # any returned status value less than this means the message sent successfully.
@@ -176,12 +183,12 @@ def sendSBD(ser, payload_data):
     while status[0] > sent_status_val and retry < max_retry:
         time.sleep(10)
         status = rockblock.satellite_transfer()
-        print('Retry number = ', retry)
-        print('status = ', status)
+        logger.info('Retry number = {}'.format(retry))
+        logger.info('status = {}'.format(status))
         retry += 1
     
     if status[0] <= 4:
         # Final print statement that it sent
-        print('Sent SBD successfully')
+        logger.info('Sent SBD successfully')
     else:
-        print('Could not send SBD')
+        logger.info('Could not send SBD')
