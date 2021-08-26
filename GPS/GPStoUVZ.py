@@ -10,6 +10,10 @@ def GPStoUVZ(gpsfile):
     # Import Statements
     import numpy as np
     import pynmea2
+    from logging import getLogger
+
+    # Set up module level logger
+    logger = getLogger('microSWIFT.'+__name__) 
 
     # Define empty lists of variables to append
     u = []
@@ -47,7 +51,7 @@ def GPStoUVZ(gpsfile):
             else: #if not GPGGA or GPVTG, continue to start of loop
                 continue
            
-    print('GPGGA lines: {}.'.format(ipos))
-    print('GPVTG lines: {}'.format(ivel))
+    logger.info('GPGGA lines: {}.'.format(ipos))
+    logger.info('GPVTG lines: {}'.format(ivel))
 
     return u,v,z,lat,lon
