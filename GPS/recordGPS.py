@@ -96,11 +96,15 @@ def recordGPS(configFilename):
                     #check gps_qual value from GPGGS sentence. 0=invalid,1=GPS fix,2=DGPS fix
                     if gpgga.gps_qual > 0:
                         logger.info('GPS fix acquired')
+                        # Set gprmc line to False and enter while loop to read new lines until it gets the correct line
+                        gprmc_line = False
                         #get date and time from GPRMC sentence - GPRMC reported only once every 8 lines
-                        for i in range(8):
+                        while gprmc_line==False:
                             newline=ser.readline().decode('utf-8')
                             if 'GPRMC' in newline:
                                 logger.info('found GPRMC sentence')
+                                # Change value to True so that the while loop exits once a gprmc line is found
+                                gprmc_line = True
                                 try:
                                     gprmc=pynmea2.parse(newline)
                                     nmea_time=gprmc.timestamp
