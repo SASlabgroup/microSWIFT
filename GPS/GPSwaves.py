@@ -31,6 +31,10 @@ def GPSwaves(u, v, z, fs):
     import numpy as np
     # import scipy.signal as signal
     import numpy.fft as fft
+    from logging import getLogger
+
+    # Set up module level logger
+    logger = getLogger('microSWIFT.'+__name__) 
 
     # Define demean function
     def demean(x):
@@ -79,9 +83,9 @@ def GPSwaves(u, v, z, fs):
     # ----------------- Begin Processing ----------------------
     num_points = u.shape[0] # number of points
     if ( (num_points >= fs*wsecs ) and (fs >= 1 ) and ( np.sum(badu) < 100 ) and (np.sum(badv) < 100) ):
-        print('Data is Sufficient for Processing - Processing Start')
+        logger.info('Data is Sufficient for Processing - Processing Start')
     else:
-        print('Data is NOT Sufficient for Processing - Program Exit')
+        logger.info('Data is NOT Sufficient for Processing - Program Exit')
         Hs = 999
         Tp = 999
         Dp = 999
