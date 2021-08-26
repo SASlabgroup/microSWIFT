@@ -78,7 +78,7 @@ if __name__=="__main__":
     GPS_fs = config.getInt('GPS', 'gps_frequency') #currently not used, hardcoded at 4 Hz (see init_gps function)
 
     # IMU parameters
-    IMU_fs = config.getFloat('IMU', 'imu_frequency')
+    IMU_fs = config.getFloat('IMU', 'imuFreq')
 
     # Set-up logging based on config file parameters
     logger = getLogger('microSWIFT')
