@@ -111,7 +111,7 @@ def recordGPS(configFilename):
                                     #set system time
                                     try:
                                         logger.info("setting system time from GPS: {0} {1}".format(nmea_date, nmea_time))
-                                        os.system('sudo timedatectl set-timezone UTC')
+                                        # os.system('sudo timedatectl set-timezone UTC')
                                         os.system('sudo date -s "{0} {1}"'.format(nmea_date, nmea_time))
                                         os.system('sudo hwclock -w')
                                         
@@ -181,7 +181,7 @@ def recordGPS(configFilename):
             logger.info(e, exc_info=True)
 
         # Output logger information on samples
-        logger.info('Ending GPS burst at ', datetime.now())
+        logger.info('Ending GPS burst at {}'.format(datetime.now()))
         logger.info('number of GPGGA samples = {}'.format(ipos))
         logger.info('number of GPVTG samples = {}'.format(ivel))
         return GPSdataFilename, gps_initialized
