@@ -92,7 +92,7 @@ def recordGPS(configFilename):
                     logger.info('found GPGGA sentence')
                     logger.info(newline)
                     gpgga=pynmea2.parse(newline,check=True)
-                    logger.info('GPS quality= %d' % gpgga.gps_qual)
+                    logger.info('GPS quality= {}'.format(gpgga.gps_qual))
                     #check gps_qual value from GPGGS sentence. 0=invalid,1=GPS fix,2=DGPS fix
                     if gpgga.gps_qual > 0:
                         logger.info('GPS fix acquired')
@@ -105,14 +105,14 @@ def recordGPS(configFilename):
                                     gprmc=pynmea2.parse(newline)
                                     nmea_time=gprmc.timestamp
                                     nmea_date=gprmc.datestamp
-                                    logger.info("nmea time: %s" %nmea_time)
-                                    logger.info("nmea date: %s" %nmea_date)
+                                    logger.info("nmea time: {}".format(nmea_time))
+                                    logger.info("nmea date: {}".format(nmea_date))
                                     
                                     #set system time
                                     try:
-                                        logger.info("setting system time from GPS: %s %s" %(nmea_date, nmea_time))
+                                        logger.info("setting system time from GPS: {0} {1}".format(nmea_date, nmea_time))
                                         os.system('sudo timedatectl set-timezone UTC')
-                                        os.system('sudo date -s "%s %s"' %(nmea_date, nmea_time))
+                                        os.system('sudo date -s "{0} {1}"'.format(nmea_date, nmea_time))
                                         os.system('sudo hwclock -w')
                                         
                                         # GPS is initialized
