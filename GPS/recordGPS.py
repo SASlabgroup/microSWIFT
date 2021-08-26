@@ -40,10 +40,10 @@ def recordGPS(configFilename):
     baud = config.getInt('GPS', 'baud')
     startBaud = config.getInt('GPS', 'startBaud')
     gps_freq = config.getInt('GPS', 'GPS_frequency')
+    burst_seconds = config.getInt('System', 'burst_seconds')
     gps_samples = gps_freq*burst_seconds
     gpsGPIO = config.getInt('GPS', 'gpsGPIO')
     gps_timeout = config.getInt('GPS','timeout')
-    burst_seconds = config.getInt('System', 'burst_seconds')
 
     ##------------ Initalize GPS -------------------------
     # setup GPIO and initialize
