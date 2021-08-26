@@ -81,8 +81,10 @@ def recordGPS(configFilename):
     #read lines from GPS serial port and wait for fix
     try:
         #loop until timeout dictated by gps_timeout value (seconds)
+        # GPS has not been initialized yet
+        gps_initialized = False
         timeout=t.time() + gps_timeout
-        while t.time() < timeout:
+        while t.time() < timeout and gps_initialized==False:
             ser.flushInput()
             ser.read_until('\n'.encode())
             newline=ser.readline().decode('utf-8')
