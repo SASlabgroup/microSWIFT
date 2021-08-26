@@ -111,9 +111,9 @@ def recordGPS(configFilename):
                                     #set system time
                                     try:
                                         logger.info("setting system time from GPS: {0} {1}".format(nmea_date, nmea_time))
-                                        # os.system('sudo timedatectl set-timezone UTC')
-                                        # os.system('sudo date -s "{0} {1}"'.format(nmea_date, nmea_time))
-                                        # os.system('sudo hwclock -w')
+                                        os.system('sudo timedatectl set-timezone UTC')
+                                        os.system('sudo date -s "{0} {1}"'.format(nmea_date, nmea_time))
+                                        os.system('sudo hwclock -w')
                                         
                                         # GPS is initialized
                                         logger.info("GPS initialized")
