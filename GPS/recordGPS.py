@@ -22,35 +22,39 @@ import RPi.GPIO as GPIO
 # Import microSWIFT specific information
 from utils.config3 import Config
 
+
+# Configuration
+config = Config() # Create object and load file
+ok = config.loadFile( configFilename )
+if( not ok ):
+    sys.exit(1)
+
+# Set up module level logger
+logger = getLogger('microSWIFT.'+__name__)  
+
+#GPS parameters 
+dataDir = config.getString('System', 'dataDir')
+floatID = os.uname()[1]
+gps_port = config.getString('GPS', 'port')
+baud = config.getInt('GPS', 'baud')
+startBaud = config.getInt('GPS', 'startBaud')
+gps_freq = config.getInt('GPS', 'GPS_frequency')
+burst_seconds = config.getInt('System', 'burst_seconds')
+gps_samples = gps_freq*burst_seconds
+gpsGPIO = config.getInt('GPS', 'gpsGPIO')
+gps_timeout = config.getInt('GPS','timeout')
+
+# setup GPIO and initialize
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(gpsGPIO,GPIO.OUT)
+GPIO.output(gpsGPIO,GPIO.HIGH) #set GPS enable pin high to turn on and start acquiring signal
+
+
 def recordGPS(configFilename):
 
-    # Configuration
-    config = Config() # Create object and load file
-    ok = config.loadFile( configFilename )
-    if( not ok ):
-        sys.exit(1)
-
-    # Set up module level logger
-    logger = getLogger('microSWIFT.'+__name__)  
-
-    #GPS parameters 
-    dataDir = config.getString('System', 'dataDir')
-    floatID = os.uname()[1]
-    gps_port = config.getString('GPS', 'port')
-    baud = config.getInt('GPS', 'baud')
-    startBaud = config.getInt('GPS', 'startBaud')
-    gps_freq = config.getInt('GPS', 'GPS_frequency')
-    burst_seconds = config.getInt('System', 'burst_seconds')
-    gps_samples = gps_freq*burst_seconds
-    gpsGPIO = config.getInt('GPS', 'gpsGPIO')
-    gps_timeout = config.getInt('GPS','timeout')
-
     ##------------ Initalize GPS -------------------------
-    # setup GPIO and initialize
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setwarnings(False)
-    GPIO.setup(gpsGPIO,GPIO.OUT)
-    GPIO.output(gpsGPIO,GPIO.HIGH) #set GPS enable pin high to turn on and start acquiring signal
+
         
     logger.info('initializing GPS')
     try:
