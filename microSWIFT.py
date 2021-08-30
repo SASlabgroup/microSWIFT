@@ -126,6 +126,10 @@ if __name__=="__main__":
 		# Time recording section
 		begin_recording_time = datetime.datetime.now()
 
+		# Both IMU and GPS start as unititialized
+		gps_initialized = False
+		imu_initialized = False 
+
 
 		for i in np.arange(len(start_times)):
 			if now >= start_times[i] and now < end_times[i]: #Are we in a record window
