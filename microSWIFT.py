@@ -30,6 +30,7 @@ import numpy as np
 import datetime
 from logging import *
 import sys, os
+from time import sleep
 
 # Import GPS functions
 from GPS.recordGPS import recordGPS
@@ -115,6 +116,7 @@ if __name__=="__main__":
 
 		#Get current minute of the hour expressed as a fraction
 		now = datetime.datetime.utcnow().minute + datetime.datetime.utcnow().second/60
+		begin_script_time = datetime.datetime.now()
 
 		# Start time of loop iteration
 		logger.info('----------- Iteration {} -----------'.format(i))
@@ -247,6 +249,7 @@ if __name__=="__main__":
 		
 		else:
 			logger.info('Waiting to enter record window')
+			sleep(0.5)
 			continue
 			
 
