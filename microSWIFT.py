@@ -127,8 +127,7 @@ if __name__=="__main__":
 		begin_recording_time = datetime.datetime.now()
 
 		# Both IMU and GPS start as unititialized
-		gps_initialized = False
-		imu_initialized = False 
+		recording_complete = False
 
 
 		for i in np.arange(len(start_times)):
@@ -145,87 +144,111 @@ if __name__=="__main__":
 					GPSdataFilename, gps_initialized = recordGPS_future.result()
 					IMUdataFilename, imu_initialized = recordIMU_future.result()
 				#exit out of loop once burst is finished
+				recording_complete = True
 				break
 
-		
-		## --------------- Data Processing Section ---------------------------------
-		# Time processing section
-		logger.info('Starting Processing')
+		if recording_complete == True: 
+			## --------------- Data Processing Section ---------------------------------
+			# Time processing section
+			logger.info('Starting Processing')
 
-		# Prioritize GPS processing
-		if gps_initialized==True:
+			# Prioritize GPS processing
+			if gps_initialized==True:
 
-			# Run processGPS
-			# Compute u, v and z from raw GPS data
-			u, v, z, lat, lon = GPStoUVZ(GPSdataFilename)
+				# Run processGPS
+				# Compute u, v and z from raw GPS data
+				u, v, z, lat, lon = GPStoUVZ(GPSdataFilename)
 
-			# Compute Wave Statistics from GPSwaves algorithm
-			Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u, v, z, GPS_fs)
+				# Compute Wave Statistics from GPSwaves algorithm
+				Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u, v, z, GPS_fs)
 
-		elif imu_initialized==True:
+			elif imu_initialized==True:
+				
+				# Process IMU data
+				logger.info('GPS did not initialize but IMU did - Would put IMU processing here but it is not yet functional')
+				# Bad Values of the GPS did not initialize - no imu processing in place yet
+				u = 999
+				v = 999
+				z = 999
+				lat = 999
+				lon = 999
+				Hs = 999
+				Tp = 999
+				Dp = 999
+				E = 999
+				f = 999
+				a1 = 999
+				b1 = 999
+				a2 = 999
+				b2 = 999 
 			
-			# Process IMU data
-			logger.info('GPS did not initialize but IMU did - Would put IMU processing here but it is not yet functional')
-			# Bad Values of the GPS did not initialize - no imu processing in place yet
-			u = 999
-			v = 999
-			z = 999
-			lat = 999
-			lon = 999
+			else:
+				logger.info('Neither GPS or IMU initialized - entering bad values')
+				# Bad Values of the GPS did not initialize
+				u = 999
+				v = 999
+				z = 999
+				lat = 999
+				lon = 999
+				Hs = 999
+				Tp = 999
+				Dp = 999
+				E = 999
+				f = 999
+				a1 = 999
+				b1 = 999
+				a2 = 999
+				b2 = 999 
+
+			# Compute mean velocities, elevation, lat and lon
+			u_mean = np.nanmean(u)
+			v_mean = np.nanmean(v)
+			z_mean = np.nanmean(z)
+			lat_mean = np.nanmean(lat)
+			lon_mean = np.nanmean(lon)
+
+			# Temperature and Voltage recordings - will be added in later versions
+			temp = 0
+			volt = 0
+
+			# Print some values of interest
+			logger.info('Hs = {}'.format(Hs))
+			logger.info('Tp = {}'.format(Tp))
+			logger.info('Dp = {}'.format(Dp))
+			logger.info('u_mean = {}'.format(u_mean))
+			logger.info('v_mean = {}'.format(v_mean))
+
+			# End Timing of recording
+			logger.info('Processing section took {}'.format(datetime.datetime.now() - begin_processing_time))
+				
+			## -------------- Telemetry Section ----------------------------------
+			# Create TX file from processData.py output from combined wave products
+			logger.info('Creating TX file and packing payload data')
+			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat_mean, lon_mean, temp, volt, configFilename)
+
+			# Decode contents of TX file and print out as a check - will be removed in final versions
+			# checkTX(TX_fname)
+
+			# Initialize Iridium Modem
+			logger.info('Intializing Modem now')
+			ser, modem_initialized = initModem()
+
+			# Send SBD over telemetry
+			if modem_initialized == True:
+				logger.info('entering sendSBD function now')
+				sendSBD(ser, payload_data)
+			else:
+				logger.info('Modem did not initialize')
+
+			# Increment up the loop counter
+			i += 1
+
+			# End Timing of entire Script
+			logger.info('microSWIFT.py took {}'.format(datetime.datetime.now() - begin_script_time))
+			logger.info('\n')
 		
 		else:
-			logger.info('Neither GPS or IMU initialized - entering bad values')
-			# Bad Values of the GPS did not initialize
-			u = 999
-			v = 999
-			z = 999
-			lat = 999
-			lon = 999
-
-		# Compute mean velocities, elevation, lat and lon
-		u_mean = np.nanmean(u)
-		v_mean = np.nanmean(v)
-		z_mean = np.nanmean(z)
-		lat_mean = np.nanmean(lat)
-		lon_mean = np.nanmean(lon)
-
-		# Temperature and Voltage recordings - will be added in later versions
-		temp = 0
-		volt = 0
-
-		# Print some values of interest
-		logger.info('Hs = {}'.format(Hs))
-		logger.info('Tp = {}'.format(Tp))
-		logger.info('Dp = {}'.format(Dp))
-		logger.info('u_mean = {}'.format(u_mean))
-		logger.info('v_mean = {}'.format(v_mean))
-
-		# End Timing of recording
-		logger.info('Processing section took {}'.format(datetime.datetime.now() - begin_processing_time))
+			logger.info('Waiting to enter record window')
+			continue
 			
-		## -------------- Telemetry Section ----------------------------------
-		# Create TX file from processData.py output from combined wave products
-		logger.info('Creating TX file and packing payload data')
-		TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat_mean, lon_mean, temp, volt, configFilename)
-
-		# Decode contents of TX file and print out as a check - will be removed in final versions
-		# checkTX(TX_fname)
-
-		# Initialize Iridium Modem
-		logger.info('Intializing Modem now')
-		ser, modem_initialized = initModem()
-
-		# Send SBD over telemetry
-		if modem_initialized == True:
-			logger.info('entering sendSBD function now')
-			sendSBD(ser, payload_data)
-		else:
-			logger.info('Modem did not initialize')
-
-		# Increment up the loop counter
-		i += 1
-
-		# End Timing of entire Script
-		logger.info('microSWIFT.py took {}'.format(datetime.datetime.now() - begin_script_time))
-		logger.info('\n')
 
