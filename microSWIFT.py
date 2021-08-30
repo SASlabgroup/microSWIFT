@@ -70,7 +70,8 @@ if __name__=="__main__":
 	burst_seconds = config.getInt('System', 'burst_seconds')
 	burst_time = config.getInt('System', 'burst_time')
 	burst_int = config.getInt('System', 'burst_interval')
-		# GPS parameters
+	
+	# GPS parameters
 	GPS_fs = config.getInt('GPS', 'gps_frequency') #currently not used, hardcoded at 4 Hz (see init_gps function)
 	# IMU parameters
 	IMU_fs = config.getFloat('IMU', 'imuFreq')
@@ -137,8 +138,8 @@ if __name__=="__main__":
 					recordIMU_future = executor.submit(recordIMU, end_time)
 
 					# get results from Futures
-					GPSdataFilename, gps_intitialized = recordGPS_future.result()
-					IMUdataFilename = recordIMU_future.result()
+					GPSdataFilename, gps_initialized = recordGPS_future.result()
+					IMUdataFilename, imu_initialized = recordIMU_future.result()
 				#exit out of loop once burst is finished
 				break
 
@@ -147,7 +148,8 @@ if __name__=="__main__":
 		# Time processing section
 		logger.info('Starting Processing')
 
-		if gps_intitialized==True:
+		# Prioritize GPS processing
+		if gps_initialized==True:
 
 			# Run processGPS
 			# Compute u, v and z from raw GPS data
@@ -156,7 +158,19 @@ if __name__=="__main__":
 			# Compute Wave Statistics from GPSwaves algorithm
 			Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u, v, z, GPS_fs)
 
+		elif imu_initialized==True:
+			
+			# Process IMU data
+			logger.info('GPS did not initialize but IMU did - Would put IMU processing here but it is not yet functional')
+			# Bad Values of the GPS did not initialize - no imu processing in place yet
+			u = 999
+			v = 999
+			z = 999
+			lat = 999
+			lon = 999
+		
 		else:
+			logger.info('Neither GPS or IMU initialized - entering bad values')
 			# Bad Values of the GPS did not initialize
 			u = 999
 			v = 999
