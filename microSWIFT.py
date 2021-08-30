@@ -1,8 +1,6 @@
-#! /usr/bin/python3
-
 ## microSWIFT.py 
 """
-authors: @EJRainville, @AlexdeKlerk and @VivianaCastillo
+author: @EJ Rainville, @Alex de Klerk, @Viviana Castillo
 
 Description: This script is the main operational script that runs on the microSWIFT. It is the scheduler that runs the recording of the GPS
 and IMU as well as schedules the processing scripts after they are done recording.
@@ -20,7 +18,8 @@ Outline:
 
 Stable version that does not include sendSBD yet - 08/09/21
 Stable version that does include sendSBD - 08/20/21
-Stable version with sendSBD and recordGPS fixes added and merged into microSWIFT.py-Centralized branch - 08/25/21
+Successfully merged all fixes/ bugs into microSWIFT.py-Centralized - 08/25/21
+
 
 """
 
@@ -45,13 +44,13 @@ from SBD.sendSBD import createTX
 from SBD.sendSBD import sendSBD
 from SBD.sendSBD import checkTX
 from SBD.sendSBD import initModem
-from SBD.sendSBD import sendSBD
 
 # Import Configuration functions
 from utils.config3 import Config
 
 # Main body of microSWIFT.py
 if __name__=="__main__":
+
 
 	# ------------ Logging Characteristics ---------------
 	# Define Config file name
