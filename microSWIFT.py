@@ -127,7 +127,7 @@ if __name__=="__main__":
 		begin_recording_time = datetime.datetime.now()
 
 
-		for i in start_times:
+		for i in np.arange(len(start_times)):
 			if now >= start_times[i] and now < end_times[i]: #Are we in a record window
 				
 				end_time = end_times[i]
