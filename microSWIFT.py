@@ -249,7 +249,7 @@ if __name__=="__main__":
 		
 		else:
 			logger.info('Waiting to enter record window')
-			sleep(0.5)
+			sleep(1)
 			continue
 			
 
