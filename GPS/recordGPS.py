@@ -53,7 +53,7 @@ GPIO.setup(gpsGPIO,GPIO.OUT)
 GPIO.output(gpsGPIO,GPIO.HIGH) #set GPS enable pin high to turn on and start acquiring signal
 
 
-def recordGPS(configFilename):
+def recordGPS(end_time):
 
     ##------------ Initalize GPS -------------------------
     logger.info('initializing GPS')

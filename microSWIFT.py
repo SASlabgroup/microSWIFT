@@ -51,14 +51,13 @@ from utils.config3 import Config
 # Main body of microSWIFT.py
 if __name__=="__main__":
 
-
-	# ------------ Logging Characteristics ---------------
-	# Define Config file name
+	# Define Config file name and load file
 	configFilename = r'utils/Config.dat'
 	config = Config() # Create object and load file
 	ok = config.loadFile( configFilename )
 	if( not ok ):
 		sys.exit(1)
+
 
 	# System Parameters
 	dataDir = config.getString('System', 'dataDir')
@@ -71,12 +70,22 @@ if __name__=="__main__":
 	burst_seconds = config.getInt('System', 'burst_seconds')
 	burst_time = config.getInt('System', 'burst_time')
 	burst_int = config.getInt('System', 'burst_interval')
-	
-	# GPS parameters
+		# GPS parameters
 	GPS_fs = config.getInt('GPS', 'gps_frequency') #currently not used, hardcoded at 4 Hz (see init_gps function)
-
 	# IMU parameters
 	IMU_fs = config.getFloat('IMU', 'imuFreq')
+
+
+	#Compute number of bursts per hour
+	num_bursts = int(60 / burst_int)
+	
+
+	#Generate lists of burst start and end times based on parameters from Config file
+	start_times = [burst_time + i*burst_int for i in range(num_bursts)]
+	end_times = [start_times[i] + burst_seconds/60 for i in range(num_bursts)] #could also use lambda
+	print('start times', start_times)
+	print('end times', end_times)
+
 
 	# Set-up logging based on config file parameters
 	logger = getLogger('microSWIFT')
@@ -92,7 +101,7 @@ if __name__=="__main__":
 
 	# Output Booted up time to log 
 	logger.info('-----------------------------------------')
-	logger.info('Booted up at {}'.format(datetime.datetime.now()))
+	logger.info('Booted up')
 
 	#Output configuration parameters to log file
 	logger.info('microSWIFT configuration:')
@@ -105,31 +114,37 @@ if __name__=="__main__":
 
 	# --------------- Main Loop -------------------------
 	while True:
+
+		#Get current minute of the hour expressed as a fraction
+		now = datetime.utcnow().minute + datetime.utcnow().second/60
+
 		# Start time of loop iteration
-		begin_script_time = datetime.datetime.now()
 		logger.info('----------- Iteration {} -----------'.format(i))
-		logger.info('At start of loop at {}'.format(begin_script_time))
 
 		## -------------- GPS and IMU Recording Section ---------------------------
 		# Time recording section
 		begin_recording_time = datetime.datetime.now()
 
-		# Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
-		with concurrent.futures.ThreadPoolExecutor() as executor:
-			# Submit Futures 
-			recordGPS_future = executor.submit(recordGPS, configFilename)
-			recordIMU_future = executor.submit(recordIMU, configFilename)
 
-			# get results from Futures
-			GPSdataFilename, gps_intitialized = recordGPS_future.result()
-			IMUdataFilename = recordIMU_future.result()
+		for i in start_times:
+			if now >= start_times[i] and now < end_times[i]: #Are we in a record window
+				
+				end_time = end_times[i]
+				# Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
+				with concurrent.futures.ThreadPoolExecutor() as executor:
+					# Submit Futures 
+					recordGPS_future = executor.submit(recordGPS, end_time)
+					recordIMU_future = executor.submit(recordIMU, end_time)
 
-		# End Timing of recording
-		logger.info('Recording section took {}'.format(datetime.datetime.now() - begin_recording_time))
+					# get results from Futures
+					GPSdataFilename, gps_intitialized = recordGPS_future.result()
+					IMUdataFilename = recordIMU_future.result()
+				#exit out of loop once burst is finished
+				break
 
+		
 		## --------------- Data Processing Section ---------------------------------
 		# Time processing section
-		begin_processing_time = datetime.datetime.now()
 		logger.info('Starting Processing')
 
 		if gps_intitialized==True:
@@ -195,3 +210,4 @@ if __name__=="__main__":
 		# End Timing of entire Script
 		logger.info('microSWIFT.py took {}'.format(datetime.datetime.now() - begin_script_time))
 		logger.info('\n')
+
