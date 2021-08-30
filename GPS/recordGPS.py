@@ -56,8 +56,6 @@ GPIO.output(gpsGPIO,GPIO.HIGH) #set GPS enable pin high to turn on and start acq
 def recordGPS(configFilename):
 
     ##------------ Initalize GPS -------------------------
-
-        
     logger.info('initializing GPS')
     try:
         #start with GPS default baud
@@ -155,7 +153,7 @@ def recordGPS(configFilename):
         GPSdataFilename = dataDir + floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
         logger.info("file name: {}".format(GPSdataFilename))
 
-        logger.info('starting GPS burst at {}'.format(datetime.now()))
+        logger.info('starting GPS burst')
         try:
             ser.flushInput()
             with open(GPSdataFilename, 'w',newline='\n') as gps_out:
