@@ -125,8 +125,6 @@ if __name__=="__main__":
 			GPSdataFilename, gps_intitialized = recordGPS_future.result()
 			IMUdataFilename = recordIMU_future.result()
 
-		print(recordGPS_future.result())
-
 		# End Timing of recording
 		logger.info('Recording section took {}'.format(datetime.datetime.now() - begin_recording_time))
 
