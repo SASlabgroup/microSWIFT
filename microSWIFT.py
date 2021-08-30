@@ -110,11 +110,12 @@ if __name__=="__main__":
 
 	# Define loop counter
 	loop_count = 1
+	wait_count = 0
+	
 
 	# --------------- Main Loop -------------------------
 	while True:
 
-		#Get current minute of the hour expressed as a fraction
 		now = datetime.datetime.utcnow().minute + datetime.datetime.utcnow().second/60
 		begin_script_time = datetime.datetime.now()
 
@@ -242,14 +243,18 @@ if __name__=="__main__":
 
 			# Increment up the loop counter
 			loop_count += 1
+			wait_count = 0
 
 			# End Timing of entire Script
 			logger.info('microSWIFT.py took {}'.format(datetime.datetime.now() - begin_script_time))
 			logger.info('\n')
 		
 		else:
-			logger.info('Waiting to enter record window')
 			sleep(1)
+			wait_count += 1
+			# Print waiting to log every 5 iterations
+			if wait_count % 5 == 0:
+				logger.info('Waiting to enter record window')
 			continue
 			
 
