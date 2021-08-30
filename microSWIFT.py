@@ -109,7 +109,7 @@ if __name__=="__main__":
 	# logger.info('gps sample rate: {0}, call interval {1}, call time: {2}'.format(GPS_fs, call_int, call_time)) # Burst Int and burst time have not been defined yet
 
 	# Define loop counter
-	i = 1
+	loop_count = 1
 
 	# --------------- Main Loop -------------------------
 	while True:
@@ -241,7 +241,7 @@ if __name__=="__main__":
 				logger.info('Modem did not initialize')
 
 			# Increment up the loop counter
-			i += 1
+			loop_count += 1
 
 			# End Timing of entire Script
 			logger.info('microSWIFT.py took {}'.format(datetime.datetime.now() - begin_script_time))
