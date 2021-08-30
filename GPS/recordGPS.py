@@ -21,40 +21,44 @@ import RPi.GPIO as GPIO
 
 # Import microSWIFT specific information
 from utils.config3 import Config
+configFilename = r'utils/Config.dat'
+
+
+# Configuration
+config = Config() # Create object and load file
+ok = config.loadFile( configFilename )
+if( not ok ):
+    sys.exit(1)
+
+# Set up module level logger
+logger = getLogger('microSWIFT.'+__name__)  
+
+#GPS parameters 
+dataDir = config.getString('System', 'dataDir')
+floatID = os.uname()[1]
+gps_port = config.getString('GPS', 'port')
+baud = config.getInt('GPS', 'baud')
+startBaud = config.getInt('GPS', 'startBaud')
+gps_freq = config.getInt('GPS', 'GPS_frequency')
+gps_timeout = config.getInt('GPS', 'timeout')
+burst_seconds = config.getInt('System', 'burst_seconds')
+gps_samples = gps_freq*burst_seconds
+gpsGPIO = config.getInt('GPS', 'gpsGPIO')
+gps_timeout = config.getInt('GPS','timeout')
+
+# setup GPIO and initialize
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(gpsGPIO,GPIO.OUT)
+GPIO.output(gpsGPIO,GPIO.HIGH) #set GPS enable pin high to turn on and start acquiring signal
+
 
 def recordGPS(configFilename):
 
-    # Configuration
-    config = Config() # Create object and load file
-    ok = config.loadFile( configFilename )
-    if( not ok ):
-        sys.exit(1)
-
-    # Set up module level logger
-    logger = getLogger('microSWIFT.'+__name__)  
-
-    #GPS parameters 
-    dataDir = config.getString('System', 'dataDir')
-    floatID = os.uname()[1]
-    gps_port = config.getString('GPS', 'port')
-    baud = config.getInt('GPS', 'baud')
-    startBaud = config.getInt('GPS', 'startBaud')
-    gps_freq = config.getInt('GPS', 'GPS_frequency')
-    burst_seconds = config.getInt('System', 'burst_seconds')
-    gps_samples = gps_freq*burst_seconds
-    gpsGPIO = config.getInt('GPS', 'gpsGPIO')
-    gps_timeout = config.getInt('GPS','timeout')
-
     ##------------ Initalize GPS -------------------------
-    # setup GPIO and initialize
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setwarnings(False)
-    GPIO.setup(gpsGPIO,GPIO.OUT)
-    GPIO.output(gpsGPIO,GPIO.HIGH) #set GPS enable pin high to turn on and start acquiring signal
-        
     logger.info('initializing GPS')
     try:
-        #start with GPS default baud whether it is right or not
+        #start with GPS default baud
         logger.info("try GPS serial port at 9600")
         ser=serial.Serial(gps_port,startBaud,timeout=1)
         try:
@@ -74,8 +78,10 @@ def recordGPS(configFilename):
             ser.write("$PMTK220,250*29\r\n".encode())
             sleep(1)
         except Exception as e:
+            logger.info('GPS failed to initialize')
             logger.info(e)
     except Exception as e:
+        logger.info('GPS failed to initialize')
         logger.info(e)
                     
     #read lines from GPS serial port and wait for fix
@@ -128,17 +134,17 @@ def recordGPS(configFilename):
                                     except Exception as e:
                                         logger.info(e)
                                         logger.info('error setting system time')
-                                        gps_initialized = False
                                         continue	
                                 except Exception as e:
                                     logger.info(e)
                                     logger.info('error parsing nmea sentence')
-                                    gps_initialized = False
                                     continue
-            sleep(1)
+            t.sleep(1)
+        #if loop times out
+        logger.info('GPS failed to initialize, timeout')
     except Exception as e:
+        logger.info('GPS failed to initialize')
         logger.info(e)
-        gps_initialized = False
 
     ## ------------- Record GPS ---------------------------
     # If GPS signal is initialized start recording
@@ -147,7 +153,7 @@ def recordGPS(configFilename):
         GPSdataFilename = dataDir + floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
         logger.info("file name: {}".format(GPSdataFilename))
 
-        logger.info('starting GPS burst at {}'.format(datetime.now()))
+        logger.info('starting GPS burst')
         try:
             ser.flushInput()
             with open(GPSdataFilename, 'w',newline='\n') as gps_out:
@@ -197,7 +203,7 @@ def recordGPS(configFilename):
         logger.info("GPS not initialized, exiting")
 
         #create file name but it is a placeholder
-        GPSdataFilename = dataDir + floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
+        GPSdataFilename = ''
 
         # Return the GPS filename to be read into the onboard processing
         return GPSdataFilename, gps_initialized
