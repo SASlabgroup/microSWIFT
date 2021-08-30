@@ -119,9 +119,6 @@ if __name__=="__main__":
 		now = datetime.datetime.utcnow().minute + datetime.datetime.utcnow().second/60
 		begin_script_time = datetime.datetime.now()
 
-		# Start time of loop iteration
-		logger.info('----------- Iteration {} -----------'.format(loop_count))
-
 		## -------------- GPS and IMU Recording Section ---------------------------
 		# Time recording section
 		begin_recording_time = datetime.datetime.now()
@@ -132,6 +129,9 @@ if __name__=="__main__":
 
 		for i in np.arange(len(start_times)):
 			if now >= start_times[i] and now < end_times[i]: #Are we in a record window
+
+				# Start time of loop iteration
+				logger.info('----------- Iteration {} -----------'.format(loop_count))
 				
 				end_time = end_times[i]
 				# Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
@@ -253,7 +253,7 @@ if __name__=="__main__":
 			sleep(1)
 			wait_count += 1
 			# Print waiting to log every 5 iterations
-			if wait_count % 5 == 0:
+			if wait_count % 10 == 0:
 				logger.info('Waiting to enter record window')
 			continue
 			
