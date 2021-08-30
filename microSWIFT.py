@@ -117,7 +117,7 @@ if __name__=="__main__":
 	while True:
 
 		#Get current minute of the hour expressed as a fraction
-		now = datetime.utcnow().minute + datetime.utcnow().second/60
+		now = datetime.datetime.utcnow().minute + datetime.datetime.utcnow().second/60
 
 		# Start time of loop iteration
 		logger.info('----------- Iteration {} -----------'.format(i))
