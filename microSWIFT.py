@@ -119,7 +119,7 @@ if __name__=="__main__":
 		begin_script_time = datetime.datetime.now()
 
 		# Start time of loop iteration
-		logger.info('----------- Iteration {} -----------'.format(i))
+		logger.info('----------- Iteration {} -----------'.format(loop_count))
 
 		## -------------- GPS and IMU Recording Section ---------------------------
 		# Time recording section
