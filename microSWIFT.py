@@ -84,9 +84,6 @@ if __name__=="__main__":
 	#Generate lists of burst start and end times based on parameters from Config file
 	start_times = [burst_time + i*burst_int for i in range(num_bursts)]
 	end_times = [start_times[i] + burst_seconds/60 for i in range(num_bursts)] #could also use lambda
-	print('start times', start_times)
-	print('end times', end_times)
-
 
 	# Set-up logging based on config file parameters
 	logger = getLogger('microSWIFT')
