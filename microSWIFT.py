@@ -148,6 +148,7 @@ if __name__=="__main__":
 			## --------------- Data Processing Section ---------------------------------
 			# Time processing section
 			logger.info('Starting Processing')
+			begin_processing_time = datetime.datetime.now()
 
 			# Prioritize GPS processing
 			if gps_initialized==True:
