@@ -21,6 +21,7 @@ import RPi.GPIO as GPIO
 
 # Import microSWIFT specific information
 from utils.config3 import Config
+configFilename = r'utils/Config.dat'
 
 
 # Configuration
@@ -39,6 +40,7 @@ gps_port = config.getString('GPS', 'port')
 baud = config.getInt('GPS', 'baud')
 startBaud = config.getInt('GPS', 'startBaud')
 gps_freq = config.getInt('GPS', 'GPS_frequency')
+gps_timeout = config.getInt('GPS', 'timeout')
 burst_seconds = config.getInt('System', 'burst_seconds')
 gps_samples = gps_freq*burst_seconds
 gpsGPIO = config.getInt('GPS', 'gpsGPIO')
@@ -58,7 +60,7 @@ def recordGPS(configFilename):
         
     logger.info('initializing GPS')
     try:
-        #start with GPS default baud whether it is right or not
+        #start with GPS default baud
         logger.info("try GPS serial port at 9600")
         ser=serial.Serial(gps_port,startBaud,timeout=1)
         try:
@@ -78,8 +80,10 @@ def recordGPS(configFilename):
             ser.write("$PMTK220,250*29\r\n".encode())
             sleep(1)
         except Exception as e:
+            logger.info('GPS failed to initialize')
             logger.info(e)
     except Exception as e:
+        logger.info('GPS failed to initialize')
         logger.info(e)
                     
     #read lines from GPS serial port and wait for fix
@@ -132,17 +136,17 @@ def recordGPS(configFilename):
                                     except Exception as e:
                                         logger.info(e)
                                         logger.info('error setting system time')
-                                        gps_initialized = False
                                         continue	
                                 except Exception as e:
                                     logger.info(e)
                                     logger.info('error parsing nmea sentence')
-                                    gps_initialized = False
                                     continue
-            sleep(1)
+            t.sleep(1)
+        #if loop times out
+        logger.info('GPS failed to initialize, timeout')
     except Exception as e:
+        logger.info('GPS failed to initialize')
         logger.info(e)
-        gps_initialized = False
 
     ## ------------- Record GPS ---------------------------
     # If GPS signal is initialized start recording
