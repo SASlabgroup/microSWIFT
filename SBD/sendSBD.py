@@ -131,27 +131,7 @@ def checkTX(TX_fname):
     data = struct.unpack('<sbbhfff42fffffffffffiiiiii', fileContent)
     logger.info('data = ', data)
 
-def getResponse(ser,command, response='bad'):
 
-    ser.flushInput()
-    command=(command+'\r').encode()
-    ser.write(command)
-    sleep(1)
-    try:
-        while ser.in_waiting > 0:
-            r=ser.readline().decode().strip('\r\n')
-            if response in r:
-                sbdlogger.info('response = {}'.format(r))
-                logger.info('response = {}'.format(r))
-                return True
-            elif 'ERROR' in response:
-                sbdlogger.info('response = ERROR')
-                logger.info('response = ERROR')
-                return False
-    except serial.SerialException as e:
-        sbdlogger.info('error: {}'.format(e))
-        logger.info('error: {}'.format(e))
-        return False
 
 def initModem():
 
@@ -161,7 +141,7 @@ def initModem():
         GPIO.output(modemGPIO,GPIO.HIGH) #power on GPIO enable pin
         logger.info('modem powered on')
         sleep(3)
-        sbdlogger.info('done')
+        logger.info('done')
     except Exception as e:
         logger.info('error powering on modem')
         logger.info(e)
@@ -178,9 +158,17 @@ def initModem():
         logger.info('unable to open serial port')
         logger.info(e)
         return ser, False
-    
-    # If the try statement passed
-    return ser, True
+
+    logger.info('command = AT')
+    if get_response(ser,'AT'): #send AT command
+        logger.info('command = AT&F')
+        if get_response(ser,'AT&F'): #set default parameters with AT&F command 
+            logger.info('command = AT&K=0')  
+            if get_response(ser,'AT&K=0'): #important, disable flow control
+                logger.info('modem initialized')
+                return ser, True
+    else:
+        return ser, False
 
 def sendSBD(ser, payload_data, next_start):
     import time
