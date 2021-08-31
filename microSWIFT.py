@@ -145,6 +145,9 @@ if __name__=="__main__":
 					IMUdataFilename, imu_initialized = recordIMU_future.result()
 				#exit out of loop once burst is finished
 				recording_complete = True
+
+				# Define next start time to enter into the sendSBD function:
+				next_start = start_times[i+1]
 				break
 
 		if recording_complete == True: 
@@ -237,7 +240,7 @@ if __name__=="__main__":
 			# Send SBD over telemetry
 			if modem_initialized == True:
 				logger.info('entering sendSBD function now')
-				sendSBD(ser, payload_data)
+				sendSBD(ser, payload_data, next_start)
 			else:
 				logger.info('Modem did not initialize')
 
