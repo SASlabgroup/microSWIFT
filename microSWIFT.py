@@ -225,7 +225,7 @@ if __name__=="__main__":
 			## -------------- Telemetry Section ----------------------------------
 			# Create TX file from processData.py output from combined wave products
 			logger.info('Creating TX file and packing payload data')
-			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat_mean, lon_mean, temp, volt, configFilename)
+			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat_mean, lon_mean, temp, volt)
 
 			# Decode contents of TX file and print out as a check - will be removed in final versions
 			# checkTX(TX_fname)

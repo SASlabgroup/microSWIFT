@@ -54,8 +54,7 @@ id = 0
 
 
 # Telemetry test functions
-def createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat, lon,  temp, volt, configFilename):
-
+def createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat, lon,  temp, volt):
 
     #Create file name
     now=datetime.utcnow()
