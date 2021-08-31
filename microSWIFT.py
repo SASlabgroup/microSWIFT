@@ -81,9 +81,8 @@ if __name__=="__main__":
 	#Compute number of bursts per hour
 	num_bursts = int(60 / burst_int)
 	
-
 	#Generate lists of burst start and end times based on parameters from Config file
-	start_times = [burst_time + i*burst_int for i in range(num_bursts)]
+	start_times = np.array([burst_time + i*burst_int for i in range(num_bursts)])
 	# end_times = [start_times[i] + burst_seconds/60 for i in range(num_bursts)] #could also use lambda
 
 	# Set-up logging based on config file parameters
