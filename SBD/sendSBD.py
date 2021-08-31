@@ -123,6 +123,7 @@ def createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat, lon,  temp, volt):
 
     logger.info('TX file created with the variables Hs, Tp, Dp, E, fmin, fmax, fstep, lat, lon, temp, volt, umean, vmean, zmean and date')
     return TX_fname, payload_data
+    
 
 def checkTX(TX_fname):
 
@@ -130,6 +131,7 @@ def checkTX(TX_fname):
         fileContent = file.read()
     data = struct.unpack('<sbbhfff42fffffffffffiiiiii', fileContent)
     logger.info('data = ', data)
+
 
 def get_response(ser,command, response='OK'):
     ser.flushInput()
