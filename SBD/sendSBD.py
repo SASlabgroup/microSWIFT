@@ -181,6 +181,7 @@ def sendSBD(ser, payload_data, next_start):
     retry = 0
     sent_status_val = 0 # any returned status value less than this means the message sent successfully.
     status = rockblock.satellite_transfer()
+    now = datetime.utcnow().minute + datetime.utcnow().second/60
     while status[0] > sent_status_val and now < next_start:
         time.sleep(10)
         status = rockblock.satellite_transfer()
