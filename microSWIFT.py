@@ -60,7 +60,6 @@ if __name__=="__main__":
 		print("Error loading config file")
 		sys.exit(1)
 
-
 	# System Parameters
 	dataDir = config.getString('System', 'dataDir')
 	floatID = os.uname()[1]

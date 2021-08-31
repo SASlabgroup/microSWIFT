@@ -18,34 +18,53 @@ from logging import getLogger
 import serial
 
 #Define Config file name and load file
-	configFilename = r'utils/Config.dat'
-	config = Config() # Create object and load file
-	ok = config.loadFile( configFilename )
-	if( not ok ):
-        print("Error loading config file")
-		sys.exit(1)
+configFilename = r'utils/Config.dat'
+config = Config() # Create object and load file
+ok = config.loadFile( configFilename )
+if( not ok ):
+    print("Error loading config file")
+    sys.exit(1)
+
+# Create the TX file named for the current time
+logger = getLogger('microSWIFT.'+__name__)  
 
 
+# System Parameters
+dataDir = config.getString('System', 'dataDir')
+floatID = os.uname()[1]
+sensor_type = config.getInt('System', 'sensorType')
+badValue = config.getInt('System', 'badValue')
+numCoef = config.getInt('System', 'numCoef')
+port = config.getInt('System', 'port')
+payload_type = config.getInt('System', 'payloadType')
+burst_seconds = config.getInt('System', 'burst_seconds')
+burst_time = config.getInt('System', 'burst_time')
+burst_int = config.getInt('System', 'burst_interval')
+    
+call_duration = burst_int*60-burst_seconds #time between burst end and burst start to make a call
+
+# Iridium parameters
+modemPort = config.getString('Iridium', 'port')
+modemBaud = config.getInt('Iridium', 'baud')
+modemGPIO = config.getInt('Iridium', 'modemGPIO')
+timeout = config.getInt('Iridium', 'timeout')
+
+#arbitrary message counter
+id = 0
 
 
 # Telemetry test functions
 def createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat, lon,  temp, volt, configFilename):
-    #load config file and get parameters
-    config = Config() # Create object and load file
-    ok = config.loadFile( configFilename )
-    dataDir = config.getString('System', 'dataDir')
-    floatID = os.uname()[1]
 
-    # Create the TX file named for the current time
-    logger = getLogger('microSWIFT.'+__name__)   
+
+    #Create file name
     now=datetime.utcnow()
     TX_fname = dataDir + floatID+'_TX_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(now)
     logger.info('telemetry file = %s' %TX_fname)
 
     # Open the TX file and start to write to it
     with open(TX_fname, 'wb') as file:
-        # Setup loging 
-        logger = getLogger('microSWIFT.'+__name__) 
+      
         logger.info('create telemetry file: {}'.format(TX_fname))
         
         #payload size in bytes: 16 4-byte floats, 7 arrays of 42 4-byte floats, three 1-byte ints, and one 2-byte int   
@@ -68,11 +87,6 @@ def createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat, lon,  temp, volt, co
         fmin = np.min(f)
         fmax = np.max(f)
         fstep = (fmax - fmin)/f.shape
-        
-        # System configurations
-        sensor_type = config.getInt('System', 'sensorType')
-        payload_type = config.getInt('System', 'payloadType')
-        port = config.getInt('System', 'port')
         
         # Build Structure of binary bits 
         now=datetime.now()
@@ -112,8 +126,6 @@ def createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat, lon,  temp, volt, co
     return TX_fname, payload_data
 
 def checkTX(TX_fname):
-    # Setup loging 
-    logger = getLogger('microSWIFT.'+__name__) 
 
     with open(TX_fname, mode='rb') as file: # b is important -> binary
         fileContent = file.read()
@@ -121,8 +133,6 @@ def checkTX(TX_fname):
     logger.info('data = ', data)
 
 def getResponse(ser,command, response='bad'):
-    # Setup loging 
-    logger = getLogger('microSWIFT.'+__name__) 
 
     ser.flushInput()
     command=(command+'\r').encode()
@@ -145,14 +155,6 @@ def getResponse(ser,command, response='bad'):
         return False
 
 def initModem():
-    # Setup loging 
-    logger = getLogger('microSWIFT.'+__name__) 
-
-    # Iridium parameters - fixed for now
-    modemPort = '/dev/ttyUSB0'
-    modemBaud = 19200
-    modemGPIO =  16 
-    timeout=60
 
     # Turn on the pin to power on the modem
     try:
