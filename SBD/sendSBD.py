@@ -161,6 +161,7 @@ def initModem():
         GPIO.output(modemGPIO,GPIO.HIGH) #power on GPIO enable pin
         logger.info('modem powered on')
         sleep(3)
+        sbdlogger.info('done')
     except Exception as e:
         logger.info('error powering on modem')
         logger.info(e)
@@ -172,6 +173,10 @@ def initModem():
         logger.info('serial port opened successfully')
     except serial.SerialException as e:
         logger.info('unable to open serial port: {}'.format(e))
+        return ser, False
+    except Exception as e:
+        logger.info('unable to open serial port')
+        logger.info(e)
         return ser, False
     
     # If the try statement passed
