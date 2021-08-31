@@ -52,11 +52,12 @@ from utils.config3 import Config
 # Main body of microSWIFT.py
 if __name__=="__main__":
 
-	# Define Config file name and load file
+	#Define Config file name and load file
 	configFilename = r'utils/Config.dat'
 	config = Config() # Create object and load file
 	ok = config.loadFile( configFilename )
 	if( not ok ):
+		print("Error loading config file")
 		sys.exit(1)
 
 

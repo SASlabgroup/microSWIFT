@@ -17,6 +17,17 @@ from time import sleep
 from logging import getLogger
 import serial
 
+#Define Config file name and load file
+	configFilename = r'utils/Config.dat'
+	config = Config() # Create object and load file
+	ok = config.loadFile( configFilename )
+	if( not ok ):
+        print("Error loading config file")
+		sys.exit(1)
+
+
+
+
 # Telemetry test functions
 def createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat, lon,  temp, volt, configFilename):
     #load config file and get parameters
