@@ -131,7 +131,23 @@ def checkTX(TX_fname):
     data = struct.unpack('<sbbhfff42fffffffffffiiiiii', fileContent)
     logger.info('data = ', data)
 
-
+def get_response(ser,command, response='OK'):
+    ser.flushInput()
+    logger.info('command = {}'.format(command))
+    ser.write((command+'\r').encode())
+    sleep(1)
+    try:
+        while ser.in_waiting > 0:
+            r=ser.readline().decode().strip('\r\n')
+            if response in r:
+                sbdlogger.info('response = {}'.format(r))
+                return True
+            elif 'ERROR' in response:
+                sbdlogger.info('response = ERROR')
+                return False
+    except serial.SerialException as e:
+        sbdlogger.info('error: {}'.format(e))
+        return False
 
 def initModem():
 
