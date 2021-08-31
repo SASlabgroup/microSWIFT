@@ -84,7 +84,7 @@ if __name__=="__main__":
 
 	#Generate lists of burst start and end times based on parameters from Config file
 	start_times = [burst_time + i*burst_int for i in range(num_bursts)]
-	end_times = [start_times[i] + burst_seconds/60 for i in range(num_bursts)] #could also use lambda
+	# end_times = [start_times[i] + burst_seconds/60 for i in range(num_bursts)] #could also use lambda
 
 	# Set-up logging based on config file parameters
 	logger = getLogger('microSWIFT')
@@ -112,10 +112,13 @@ if __name__=="__main__":
 	loop_count = 1
 	wait_count = 0
 	
+	# Find first recording loop 
+	now = datetime.datetime.utcnow().minute + datetime.datetime.utcnow().second/60
+	next_start_time = start_times[start_times > now].min()  
 
 	# --------------- Main Loop -------------------------
 	while True:
-
+		
 		now = datetime.datetime.utcnow().minute + datetime.datetime.utcnow().second/60
 		begin_script_time = datetime.datetime.now()
 
@@ -126,29 +129,28 @@ if __name__=="__main__":
 		# Both IMU and GPS start as unititialized
 		recording_complete = False
 
+		if now >= next_start_time: #Are we in a record window
 
-		for i in np.arange(len(start_times)):
-			if now >= start_times[i] and now < end_times[i]: #Are we in a record window
+			# Start time of loop iteration
+			logger.info('----------- Iteration {} -----------'.format(loop_count))
+			
+			# Define the end time for recording 
+			end_time = now + burst_seconds/60
 
-				# Start time of loop iteration
-				logger.info('----------- Iteration {} -----------'.format(loop_count))
-				
-				end_time = end_times[i]
-				# Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
-				with concurrent.futures.ThreadPoolExecutor() as executor:
-					# Submit Futures 
-					recordGPS_future = executor.submit(recordGPS, end_time)
-					recordIMU_future = executor.submit(recordIMU, end_time)
+			# Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
+			with concurrent.futures.ThreadPoolExecutor() as executor:
+				# Submit Futures 
+				recordGPS_future = executor.submit(recordGPS, end_time)
+				recordIMU_future = executor.submit(recordIMU, end_time)
 
-					# get results from Futures
-					GPSdataFilename, gps_initialized = recordGPS_future.result()
-					IMUdataFilename, imu_initialized = recordIMU_future.result()
-				#exit out of loop once burst is finished
-				recording_complete = True
+				# get results from Futures
+				GPSdataFilename, gps_initialized = recordGPS_future.result()
+				IMUdataFilename, imu_initialized = recordIMU_future.result()
+			#exit out of loop once burst is finished
+			recording_complete = True
 
-				# Define next start time to enter into the sendSBD function:
-				next_start = start_times[i+1]
-				break
+			# Compute the next start time of the recording 
+			next_start_time = next_start_time + burst_int
 
 		if recording_complete == True: 
 			## --------------- Data Processing Section ---------------------------------
@@ -240,7 +242,7 @@ if __name__=="__main__":
 			# Send SBD over telemetry
 			if modem_initialized == True:
 				logger.info('entering sendSBD function now')
-				sendSBD(ser, payload_data, next_start)
+				sendSBD(ser, payload_data, next_start_time)
 			else:
 				logger.info('Modem did not initialize')
 
