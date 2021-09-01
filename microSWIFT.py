@@ -27,7 +27,7 @@ Successfully merged all fixes/ bugs into microSWIFT.py-Centralized - 08/25/21
 import concurrent.futures
 import datetime
 import numpy as np
-import datetime
+from datetime import datetime, timedelta
 from logging import *
 import sys, os
 from time import sleep
@@ -161,7 +161,7 @@ if __name__=="__main__":
 				u, v, z, lat, lon = GPStoUVZ(GPSdataFilename)
 
 				# Compute Wave Statistics from GPSwaves algorithm
-				Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u, v, z, GPS_fs)
+				Hs, Tp, Dp, E, f, a1, b1, a2, b2, check = GPSwaves(u, v, z, GPS_fs)
 
 			elif imu_initialized==True:
 				
@@ -225,7 +225,7 @@ if __name__=="__main__":
 			## -------------- Telemetry Section ----------------------------------
 			# Create TX file from processData.py output from combined wave products
 			logger.info('Creating TX file and packing payload data')
-			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat_mean, lon_mean, temp, volt)
+			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, lat_mean, lon_mean, temp, volt)
 
 			# Decode contents of TX file and print out as a check - will be removed in final versions
 			# checkTX(TX_fname)

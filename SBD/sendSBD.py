@@ -387,7 +387,7 @@ def transmit_ascii(ser,msg):
 #Sub-header 1 thru N:
 #    ,<id>,<start-byte>:
 #--------------------------------------------------------------------------------------------
-def send_microSWIFT_50(payload_data):
+def send_microSWIFT_50(payload_data, timeout):
     logger.info('sending microSWIFT telemetry (type 50)')
     
     global id
@@ -436,9 +436,11 @@ def send_microSWIFT_50(payload_data):
     message = [packet0, packet1, packet2, packet3] #list of packets
     ordinal = ['first', 'second', 'third', 'fourth']
 
-    
-    tend = t.time()+call_duration #get end time to stop attempting call
-    while t.time() <= tend:
+    now = datetime.utcnow()
+    hour = now.hour
+    minute = now.minute + now.second/60
+
+    while datetime.utcnow().minute < timeout and datetime.hour == hour:  
     
         #initialize modem
         ser, modem_initialized = initModem()
@@ -483,6 +485,7 @@ def send_microSWIFT_50(payload_data):
                 logger.info('Powering down modem')    
                 GPIO.output(modemGPIO,GPIO.LOW)
                 return
+            
 
     #turn off modem
     logger.info('Send SBD timeout')
@@ -490,7 +493,7 @@ def send_microSWIFT_50(payload_data):
     GPIO.output(modemGPIO,GPIO.LOW)
    
 
-def send_microSWIFT_51(payload_data):
+def send_microSWIFT_51(payload_data, timeout):
     logger.info('sending microSWIFT telemetry (type 51)')
     
     global id
