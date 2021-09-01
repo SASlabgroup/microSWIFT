@@ -126,7 +126,7 @@ if __name__=="__main__":
 		# Both IMU and GPS start as unititialized
 		recording_complete = False
 
-		for i in np.arange(start_times):
+		for i in np.arange(len(start_times)):
 			if now >= start_times[i] and now < end_times[i]: #Are we in a record window
 
 				# Start time of loop iteration
