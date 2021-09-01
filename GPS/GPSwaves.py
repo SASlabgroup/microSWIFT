@@ -345,4 +345,4 @@ def GPSwaves(u, v, z, fs):
     f = np.delete(f, ind_to_delete)
 
     # Return values
-    return Hs, Tp, Dp, E, f, a1, b1, a2, b2
+    return Hs, Tp, Dp, E, f, a1, b1, a2, b2, check
