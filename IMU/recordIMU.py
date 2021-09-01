@@ -89,9 +89,8 @@ def recordIMU(end_time):
         # Open the new IMU data file for logging
         with open(IMUdataFilename, 'w',newline='\n') as imu_out:
             logger.info('open file for writing: {}'.format(IMUdataFilename))
-            t_end = time.time() + burst_seconds #get end time for burst
             isample=0
-            while isample < imu_samples:
+            while datetime.utcnow().minute + datetime.utcnow().second/60 < end_time or isample < imu_samples:
                 # Get values from IMU
                 try:
                     accel_x, accel_y, accel_z = fxos.accelerometer
