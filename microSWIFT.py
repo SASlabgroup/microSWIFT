@@ -83,7 +83,7 @@ if __name__=="__main__":
 	
 	#Generate lists of burst start and end times based on parameters from Config file
 	start_times = np.array([burst_time + i*burst_int for i in range(num_bursts)])
-	end_times = [start_times[i] + burst_seconds/60 for i in range(num_bursts)] #could also use lambda
+	end_times = [start_times[i] + burst_seconds/60 for i in range(num_bursts)]
 
 	# Set-up logging based on config file parameters
 	logger = getLogger('microSWIFT')
@@ -110,10 +110,6 @@ if __name__=="__main__":
 	# Define loop counter
 	loop_count = 1
 	wait_count = 0
-	
-	# # Find first recording loop 
-	# now = datetime.datetime.utcnow().minute + datetime.datetime.utcnow().second/60
-	# next_start_time = start_times[start_times > now].min()  
 
 	# --------------- Main Loop -------------------------
 	while True:
