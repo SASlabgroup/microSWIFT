@@ -56,47 +56,62 @@ id = 0
 # Telemetry test functions
 def createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat, lon,  temp, volt):
 
-    #Create file name
+    if payload_type != 7:
+        logger.info('invalid payload type: {}'.format(payload_type))
+        logger.info('exiting')
+        sys.exit(1)
+
     now=datetime.utcnow()
-    TX_fname = dataDir + floatID+'_TX_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(now)
-    logger.info('telemetry file = %s' %TX_fname)
 
-    # Open the TX file and start to write to it
-    with open(TX_fname, 'wb') as file:
-      
-        logger.info('create telemetry file: {}'.format(TX_fname))
+    # Round the values each to 6 decimal places
+    Hs = round(Hs,6)
+    Tp = round(Tp,6)
+    Dp = round(Dp,6)
+    lat = round(lat,6)
+    lon = round(lon,6)
+    uMean = round(u_mean,6)
+    vMean = round(v_mean,6)
+    zMean = round(z_mean,6)
         
-        #payload size in bytes: 16 4-byte floats, 7 arrays of 42 4-byte floats, three 1-byte ints, and one 2-byte int   
-        #payload_size = (16 + 7*42) * 4 + 5
-        # Round the values each to 6 decimal places
-        Hs = round(Hs,6)
-        Tp = round(Tp,6)
-        Dp = round(Dp,6)
-        lat = round(lat,6)
-        lon = round(lon,6)
-        uMean = round(u_mean,6)
-        vMean = round(v_mean,6)
-        zMean = round(z_mean,6)
-        
-        # Log the data that will be sent    
-        logger.info('Hs: {0} Tp: {1} Dp: {2} lat: {3} lon: {4} temp: {5} volt: {6} uMean: {7} vMean: {8} zMean: {9}'.format(
-            Hs, Tp, Dp, lat, lon, temp, volt, uMean, vMean, zMean))
+    # Log the data that will be sent    
+    logger.info('Hs: {0} Tp: {1} Dp: {2} lat: {3} lon: {4} temp: {5} volt: {6} uMean: {7} vMean: {8} zMean: {9}'.format(
+        Hs, Tp, Dp, lat, lon, temp, volt, uMean, vMean, zMean))
 
-        # Compute fmin fmax and fstep
+    if sensor_type == 50:
+
+        #create formatted struct with all payload data
+        payload_size = struct.calcsize('<sbbhfff42f42f42f42f42f42f42ffffffffiiiiii')
+        payload_data = (struct.pack('<sbbhfff', str(payload_type).encode(),sensor_type,port, payload_size,Hs,Tp,Dp) + 
+                        struct.pack('<42f', *E) +
+                        struct.pack('<42f', *f) +
+                        struct.pack('<42f', *a1) +
+                        struct.pack('<42f', *b1) +
+                        struct.pack('<42f', *a2) +
+                        struct.pack('<42f', *b2) +
+                        struct.pack('<42f', *checkdata) +
+                        struct.pack('<f', lat) +
+                        struct.pack('<f', lon) +
+                        struct.pack('<f', temp) +
+                        struct.pack('<f', volt) +
+                        struct.pack('<f', uMean) +
+                        struct.pack('<f', vMean) +
+                        struct.pack('<f', zMean) +
+                        struct.pack('<i', int(now.year)) +
+                        struct.pack('<i', int(now.month)) +
+                        struct.pack('<i', int(now.day)) +
+                        struct.pack('<i', int(now.hour)) +
+                        struct.pack('<i', int(now.minute)) +
+                        struct.pack('<i', int(now.second)))
+    
+    elif sensor_type == 51:
+        
+        #compute fmin fmax and fstep
         fmin = np.min(f)
         fmax = np.max(f)
-        fstep = (fmax - fmin)/f.shape
-        
-        # Build Structure of binary bits 
-        now=datetime.now()
+        fstep = (fmax - fmin)/41
+
         payload_size = struct.calcsize('<sbbhfff42fffffffffffiiiiii')
-        payload_data = (struct.pack('<s', str(payload_type).encode()) +
-                        struct.pack('<b', sensor_type) +
-                        struct.pack('<b', port) +
-                        struct.pack('<h', payload_size) +
-                        struct.pack('<f', Hs) +
-                        struct.pack('<f', Tp) + 
-                        struct.pack('<f', Dp) +
+        payload_data = (struct.pack('<sbbhfff', str(payload_type).encode(),sensor_type,port, payload_size,Hs,Tp,Dp) + 
                         struct.pack('<42f', *E) +
                         struct.pack('<f', fmin) +
                         struct.pack('<f', fmax) +
@@ -115,15 +130,27 @@ def createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat, lon,  temp, volt):
                         struct.pack('<i', int(now.minute)) +
                         struct.pack('<i', int(now.second)))
 
+    else: 
+        logger.info('invalid sensor type: {}'.format(sensor_type))
+        logger.info('exiting')
+        sys.exit(1)
+
+
+    #Create file name
+    TX_fname = dataDir + floatID+'_TX_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(now) 
+
+    # Open the TX file and start to write to it    
+    with open(TX_fname, 'wb') as file:
+        
+        logger.info('create telemetry file: {}'.format(TX_fname))
         # Write the binary packed data to a file 
         logger.info('writing data to file')
         file.write(payload_data)
         logger.info('done')
         file.flush()
 
-    logger.info('TX file created with the variables Hs, Tp, Dp, E, fmin, fmax, fstep, lat, lon, temp, volt, umean, vmean, zmean and date')
     return TX_fname, payload_data
-    
+
 
 def checkTX(TX_fname):
 
@@ -150,6 +177,29 @@ def get_response(ser,command, response='OK'):
     except serial.SerialException as e:
         sbdlogger.info('error: {}'.format(e))
         return False
+
+#Get signal quality using AT+CSQF command (see AT command reference).
+#Returns signal quality, default range is 0-5. Returns -1 for an error or no response
+#Example modem output: AT+CSQF +CSQF:0 OK    
+def sig_qual(ser, command='AT+CSQ'):
+    ser.flushInput()
+    ser.write((command+'\r').encode())
+    sbdlogger.info('command = {} '.format(command))
+    r=ser.read(23).decode()
+    if 'CSQ:' in r:
+        response=r[9:15]
+        qual = r[14]
+        sbdlogger.info('response = {}'.format(response))
+        return int(qual) #return signal quality (0-5)
+    elif 'ERROR' in r:
+        sbdlogger.info('Response = ERROR')
+        return -1
+    elif r == '':
+        sbdlogger.info('No response from modem')
+        return -1
+    else:
+        sbdlogger.info('Unexpected response: {}'.format(r))  
+        return -1
 
 def initModem():
 
