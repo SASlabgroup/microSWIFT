@@ -25,7 +25,7 @@ if( not ok ):
     sys.exit(1)
 
 # Create the TX file named for the current time
-logger = logging.getLogger('microSWIFT.'+__name__)  
+logger = getLogger('microSWIFT.'+__name__)  
 
 
 # System Parameters
@@ -87,7 +87,7 @@ def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, la
                         struct.pack('<42f', *b1) +
                         struct.pack('<42f', *a2) +
                         struct.pack('<42f', *b2) +
-                        struct.pack('<42f', *checkdata) +
+                        struct.pack('<42f', *check) +
                         struct.pack('<f', lat) +
                         struct.pack('<f', lon) +
                         struct.pack('<f', temp) +
@@ -163,7 +163,7 @@ def get_response(ser,command, response='OK'):
     ser.flushInput()
     logger.info('command = {}'.format(command))
     ser.write((command+'\r').encode())
-    sleep(1)
+    t.sleep(1)
     try:
         while ser.in_waiting > 0:
             r=ser.readline().decode().strip('\r\n')
@@ -207,7 +207,7 @@ def initModem():
         GPIO.setup(modemGPIO, GPIO.OUT)
         GPIO.output(modemGPIO,GPIO.HIGH) #power on GPIO enable pin
         logger.info('modem powered on')
-        sleep(3)
+        t.sleep(3)
         logger.info('done')
     except Exception as e:
         logger.info('error powering on modem')
@@ -254,7 +254,7 @@ def transmit_bin(ser,msg):
         logger.info('Command = AT+SBDWB')
         ser.flushInput()
         ser.write(('AT+SBDWB='+str(bytelen)+'\r').encode()) #command to write bytes, followed by number of bytes to write
-        sleep(0.25)
+        t.sleep(0.25)
     except serial.SerialException as e:
         logger.info('Serial error: {}'.format(e))
         return False
@@ -268,7 +268,7 @@ def transmit_bin(ser,msg):
         logger.info('passing message to modem buffer')
         ser.flushInput()
         ser.write(msg) #pass bytes to modem
-        sleep(0.25)
+        t.sleep(0.25)
         
         #The checksum is the least significant 2-bytes of the summation of the entire SBD message. 
         #The high order byte must be sent first. 
@@ -277,9 +277,9 @@ def transmit_bin(ser,msg):
         byte2 = (checksum & 0xFF).to_bytes(1,'big')#bitwise operation to get second byte of checksum, convet to bytes
         logger.info('passing checksum to modem buffer')
         ser.write(byte1) #first byte of 2-byte checksum 
-        sleep(0.25)
+        t.sleep(0.25)
         ser.write(byte2) #second byte of checksum
-        sleep(0.25)
+        t.sleep(0.25)
         
         r=ser.read(3).decode() #read response to get result code from SBDWB command (0-4)
         try:
@@ -290,7 +290,7 @@ def transmit_bin(ser,msg):
                 logger.info('command = AT+SBDIX')
                 ser.flushInput()
                 ser.write(b'AT+SBDIX\r') #start extended Iridium session (transmit)
-                sleep(5)
+                t.sleep(5)
                 ser.read(11)
                 r=ser.readline().decode().strip('\r\n')  #get command response in the form +SBDIX:<MO status>,<MOMSN>,<MT status>,<MTMSN>,<MT length>,<MT queued>
                 logger.info('response = {}'.format(r))
@@ -343,7 +343,7 @@ def transmit_ascii(ser,msg):
         ser.flushInput()
         logger.info('command = AT+SBDWT')
         ser.write(b'AT+SBDWT\r') #command to write text to modem buffer
-        sleep(0.25)
+        t.sleep(0.25)
     except serial.SerialException as e:
         logger.info('serial error: {}'.format(e))
         return False
@@ -356,7 +356,7 @@ def transmit_ascii(ser,msg):
         logger.info('response = READY')
         ser.flushInput()
         ser.write((msg + '\r').encode()) #pass bytes to modem. Must have carriage return
-        sleep(0.25)
+        t.sleep(0.25)
         logger.info('passing message to modem buffer')
         r=ser.read(msg_len+9).decode() #read response to get result code (0 for successful save in buffer or 1 for fail)
         if 'OK' in r:
@@ -367,7 +367,7 @@ def transmit_ascii(ser,msg):
                 logger.info('command = AT+SBDIX')
                 ser.flushInput()
                 ser.write(b'AT+SBDIX\r') #start extended Iridium session (transmit)
-                sleep(5)
+                t.sleep(5)
                 r=ser.read(36).decode()
                 if '+SBDIX: ' in r:
                     r=r[11:36] #get command response in the form +SBDIX:<MO status>,<MOMSN>,<MT status>,<MTMSN>,<MT length>,<MT queued>
@@ -441,7 +441,7 @@ def send_microSWIFT_50(payload_data):
     while t.time() <= tend:
     
         #initialize modem
-        ser, modem_initialized = init_modem()
+        ser, modem_initialized = initModem()
 
         if not modem_initialized:
             logger.info('Modem not initialized')
@@ -519,7 +519,7 @@ def send_microSWIFT_51(payload_data):
     while t.time() <= tend:
     
         #initialize modem
-        ser, modem_initialized = init_modem()
+        ser, modem_initialized = initModem()
 
         if not modem_initialized:
             logger.info('Modem not initialized')
@@ -566,26 +566,6 @@ def send_microSWIFT_51(payload_data):
     logger.info('powering down modem')    
     GPIO.output(modemGPIO,GPIO.LOW)
     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 def sendSBD(ser, payload_data, next_start):
