@@ -53,7 +53,7 @@ id = 0
 
 
 # Telemetry test functions
-def createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat, lon,  temp, volt):
+def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, lat, lon,  temp, volt):
 
     if payload_type != 7:
         logger.info('invalid payload type: {}'.format(payload_type))
@@ -437,8 +437,8 @@ def send_microSWIFT_50(payload_data):
     ordinal = ['first', 'second', 'third', 'fourth']
 
     
-    tend = time.time()+call_duration #get end time to stop attempting call
-    while time.time() <= tend:
+    tend = t.time()+call_duration #get end time to stop attempting call
+    while t.time() <= tend:
     
         #initialize modem
         ser, modem_initialized = init_modem()
@@ -453,7 +453,7 @@ def send_microSWIFT_50(payload_data):
         
         i=0
         signal=[]
-        while time.time() <= tend:
+        while t.time() <= tend:
             
             isignal = sig_qual(ser)
             if isignal < 0:
@@ -515,8 +515,8 @@ def send_microSWIFT_51(payload_data):
     payload_bytes0 = payload_data[index:248] #data bytes for packet
     packet0 = header + sub_header0 + payload_bytes0
     
-    tend = time.time()+call_duration #get end time to stop attempting call
-    while time.time() <= tend:
+    tend = t.time()+call_duration #get end time to stop attempting call
+    while t.time() <= tend:
     
         #initialize modem
         ser, modem_initialized = init_modem()
@@ -531,7 +531,7 @@ def send_microSWIFT_51(payload_data):
         
         i=0
         signal=[]
-        while time.time() <= tend:
+        while t.time() <= tend:
             
             isignal = sig_qual(ser)
             if isignal < 0:
@@ -606,7 +606,7 @@ def sendSBD(ser, payload_data, next_start):
     status = rockblock.satellite_transfer()
     now = datetime.utcnow().minute + datetime.utcnow().second/60
     while status[0] > sent_status_val and now < next_start:
-        time.sleep(10)
+        t.sleep(10)
         status = rockblock.satellite_transfer()
         logger.info('Retry number = {}'.format(retry))
         logger.info('status = {}'.format(status))
@@ -616,5 +616,6 @@ def sendSBD(ser, payload_data, next_start):
     if status[0] == 0:
         # Final print statement that it sent
         logger.info('Sent SBD successfully')
+
     else:
         logger.info('Could not send SBD')
