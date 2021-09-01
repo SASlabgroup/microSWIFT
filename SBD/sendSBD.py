@@ -13,7 +13,7 @@ import sys, os
 from utils.config3 import Config
 import numpy as np
 import RPi.GPIO as GPIO
-from time import sleep
+import time as t
 import serial
 
 #Define Config file name and load file
