@@ -436,11 +436,8 @@ def send_microSWIFT_50(payload_data, timeout):
     message = [packet0, packet1, packet2, packet3] #list of packets
     ordinal = ['first', 'second', 'third', 'fourth']
 
-    now = datetime.utcnow()
-    hour = now.hour
-    minute = now.minute + now.second/60
 
-    while datetime.utcnow().minute < timeout and datetime.hour == hour:  
+    while datetime.utcnow() < timeout:  
     
         #initialize modem
         ser, modem_initialized = initModem()
@@ -455,7 +452,7 @@ def send_microSWIFT_50(payload_data, timeout):
         
         i=0
         signal=[]
-        while t.time() <= tend:
+        while datetime.utcnow() <= timeout:
             
             isignal = sig_qual(ser)
             if isignal < 0:
@@ -470,25 +467,28 @@ def send_microSWIFT_50(payload_data, timeout):
                 
                 #attempt to transmit packets
                 for i in range(4):
-                    logger.info('Sending {} packet'.format(ordinal[i]))
+                    retry = 0
                     issent  = False
                     while issent == False:
+                        logger.info('Sending {} packet. Retry {}'.format(ordinal[i], retry))
                         issent  = transmit_bin(ser,message[i])            
-            
+                        retry += 1
                 #increment message counter for each completed message
                 if id >= 99:
                      id = 0
                 else:   
-                    id+=1 
-                      
+                    id+=1
+
+                # Final print statement that it sent
+                logger.info('Sent SBD successfully')      
                 #turn off modem
                 logger.info('Powering down modem')    
                 GPIO.output(modemGPIO,GPIO.LOW)
-                return
+                return 
             
 
     #turn off modem
-    logger.info('Send SBD timeout')
+    logger.info('Send SBD timeout. Message not sent')
     logger.info('powering down modem')    
     GPIO.output(modemGPIO,GPIO.LOW)
    
@@ -518,8 +518,7 @@ def send_microSWIFT_51(payload_data, timeout):
     payload_bytes0 = payload_data[index:248] #data bytes for packet
     packet0 = header + sub_header0 + payload_bytes0
     
-    tend = t.time()+call_duration #get end time to stop attempting call
-    while t.time() <= tend:
+    while datetime.utcnow() < timeout:
     
         #initialize modem
         ser, modem_initialized = initModem()
@@ -534,7 +533,7 @@ def send_microSWIFT_51(payload_data, timeout):
         
         i=0
         signal=[]
-        while t.time() <= tend:
+        while datetime.utcnow() < timeout:
             
             isignal = sig_qual(ser)
             if isignal < 0:
@@ -547,9 +546,26 @@ def send_microSWIFT_51(payload_data, timeout):
                 signal.clear() #clear signal values
                 i=0 #reset counter
                 
-                #attempt to transmit packet            
-                success = transmit_bin(ser,packet0)
-            
+                #attempt to transmit packets
+                retry = 0
+                issent  = False
+                while issent == False:
+                    logger.info('Sending packet. Retry {}'.format(retry))
+                    issent  = transmit_bin(ser, packet0)            
+                    retry += 1
+                #increment message counter for each completed message
+                if id >= 99:
+                     id = 0
+                else:   
+                    id+=1
+
+                # Final print statement that it sent
+                logger.info('Sent SBD successfully')      
+                #turn off modem
+                logger.info('Powering down modem')    
+                GPIO.output(modemGPIO,GPIO.LOW)
+                return 
+
                 if success == True: #increment message counter for each completed message
                     if id >= 99:
                          id = 0
