@@ -1,0 +1,16 @@
+[Install]
+WantedBy=multi-user.target
+
+[Unit]
+Description=microSWIFT wave buoy
+Documentation=https://github.com/alexdeklerk/microSWIFT/blob/main/README.md 
+
+
+[Service]
+Type=exec
+RestartSec=5
+Restart=always
+TimeoutStartSec=10
+TimoutStopSec=10
+KillMode=control-group
+ExecStart=/usr/bin/python3 /home/pi/microSWIFT/
