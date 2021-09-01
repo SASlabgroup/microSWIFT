@@ -113,13 +113,13 @@ if __name__=="__main__":
 
 	# --------------- Main Loop -------------------------
 	while True:
-		
-		now = datetime.datetime.utcnow().minute + datetime.datetime.utcnow().second/60
-		begin_script_time = datetime.datetime.now()
+
+		now = datetime.utcnow().minute + datetime.utcnow().second/60
+		begin_script_time = datetime.now()
 
 		## -------------- GPS and IMU Recording Section ---------------------------
 		# Time recording section
-		begin_recording_time = datetime.datetime.now()
+		begin_recording_time = datetime.now()
 
 		# Both IMU and GPS start as unititialized
 		recording_complete = False
@@ -151,7 +151,7 @@ if __name__=="__main__":
 			## --------------- Data Processing Section ---------------------------------
 			# Time processing section
 			logger.info('Starting Processing')
-			begin_processing_time = datetime.datetime.now()
+			begin_processing_time = datetime.now()
 
 			# Prioritize GPS processing
 			if gps_initialized==True:
@@ -220,7 +220,7 @@ if __name__=="__main__":
 			logger.info('v_mean = {}'.format(v_mean))
 
 			# End Timing of recording
-			logger.info('Processing section took {}'.format(datetime.datetime.now() - begin_processing_time))
+			logger.info('Processing section took {}'.format(datetime.now() - begin_processing_time))
 				
 			## -------------- Telemetry Section ----------------------------------
 			# Create TX file from processData.py output from combined wave products
@@ -246,7 +246,7 @@ if __name__=="__main__":
 			wait_count = 0
 
 			# End Timing of entire Script
-			logger.info('microSWIFT.py took {}'.format(datetime.datetime.now() - begin_script_time))
+			logger.info('microSWIFT.py took {}'.format(datetime.now() - begin_script_time))
 			logger.info('\n')
 		
 		else:
