@@ -27,7 +27,7 @@ Successfully merged all fixes/ bugs into microSWIFT.py-Centralized - 08/25/21
 import concurrent.futures
 import datetime
 import numpy as np
-import datetime
+from datetime import datetime, timedelta
 from logging import *
 import sys, os
 from time import sleep
@@ -45,6 +45,8 @@ from SBD.sendSBD import createTX
 from SBD.sendSBD import sendSBD
 from SBD.sendSBD import checkTX
 from SBD.sendSBD import initModem
+from SBD.sendSBD import send_microSWIFT_50
+from SBD.sendSBD import send_microSWIFT_51
 
 # Import Configuration functions
 from utils.config3 import Config
@@ -52,13 +54,13 @@ from utils.config3 import Config
 # Main body of microSWIFT.py
 if __name__=="__main__":
 
-	# Define Config file name and load file
+	#Define Config file name and load file
 	configFilename = r'utils/Config.dat'
 	config = Config() # Create object and load file
 	ok = config.loadFile( configFilename )
 	if( not ok ):
+		print("Error loading config file")
 		sys.exit(1)
-
 
 	# System Parameters
 	dataDir = config.getString('System', 'dataDir')
@@ -113,23 +115,29 @@ if __name__=="__main__":
 
 	# --------------- Main Loop -------------------------
 	while True:
-		
-		now = datetime.datetime.utcnow().minute + datetime.datetime.utcnow().second/60
-		begin_script_time = datetime.datetime.now()
+
+		now = datetime.utcnow()
+		current_min = datetime.utcnow().minute + datetime.utcnow().second/60
+		begin_script_time = datetime.now()
 
 		## -------------- GPS and IMU Recording Section ---------------------------
 		# Time recording section
-		begin_recording_time = datetime.datetime.now()
+		begin_recording_time = datetime.now()
 
 		# Both IMU and GPS start as unititialized
 		recording_complete = False
 
 		for i in np.arange(len(start_times)):
-			if now >= start_times[i] and now < end_times[i]: #Are we in a record window
+			if current_min >= start_times[i] and current_min < end_times[i]: #Are we in a record window
 
 				# Start time of loop iteration
 				logger.info('----------- Iteration {} -----------'.format(loop_count))
+				
+				end_time = end_times[i]
 
+				# Define next start time to enter into the sendSBD function:
+				next_start = now + timedelta(minutes=burst_int)
+				
 				# Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
 				with concurrent.futures.ThreadPoolExecutor() as executor:
 					# Submit Futures 
@@ -143,15 +151,14 @@ if __name__=="__main__":
 				#exit out of loop once burst is finished
 				recording_complete = True
 
-				# Compute the next start time of the recording 
-				next_start_time = start_times[i] + burst_int
+				
 				break
 
 		if recording_complete == True: 
 			## --------------- Data Processing Section ---------------------------------
 			# Time processing section
 			logger.info('Starting Processing')
-			begin_processing_time = datetime.datetime.now()
+			begin_processing_time = datetime.now()
 
 			# Prioritize GPS processing
 			if gps_initialized==True:
@@ -161,7 +168,7 @@ if __name__=="__main__":
 				u, v, z, lat, lon = GPStoUVZ(GPSdataFilename)
 
 				# Compute Wave Statistics from GPSwaves algorithm
-				Hs, Tp, Dp, E, f, a1, b1, a2, b2 = GPSwaves(u, v, z, GPS_fs)
+				Hs, Tp, Dp, E, f, a1, b1, a2, b2, check = GPSwaves(u, v, z, GPS_fs)
 
 			elif imu_initialized==True:
 				
@@ -220,33 +227,27 @@ if __name__=="__main__":
 			logger.info('v_mean = {}'.format(v_mean))
 
 			# End Timing of recording
-			logger.info('Processing section took {}'.format(datetime.datetime.now() - begin_processing_time))
+			logger.info('Processing section took {}'.format(datetime.now() - begin_processing_time))
 				
 			## -------------- Telemetry Section ----------------------------------
 			# Create TX file from processData.py output from combined wave products
 			logger.info('Creating TX file and packing payload data')
-			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, u_mean, v_mean, z_mean, lat_mean, lon_mean, temp, volt, configFilename)
+			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, lat_mean, lon_mean, temp, volt)
 
 			# Decode contents of TX file and print out as a check - will be removed in final versions
 			# checkTX(TX_fname)
 
-			# Initialize Iridium Modem
-			logger.info('Intializing Modem now')
-			ser, modem_initialized = initModem()
-
-			# Send SBD over telemetry
-			if modem_initialized == True:
-				logger.info('entering sendSBD function now')
-				sendSBD(ser, payload_data, next_start_time)
-			else:
-				logger.info('Modem did not initialize')
+			if sensor_type == 50:
+				send_microSWIFT_50(payload_data, next_start)
+			elif sensor_type == 51:
+				send_microSWIFT_51(payload_data, next_start)
 
 			# Increment up the loop counter
 			loop_count += 1
 			wait_count = 0
 
 			# End Timing of entire Script
-			logger.info('microSWIFT.py took {}'.format(datetime.datetime.now() - begin_script_time))
+			logger.info('microSWIFT.py took {}'.format(datetime.now() - begin_script_time))
 			logger.info('\n')
 		
 		else:
@@ -258,3 +259,19 @@ if __name__=="__main__":
 			continue
 			
 
+def _getuvzMean(badValue, pts):
+    mean = badValue     #set values to 999 initially and fill if valid values
+    index = np.where(pts != badValue)[0] #get index of non bad values
+    pts=pts[index] #take subset of data without bad values in it
+    
+    if(len(index) > 0):
+        mean = np.mean(pts)
+ 
+    return mean
+
+def _get_last(badValue, pts):
+    for i in range(1, len(pts)): #loop over entire lat/lon array
+        if pts[-i] != badValue: #count back from last point looking for a real position
+            return pts[-i]
+        
+    return badValue #returns badValue if no real position exists

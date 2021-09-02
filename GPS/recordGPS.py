@@ -19,15 +19,13 @@ from time import sleep
 # Raspberry pi GPIO
 import RPi.GPIO as GPIO
 
-# Import microSWIFT specific information
+#Define Config file name and load file
 from utils.config3 import Config
 configFilename = r'utils/Config.dat'
-
-
-# Configuration
 config = Config() # Create object and load file
 ok = config.loadFile( configFilename )
 if( not ok ):
+    print("Error loading config file")
     sys.exit(1)
 
 # Set up module level logger

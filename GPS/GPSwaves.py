@@ -95,8 +95,9 @@ def GPSwaves(u, v, z, fs):
         b1 = 999 * np.ones(42)
         a2 = 999 * np.ones(42)
         b2 = 999 * np.ones(42)
+        check = 999 * np.ones(42)
         # Return values and exit
-        return Hs, Tp, Dp, E, f, a1, b1, a2, b2
+        return Hs, Tp, Dp, E, f, a1, b1, a2, b2, check
 
     # --------------- Detrend and High Pass Filter -------------
     u = demean(u)
@@ -349,6 +350,6 @@ def GPSwaves(u, v, z, fs):
     b2 = np.delete(b2, ind_to_delete)
     check = np.delete(check, ind_to_delete)
     f = np.delete(f, ind_to_delete)
-
+    
     # Return values
-    return Hs, Tp, Dp, E, f, a1, b1, a2, b2
+    return Hs, Tp, Dp, E, f, a1, b1, a2, b2, check
