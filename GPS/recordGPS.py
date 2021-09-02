@@ -21,7 +21,7 @@ import RPi.GPIO as GPIO
 
 #Define Config file name and load file
 from utils.config3 import Config
-configFilename = r'utils/Config.dat'
+configFilename = r'/home/pi/microSWIFT/utils/Config.dat'
 config = Config() # Create object and load file
 ok = config.loadFile( configFilename )
 if( not ok ):

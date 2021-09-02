@@ -23,7 +23,7 @@ import IMU.adafruit_fxas21002c_microSWIFT
 
 # Configuration imports
 from utils.config3 import Config
-configFilename = r'utils/Config.dat'
+configFilename = r'/home/pi/microSWIFT/utils/Config.dat'
 
 # System and logging parameters
 config = Config() # Create object and load file

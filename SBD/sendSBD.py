@@ -17,7 +17,7 @@ import time as t
 import serial
 
 #Define Config file name and load file
-configFilename = r'utils/Config.dat'
+configFilename = r'/home/pi/microSWIFT/utils/Config.dat'
 config = Config() # Create object and load file
 ok = config.loadFile( configFilename )
 if( not ok ):
