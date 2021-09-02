@@ -99,29 +99,35 @@ def GPSwaves(u, v, z, fs):
         return Hs, Tp, Dp, E, f, a1, b1, a2, b2
 
     # --------------- Detrend and High Pass Filter -------------
-    # u = signal.detrend(u)
-    # v = signal.detrend(v)
-    # z = signal.detrend(z)
     u = demean(u)
     v = demean(v)
     z = demean(z)
 
-    # Define alpha for filter
-    alpha = RC / (RC + 1/fs)
+    # New High-pass filter - from https://tomroelandts.com/articles/how-to-create-a-simple-high-pass-filter
+    ## https://fiiir.com/
 
-    # Filter each signal
-    ufiltered = u.copy()
-    vfiltered = v.copy()
-    zfiltered = z.copy()
-    for i in np.arange(1, len(u)):
-        ufiltered[i] = alpha * ufiltered[i-1] + alpha * ( u[i] - u[i-1] )
-        vfiltered[i] = alpha * vfiltered[i-1] + alpha * ( v[i] - v[i-1] )
-        zfiltered[i] = alpha * zfiltered[i-1] + alpha * ( z[i] - z[i-1] )
+    # Configuration.
+    fS = fs  # Sampling rate.
+    fH = 0.05  # Cutoff frequency.
+    N = 207 # Filter length, must be odd.
 
-    # Redefine the values as the filtered values
-    u = ufiltered.copy()
-    v = vfiltered.copy()
-    z = zfiltered.copy()
+    # Compute sinc filter.
+    h = np.sinc(2 * fH / fS * (np.arange(N) - (N - 1) / 2))
+
+    # Apply window.
+    h *= np.hamming(N)
+
+    # Normalize to get unity gain.
+    h /= np.sum(h)
+
+    # Create a high-pass filter from the low-pass filter through spectral inversion.
+    h = -h
+    h[(N - 1) // 2] += 1
+
+    # Filter Each signal
+    u = np.convolve(u, h)
+    v = np.convolve(v, h)
+    z = np.convolve(z, h)
 
     # ---------------- Break Data into Windows ------------------
     # Windows have 75% Overlap 
