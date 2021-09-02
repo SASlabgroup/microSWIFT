@@ -45,8 +45,8 @@ from SBD.sendSBD import createTX
 from SBD.sendSBD import sendSBD
 from SBD.sendSBD import checkTX
 from SBD.sendSBD import initModem
-from SBD.sendSBD import send_microSWIFT50
-from SBD.sendSBD import send_microSWIFT51
+from SBD.sendSBD import send_microSWIFT_50
+from SBD.sendSBD import send_microSWIFT_51
 
 # Import Configuration functions
 from utils.config3 import Config
@@ -238,9 +238,9 @@ if __name__=="__main__":
 			# checkTX(TX_fname)
 
 			if sensor_type == 50:
-				send_microSWIFT50(payload_data, next_start)
+				send_microSWIFT_50(payload_data, next_start)
 			elif sensor_type == 51:
-				send_microSWIFT51(payload_data, next_start)
+				send_microSWIFT_51(payload_data, next_start)
 
 			# Increment up the loop counter
 			loop_count += 1
