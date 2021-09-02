@@ -469,10 +469,17 @@ def send_microSWIFT_50(payload_data, timeout):
                 for i in range(4):
                     retry = 0
                     issent  = False
-                    while issent == False and datetime.utcnow() < timeout:
-                        logger.info('Sending {} packet. Retry {}'.format(ordinal[i], retry))
-                        issent  = transmit_bin(ser,message[i])            
-                        retry += 1
+                    while issent == False:
+                        if datetime.utcnow() < timeout:
+                            logger.info('Sending {} packet. Retry {}'.format(ordinal[i], retry))
+                            issent  = transmit_bin(ser,message[i])            
+                            retry += 1
+                        else:
+                            logger.info('Send SBD timeout. Message not sent')
+                            #turn off modem
+                            logger.info('Powering down modem')    
+                            GPIO.output(modemGPIO,GPIO.LOW)
+                            return 
                 #increment message counter for each completed message
                 if id >= 99:
                      id = 0
