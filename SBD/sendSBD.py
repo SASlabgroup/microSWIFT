@@ -469,7 +469,7 @@ def send_microSWIFT_50(payload_data, timeout):
                 for i in range(4):
                     retry = 0
                     issent  = False
-                    while issent == False:
+                    while issent == False and datetime.utcnow() < timeout:
                         logger.info('Sending {} packet. Retry {}'.format(ordinal[i], retry))
                         issent  = transmit_bin(ser,message[i])            
                         retry += 1
@@ -549,13 +549,13 @@ def send_microSWIFT_51(payload_data, timeout):
                 #attempt to transmit packets
                 retry = 0
                 issent  = False
-                while issent == False:
+                while issent == False and datetime.utcnow() < timeout:
                     logger.info('Sending packet. Retry {}'.format(retry))
                     issent  = transmit_bin(ser, packet0)            
                     retry += 1
                 #increment message counter for each completed message
                 if id >= 99:
-                     id = 0
+                    id = 0
                 else:   
                     id+=1
 
@@ -564,24 +564,13 @@ def send_microSWIFT_51(payload_data, timeout):
                 #turn off modem
                 logger.info('Powering down modem')    
                 GPIO.output(modemGPIO,GPIO.LOW)
-                return 
-
-                if success == True: #increment message counter for each completed message
-                    if id >= 99:
-                         id = 0
-                    else:   
-                        id+=1 
-                      
-                    #turn off modem
-                    logger.info('Powering down modem')    
-                    GPIO.output(modemGPIO,GPIO.LOW)
-                    return
+                return   
              
-                else: 
-                    continue
+            else: 
+                continue
  
     #turn off modem
-    logger.info('Send SBD timeout')
+    logger.info('Send SBD timeout. Message not sent')
     logger.info('powering down modem')    
     GPIO.output(modemGPIO,GPIO.LOW)
     

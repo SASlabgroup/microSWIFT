@@ -45,6 +45,8 @@ from SBD.sendSBD import createTX
 from SBD.sendSBD import sendSBD
 from SBD.sendSBD import checkTX
 from SBD.sendSBD import initModem
+from SBD.sendSBD import send_microSWIFT50
+from SBD.sendSBD import send_microSWIFT51
 
 # Import Configuration functions
 from utils.config3 import Config
@@ -235,16 +237,10 @@ if __name__=="__main__":
 			# Decode contents of TX file and print out as a check - will be removed in final versions
 			# checkTX(TX_fname)
 
-			# Initialize Iridium Modem
-			logger.info('Intializing Modem now')
-			ser, modem_initialized = initModem()
-
-			# Send SBD over telemetry
-			if modem_initialized == True:
-				logger.info('entering sendSBD function now')
-				sendSBD(ser, payload_data, next_start_time)
-			else:
-				logger.info('Modem did not initialize')
+			if sensor_type == 50:
+				send_microSWIFT50(payload_data, next_start)
+			elif sensor_type == 51:
+				send_microSWIFT51(payload_data, next_start)
 
 			# Increment up the loop counter
 			loop_count += 1
