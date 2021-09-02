@@ -344,7 +344,7 @@ def GPSwaves(u, v, z, fs):
     check = np.delete(check, ind_to_delete)
     f = np.delete(f, ind_to_delete)
 
-    print(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check)
-    
+    logger.info('Hs = {}, Tp ={}, Dp = {}, E {}, f = {}, a1 = {}, b1 = {}, a2 = {}, b2 = {}, check = {}'. format( Hs, Tp, Dp, E, f, a1, b1, a2, b2, check))
+
     # Return values
     return Hs, Tp, Dp, E, f, a1, b1, a2, b2, check
