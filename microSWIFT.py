@@ -55,7 +55,7 @@ from utils.config3 import Config
 if __name__=="__main__":
 
 	#Define Config file name and load file
-	configFilename = r'utils/Config.dat'
+	configFilename = r'/home/pi/microSWIFT/utils/Config.dat'
 	config = Config() # Create object and load file
 	ok = config.loadFile( configFilename )
 	if( not ok ):
