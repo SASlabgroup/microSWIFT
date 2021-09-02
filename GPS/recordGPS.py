@@ -141,8 +141,8 @@ def recordGPS(end_time):
                                         logger.info('error parsing nmea sentence')
                                         continue
                 t.sleep(1)
-            #if loop times out
-            logger.info('GPS failed to initialize, timeout')
+            if gps_initialized == False:
+                logger.info('GPS failed to initialize, timeout')
         except Exception as e:
             logger.info('GPS failed to initialize')
             logger.info(e)
