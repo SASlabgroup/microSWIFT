@@ -297,8 +297,8 @@ def transmit_bin(ser,msg):
                 
                 if '+SBDIX: ' in r:
                     r=r.strip('+SBDIX:').split(', ')
-                    #interpret response and check MO status code (0=success)
-                    if int(r[0]) == 0:
+                    #interpret response and check MO status code (0=success, 2=success but no location update). See ISU AT Command ref page 96.
+                    if int(r[0]) == 0 or int(r[0]) == 2:
                         logger.info('Message send success')
                         return True
                     else:
