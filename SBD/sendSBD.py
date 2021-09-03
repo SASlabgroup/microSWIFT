@@ -522,7 +522,7 @@ def send_microSWIFT_51(payload_data, timeout):
     #packet to send
     header = str(packet_type).encode('ascii') #packet type as as ascii number
     sub_header0 = str(','+str(id)+','+str(index)+','+str(payload_size)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
-    payload_bytes0 = payload_data[index:248] #data bytes for packet
+    payload_bytes0 = payload_data[index:249] #data bytes for packet
     packet0 = header + sub_header0 + payload_bytes0
     
     while datetime.utcnow() < timeout:
