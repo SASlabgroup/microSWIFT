@@ -580,6 +580,7 @@ def send_microSWIFT_51(payload_data, timeout):
     logger.info('Send SBD timeout. Message not sent')
     logger.info('powering down modem')    
     GPIO.output(modemGPIO,GPIO.LOW)
+    return
     
 
 
