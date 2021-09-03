@@ -161,7 +161,7 @@ def recordGPS(end_time):
                     logger.info('open file for writing: %s' %GPSdataFilename)
                     ipos=0
                     ivel=0
-                    while t.time() <= end_time or ipos < gps_samples or ivel < gps_samples:
+                    while datetime.utcnow().minute + datetime.utcnow().second/60 <= end_time:
                         newline=ser.readline().decode()
                         gps_out.write(newline)
                         gps_out.flush()
