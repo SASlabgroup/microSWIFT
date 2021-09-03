@@ -116,7 +116,6 @@ if __name__=="__main__":
 	# --------------- Main Loop -------------------------
 	while True:
 
-		now = datetime.utcnow()
 		current_min = datetime.utcnow().minute + datetime.utcnow().second/60
 		begin_script_time = datetime.now()
 
@@ -136,7 +135,8 @@ if __name__=="__main__":
 				end_time = end_times[i]
 
 				# Define next start time to enter into the sendSBD function:
-				next_start = now + timedelta(minutes=burst_int)
+				current_start = datetime.utcnow().year + datetime.utcnow().month + datetime.utcnow().day + datetime.utcnow().hour + start_times[i]
+				next_start = current_start + timedelta(minutes=burst_int)
 				
 				# Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
 				with concurrent.futures.ThreadPoolExecutor() as executor:
