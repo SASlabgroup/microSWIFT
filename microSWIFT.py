@@ -135,7 +135,7 @@ if __name__=="__main__":
 				end_time = end_times[i]
 
 				# Define next start time to enter into the sendSBD function:
-				current_start = datetime.utcnow().year + datetime.utcnow().month + datetime.utcnow().day + datetime.utcnow().hour + start_times[i]
+				current_start = datetime.utcnow().year + datetime.utcnow().month + datetime.utcnow().day + datetime.utcnow().hour + timedelta(minutes=start_times[i])
 				next_start = current_start + timedelta(minutes=burst_int)
 				
 				# Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
