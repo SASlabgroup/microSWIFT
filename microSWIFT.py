@@ -183,12 +183,12 @@ if __name__=="__main__":
 				Hs = 999
 				Tp = 999
 				Dp = 999
-				E = 999
-				f = 999
-				a1 = 999
-				b1 = 999
-				a2 = 999
-				b2 = 999 
+				E = 999 * np.ones(42)
+				f = 999 * np.ones(42)
+				a1 = 999 * np.ones(42)
+				b1 = 999 * np.ones(42)
+				a2 = 999 * np.ones(42) 
+				b2 = 999 * np.ones(42)
 			
 			else:
 				logger.info('Neither GPS or IMU initialized - entering bad values')
@@ -201,12 +201,12 @@ if __name__=="__main__":
 				Hs = 999
 				Tp = 999
 				Dp = 999
-				E = 999
-				f = 999
-				a1 = 999
-				b1 = 999
-				a2 = 999
-				b2 = 999 
+				E = 999 * np.ones(42)
+				f = 999 * np.ones(42)
+				a1 = 999 * np.ones(42)
+				b1 = 999 * np.ones(42)
+				a2 = 999 * np.ones(42) 
+				b2 = 999 * np.ones(42)
 
 			# Compute mean velocities, elevation, lat and lon
 			u_mean = np.nanmean(u)
