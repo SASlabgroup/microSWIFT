@@ -13,4 +13,4 @@ Restart=always
 TimeoutStartSec=10
 TimoutStopSec=10
 KillMode=control-group
-ExecStart=/usr/bin/python3 /home/pi/microSWIFT/microSWIFT.py
+ExecStart=/usr/bin/python3 /home/pi/microSWIFT/microSWIFT.py 2>&1 > /home/pi/microSWIFT/errors.out
