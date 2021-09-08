@@ -90,8 +90,7 @@ def recordGPS(end_time):
         #read lines from GPS serial port and wait for fix
         try:
             #loop until timeout dictated by gps_timeout value (seconds) or the gps is initialized
-            timeout=t.time() + gps_timeout
-            while t.time() < timeout and gps_initialized==False:
+            while datetime.utcnow().minute + datetime.utcnow().second/60 < end_time and gps_initialized==False:
                 ser.flushInput()
                 ser.read_until('\n'.encode())
                 newline=ser.readline().decode('utf-8')
@@ -147,64 +146,64 @@ def recordGPS(end_time):
             logger.info('GPS failed to initialize')
             logger.info(e)
 
-        ## ------------- Record GPS ---------------------------
-        # If GPS signal is initialized start recording
-        if gps_initialized:
-            #create file name
-            GPSdataFilename = dataDir + floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
-            logger.info("file name: {}".format(GPSdataFilename))
+    ## ------------- Record GPS ---------------------------
+    # If GPS signal is initialized start recording
+    if gps_initialized:
+        #create file name
+        GPSdataFilename = dataDir + floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
+        logger.info("file name: {}".format(GPSdataFilename))
 
-            logger.info('starting GPS burst')
-            try:
-                ser.flushInput()
-                with open(GPSdataFilename, 'w',newline='\n') as gps_out:
-                    logger.info('open file for writing: %s' %GPSdataFilename)
-                    ipos=0
-                    ivel=0
-                    while datetime.utcnow().minute + datetime.utcnow().second/60 <= end_time:
-                        newline=ser.readline().decode()
-                        gps_out.write(newline)
-                        gps_out.flush()
-                
-                        if "GPGGA" in newline:
-                            gpgga = pynmea2.parse(newline,check=True)   #grab gpgga sentence and parse
-                            #check to see if we have lost GPS fix, and if so, continue to loop start. a badValue will remain at this index
-                            if gpgga.gps_qual < 1:
-                                logger.info('lost GPS fix, sample not recorded. Waiting 10 seconds')
-                                logger.info('lost GPS fix, sample not recorded. Waiting 10 seconds')
-                                sleep(10)
-                                ipos+=1
-                                continue
+        logger.info('starting GPS burst')
+        try:
+            ser.flushInput()
+            with open(GPSdataFilename, 'w',newline='\n') as gps_out:
+                logger.info('open file for writing: %s' %GPSdataFilename)
+                ipos=0
+                ivel=0
+                while datetime.utcnow().minute + datetime.utcnow().second/60 <= end_time:
+                    newline=ser.readline().decode()
+                    gps_out.write(newline)
+                    gps_out.flush()
+            
+                    if "GPGGA" in newline:
+                        gpgga = pynmea2.parse(newline,check=True)   #grab gpgga sentence and parse
+                        #check to see if we have lost GPS fix, and if so, continue to loop start. a badValue will remain at this index
+                        if gpgga.gps_qual < 1:
+                            logger.info('lost GPS fix, sample not recorded. Waiting 10 seconds')
+                            logger.info('lost GPS fix, sample not recorded. Waiting 10 seconds')
+                            sleep(10)
                             ipos+=1
-                        elif "GPVTG" in newline:
-                            ivel+=1
-                        
-                        # If the number of position and velocity samples is enough then and the loop
-                        if ipos == gps_samples and ivel == gps_samples:
-                            break
-                        else:
                             continue
-                    # Output logger information on samples
-                    logger.info('Ending GPS burst at {}'.format(datetime.now()))
-                    logger.info('number of GPGGA samples = {}'.format(ipos))
-                    logger.info('number of GPVTG samples = {}'.format(ivel))
+                        ipos+=1
+                    elif "GPVTG" in newline:
+                        ivel+=1
+                    
+                    # If the number of position and velocity samples is enough then and the loop
+                    if ipos == gps_samples and ivel == gps_samples:
+                        break
+                    else:
+                        continue
+                # Output logger information on samples
+                logger.info('Ending GPS burst at {}'.format(datetime.now()))
+                logger.info('number of GPGGA samples = {}'.format(ipos))
+                logger.info('number of GPVTG samples = {}'.format(ivel))
 
-            except Exception as e:
-                logger.info(e, exc_info=True)
+        except Exception as e:
+            logger.info(e, exc_info=True)
 
-            # Output logger information on samples
-            logger.info('Ending GPS burst at {}'.format(datetime.now()))
-            logger.info('number of GPGGA samples = {}'.format(ipos))
-            logger.info('number of GPVTG samples = {}'.format(ivel))
-            return GPSdataFilename, gps_initialized
+        # Output logger information on samples
+        logger.info('Ending GPS burst at {}'.format(datetime.now()))
+        logger.info('number of GPGGA samples = {}'.format(ipos))
+        logger.info('number of GPVTG samples = {}'.format(ivel))
+        return GPSdataFilename, gps_initialized
 
-        # If GPS signal is not initialized exit 
-        else:
-            logger.info("GPS not initialized, exiting")
+    # If GPS signal is not initialized exit 
+    else:
+        logger.info("GPS not initialized, exiting")
 
-            #create file name but it is a placeholder
-            GPSdataFilename = ''
+        #create file name but it is a placeholder
+        GPSdataFilename = ''
 
-            # Return the GPS filename to be read into the onboard processing
-            return GPSdataFilename, gps_initialized
+        # Return the GPS filename to be read into the onboard processing
+        return GPSdataFilename, gps_initialized
 
