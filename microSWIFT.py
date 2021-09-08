@@ -189,6 +189,8 @@ if __name__=="__main__":
 				b1 = 999 * np.ones(42)
 				a2 = 999 * np.ones(42) 
 				b2 = 999 * np.ones(42)
+				check = 999 * np.ones(42)
+
 			
 			else:
 				logger.info('Neither GPS or IMU initialized - entering bad values')
@@ -207,6 +209,7 @@ if __name__=="__main__":
 				b1 = 999 * np.ones(42)
 				a2 = 999 * np.ones(42) 
 				b2 = 999 * np.ones(42)
+				check = 999 * np.ones(42)
 
 			# Compute mean velocities, elevation, lat and lon
 			u_mean = np.nanmean(u)
