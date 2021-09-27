@@ -69,13 +69,13 @@ payloadType=7
 badValue=999
 
 #length of burst in seconds
-burst_seconds=600
+burst_seconds=3000
 
 #minute of the hour on which to start the burst
 burst_time=0
 
 #number of minutes between bursts (12=5x6, 15=4x6, 20=3x6, 30=2x6, 60=1x6)
-burst_interval=20
+burst_interval=60
 
 port=6
 numCoef=42
