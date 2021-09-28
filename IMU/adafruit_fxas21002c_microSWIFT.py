@@ -161,7 +161,7 @@ class FXAS21002C:
     @property
     def gyroscope(self):
         """Read the gyroscope value and return its X, Y, Z axis values as a
-        3-tuple in radians/second.
+        3-tuple in degrees/second.
         """
         raw = self.read_raw()
         # Compensate values depending on the resolution
