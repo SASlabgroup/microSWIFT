@@ -229,9 +229,9 @@ if __name__=="__main__":
 				check = 999 * np.ones(42)
 
 			# Compute mean velocities, elevation, lat and lon
-			u_mean = np.nanmean(_get_uvzmean(badValue,u))
-			v_mean = np.nanmean(_get_uvzmean(badValue,v))
-			z_mean = np.nanmean(_get_uvzmean(badValue,z))
+			u_mean = np.nanmean(u)
+			v_mean = np.nanmean(v)
+			z_mean = np.nanmean(z)
 		
 			#Get last reported position
 			last_lat = _get_last(badValue, lat)
