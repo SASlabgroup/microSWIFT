@@ -51,7 +51,7 @@ from SBD.sendSBD import send_microSWIFT_51
 # Import Configuration functions
 from utils.config3 import Config
 
-def _getuvzMean(badValue, pts):
+def _get_uvzmean(badValue, pts):
     mean = badValue     #set values to 999 initially and fill if valid values
     index = np.where(pts != badValue)[0] #get index of non bad values
     pts=pts[index] #take subset of data without bad values in it
@@ -229,9 +229,9 @@ if __name__=="__main__":
 				check = 999 * np.ones(42)
 
 			# Compute mean velocities, elevation, lat and lon
-			u_mean = np.nanmean(_getuvzMean(badValue,u))
-			v_mean = np.nanmean(_getuvzMean(badValue,v))
-			z_mean = np.nanmean(_getuvzMean(badValue,z))
+			u_mean = np.nanmean(_get_uvzmean(badValue,u))
+			v_mean = np.nanmean(_get_uvzmean(badValue,v))
+			z_mean = np.nanmean(_get_uvzmean(badValue,z))
 		
 			#Get last reported position
 			last_lat = _get_last(badValue, lat)
