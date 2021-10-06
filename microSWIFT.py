@@ -232,11 +232,8 @@ if __name__=="__main__":
 			u_mean = np.nanmean(u)
 			v_mean = np.nanmean(v)
 			z_mean = np.nanmean(z)
-		
-			#Get last reported position
-			last_lat = _get_last(badValue, lat)
-			last_lon = _get_last(badValue, lon)
-
+			lat_mean = np.nanmean(lat)
+			lon_mean = np.nanmean(lon)
 
 			# Temperature and Voltage recordings - will be added in later versions
 			temp = 0
@@ -255,7 +252,7 @@ if __name__=="__main__":
 			## -------------- Telemetry Section ----------------------------------
 			# Create TX file from processData.py output from combined wave products
 			logger.info('Creating TX file and packing payload data')
-			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt)
+			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, lat_mean, lon_mean, temp, volt)
 
 			# Decode contents of TX file and print out as a check - will be removed in final versions
 			# checkTX(TX_fname)
