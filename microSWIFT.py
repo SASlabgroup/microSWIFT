@@ -51,6 +51,23 @@ from SBD.sendSBD import send_microSWIFT_51
 # Import Configuration functions
 from utils.config3 import Config
 
+def _getuvzMean(badValue, pts):
+    mean = badValue     #set values to 999 initially and fill if valid values
+    index = np.where(pts != badValue)[0] #get index of non bad values
+    pts=pts[index] #take subset of data without bad values in it
+    
+    if(len(index) > 0):
+        mean = np.mean(pts)
+ 
+    return mean
+
+def _get_last(badValue, pts):
+    for i in range(1, len(pts)): #loop over entire lat/lon array
+        if pts[-i] != badValue: #count back from last point looking for a real position
+            return pts[-i]
+        
+    return badValue #returns badValue if no real position exists
+
 # Main body of microSWIFT.py
 if __name__=="__main__":
 
@@ -212,12 +229,14 @@ if __name__=="__main__":
 				check = 999 * np.ones(42)
 
 			# Compute mean velocities, elevation, lat and lon
-			u_mean = np.nanmean(u)
-			v_mean = np.nanmean(v)
-			z_mean = np.nanmean(z)
+			u_mean = np.nanmean(_getuvzMean(badValue,u))
+			v_mean = np.nanmean(_getuvzMean(badValue,v))
+			z_mean = np.nanmean(_getuvzMean(badValue,z))
+		
 			#Get last reported position
 			last_lat = _get_last(badValue, lat)
 			last_lon = _get_last(badValue, lon)
+
 
 			# Temperature and Voltage recordings - will be added in later versions
 			temp = 0
@@ -262,20 +281,3 @@ if __name__=="__main__":
 				logger.info('Waiting to enter record window')
 			continue
 			
-
-def _getuvzMean(badValue, pts):
-    mean = badValue     #set values to 999 initially and fill if valid values
-    index = np.where(pts != badValue)[0] #get index of non bad values
-    pts=pts[index] #take subset of data without bad values in it
-    
-    if(len(index) > 0):
-        mean = np.mean(pts)
- 
-    return mean
-
-def _get_last(badValue, pts):
-    for i in range(1, len(pts)): #loop over entire lat/lon array
-        if pts[-i] != badValue: #count back from last point looking for a real position
-            return pts[-i]
-        
-    return badValue #returns badValue if no real position exists
