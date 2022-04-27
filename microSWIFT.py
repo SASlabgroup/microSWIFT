@@ -130,6 +130,10 @@ if __name__=="__main__":
 	loop_count = 1
 	wait_count = 0
 
+	# Initialize the Telemetry Queue - create file and then close for thread protection
+	telemetyQueue = open('telemetryQueue.txt','w+')
+	telemetyQueue.close()
+
 	# --------------- Main Loop -------------------------
 	while True:
 
@@ -257,13 +261,25 @@ if __name__=="__main__":
 			logger.info('Creating TX file and packing payload data')
 			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt)
 
-			# Decode contents of TX file and print out as a check - will be removed in final versions
-			# checkTX(TX_fname)
+			# Add the payload data to the end of the queue
+			telemetyQueue = open('telemetryQueue.txt','w+')
+			telemetyQueue.write('\n') # Add a new line
+			telemetyQueue.write(payload_data) # write the most recent 
 
-			if sensor_type == 50:
-				send_microSWIFT_50(payload_data, next_start)
-			elif sensor_type == 51:
-				send_microSWIFT_51(payload_data, next_start)
+			# Send as many payloads as possible from the queue in FIFO order
+			payloads = telemetyQueue.readlines()
+			messages_sent = 0
+			for payload in payloads:
+				# send either payload type 50 or 51
+				if sensor_type == 50:
+					send_microSWIFT_50(payload, next_start)
+				elif sensor_type == 51:
+					send_microSWIFT_51(payload, next_start)
+				
+				# 
+
+			# Remove lines of messages that were sent and close the telemetry queue
+			
 
 			# Increment up the loop counter
 			loop_count += 1
