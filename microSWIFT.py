@@ -131,7 +131,7 @@ if __name__=="__main__":
 	wait_count = 0
 
 	# Initialize the Telemetry Queue - create file and then close for thread protection
-	telemetyQueue = open('telemetryQueue.txt','w+')
+	telemetyQueue = open('./telemetryQueue.txt','w+')
 	telemetyQueue.close()
 	logger.info('Created Telemetry Queue')
 
