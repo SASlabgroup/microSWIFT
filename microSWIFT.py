@@ -133,6 +133,7 @@ if __name__=="__main__":
 	# Initialize the Telemetry Queue - create file and then close for thread protection
 	telemetyQueue = open('telemetryQueue.txt','w+')
 	telemetyQueue.close()
+	logger.info('Created Telemetry Queue')
 
 	# --------------- Main Loop -------------------------
 	while True:
@@ -279,7 +280,7 @@ if __name__=="__main__":
 				# 
 
 			# Remove lines of messages that were sent and close the telemetry queue
-			
+
 
 			# Increment up the loop counter
 			loop_count += 1
