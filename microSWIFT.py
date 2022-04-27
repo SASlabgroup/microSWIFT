@@ -131,8 +131,7 @@ if __name__=="__main__":
 	wait_count = 0
 
 	# Initialize the Telemetry Queue - create file and then close for thread protection
-	with open('/home/pi/microSWIFT/telemetryQueue.txt','w+') as telemetryQueue:
-		# telemetryQueue.write('yay this is me the queue')
+	with open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','w+') as telemetryQueue:
 		telemetryQueue.close()
 	logger.info('Created Telemetry Queue')
 
