@@ -132,7 +132,7 @@ if __name__=="__main__":
 
 	# Initialize the Telemetry Queue - create file and then close for thread protection
 	with open('/home/pi/microSWIFT/telemetryQueue.txt','w+') as telemetryQueue:
-		telemetryQueue.write('yay this is me the queue')
+		# telemetryQueue.write('yay this is me the queue')
 		telemetryQueue.close()
 	logger.info('Created Telemetry Queue')
 
