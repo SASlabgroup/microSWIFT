@@ -31,6 +31,7 @@ from datetime import datetime, timedelta
 from logging import *
 import sys, os
 from time import sleep
+import struct
 
 # Import GPS functions
 from GPS.recordGPS import recordGPS
@@ -274,15 +275,19 @@ if __name__=="__main__":
 			payloads = telemetyQueue.readlines()
 			messages_sent = 0
 			for payload in payloads:
+				# Check the payload to make sure that it is reading in correctly 
+				data = struct.unpack('<sbbhfff42fffffffffffiiiiii', payload)
+				logger.info('data = {}'.format(data))
+
 				# send either payload type 50 or 51
 				if sensor_type == 50:
 					send_microSWIFT_50(payload[:-1], next_start)
 				elif sensor_type == 51:
 					send_microSWIFT_51(payload[:-1], next_start)
-				
-				# 
+				# Index up the messages sent value
+				messages_sent += 1
 
-			# Remove lines of messages that were sent and close the telemetry queue
+			# Remove lines of messages that were sent based on messages sent count
 
 
 			# Increment up the loop counter
