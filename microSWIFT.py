@@ -202,8 +202,8 @@ if __name__=="__main__":
 				u = 999
 				v = 999
 				z = 999
-				lat = 999 * np.ones(5)
-				lon = 999 * np.ones(5)
+				lat = [999]
+				lon = [999]
 				Hs = 999
 				Tp = 999
 				Dp = 999
