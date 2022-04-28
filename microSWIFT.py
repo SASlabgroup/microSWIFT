@@ -236,7 +236,6 @@ if __name__=="__main__":
 				check = 999 * np.ones(42)
 
 			# Compute mean velocities, elevation, lat and lon
-			logger.info('I made it to here')
 			u_mean = np.nanmean(u)
 			v_mean = np.nanmean(v)
 			z_mean = np.nanmean(z)
@@ -244,8 +243,6 @@ if __name__=="__main__":
 			#Get last reported position
 			last_lat = _get_last(badValue, lat)
 			last_lon = _get_last(badValue, lon)
-			logger.info('I made it to here')
-
 
 			# Temperature and Voltage recordings - will be added in later versions
 			temp = 0
@@ -267,10 +264,12 @@ if __name__=="__main__":
 			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt)
 
 			# Append the payload data to the end of the queue
+			logger.info('Adding payload to Queue')
 			telemetyQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.bin','ab')
 			telemetyQueue.write(payload_data) # write the most recent 
 			telemetyQueue.write('\n'.encode('utf-8')) # Add a new line to the binary queue
 			telemetryQueue.close()
+			logger.info('Payload added to Queue')
 
 			# Send as many payloads as possible from the queue in FIFO order
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.bin','rb')
