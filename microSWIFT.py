@@ -53,18 +53,18 @@ from SBD.sendSBD import send_microSWIFT_51
 from utils.config3 import Config
 
 def _get_uvzmean(badValue, pts):
-    mean = badValue     #set values to 999 initially and fill if valid values
+    mean = badValue     #set values to 999 initially and fill if valid value
     index = np.where(pts != badValue)[0] #get index of non bad values
     pts=pts[index] #take subset of data without bad values in it
     
-    if(len(index) > 0):
+	if(len(index) > 0):
         mean = np.mean(pts)
- 
-    return mean
+    
+	return mean
 
 def _get_last(badValue, pts):
     for i in range(1, len(pts)): #loop over entire lat/lon array
-        if pts[-i] != badValue: #count back from last point looking for a real position
+		if pts[-i] != badValue: #count back from last point looking for a real position
             return pts[-i]
         
     return badValue #returns badValue if no real position exists
@@ -202,8 +202,8 @@ if __name__=="__main__":
 				u = 999
 				v = 999
 				z = 999
-				lat = 999
-				lon = 999
+				lat = 999 * np.ones(5)
+				lon = 999 * np.ones(5)
 				Hs = 999
 				Tp = 999
 				Dp = 999
