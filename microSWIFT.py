@@ -131,8 +131,9 @@ if __name__=="__main__":
 	wait_count = 0
 
 	# Initialize the Telemetry Queue - create file and then close for thread protection
-	with open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','w+') as telemetryQueue:
-		telemetryQueue.close()
+	# Note: 'ab' in the open function opens the file in append and binary
+	telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.bin','ab')
+	telemetryQueue.close()
 	logger.info('Created Telemetry Queue')
 
 	# --------------- Main Loop -------------------------
@@ -262,20 +263,22 @@ if __name__=="__main__":
 			logger.info('Creating TX file and packing payload data')
 			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt)
 
-			# Add the payload data to the end of the queue
-			telemetyQueue = open('telemetryQueue.txt','w+')
-			telemetyQueue.write('\n') # Add a new line
+			# Append the payload data to the end of the queue
+			telemetyQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.bin','ab')
 			telemetyQueue.write(payload_data) # write the most recent 
+			telemetyQueue.write('\n'.encode('utf-8')) # Add a new line to the binary queue
+			telemetryQueue.close()
 
 			# Send as many payloads as possible from the queue in FIFO order
+			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.bin','rb')
 			payloads = telemetyQueue.readlines()
 			messages_sent = 0
 			for payload in payloads:
 				# send either payload type 50 or 51
 				if sensor_type == 50:
-					send_microSWIFT_50(payload, next_start)
+					send_microSWIFT_50(payload[:-1], next_start)
 				elif sensor_type == 51:
-					send_microSWIFT_51(payload, next_start)
+					send_microSWIFT_51(payload[:-1], next_start)
 				
 				# 
 
