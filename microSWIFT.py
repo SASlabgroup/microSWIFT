@@ -236,6 +236,7 @@ if __name__=="__main__":
 				check = 999 * np.ones(42)
 
 			# Compute mean velocities, elevation, lat and lon
+			logger.info('I made it to here')
 			u_mean = np.nanmean(u)
 			v_mean = np.nanmean(v)
 			z_mean = np.nanmean(z)
@@ -243,6 +244,7 @@ if __name__=="__main__":
 			#Get last reported position
 			last_lat = _get_last(badValue, lat)
 			last_lon = _get_last(badValue, lon)
+			logger.info('I made it to here')
 
 
 			# Temperature and Voltage recordings - will be added in later versions
