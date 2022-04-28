@@ -264,20 +264,20 @@ if __name__=="__main__":
 			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt)
 
 			# Append the payload data to the end of the queue
-			logger.info('Adding payload to Queue')
 			telemetyQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.bin','ab')
 			telemetyQueue.write(payload_data) # write the most recent 
 			telemetyQueue.write('\n'.encode('utf-8')) # Add a new line to the binary queue
 			telemetryQueue.close()
-			logger.info('Payload added to Queue')
 
 			# Send as many payloads as possible from the queue in FIFO order
+			logger.info('Reading data from the binary queue')
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.bin','rb')
 			payloads = telemetyQueue.readlines()
+			logger.info(payloads)
 			messages_sent = 0
 			for payload in payloads:
 				# Check the payload to make sure that it is reading in correctly 
-				data = struct.unpack('<sbbhfff42fffffffffffiiiiii', payload)
+				data = struct.unpack('<sbbhfff42fffffffffffiiiiii', payload[:-1])
 				logger.info('data = {}'.format(data))
 
 				# send either payload type 50 or 51
