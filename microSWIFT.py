@@ -272,7 +272,10 @@ if __name__=="__main__":
 			# Send as many payloads as possible from the queue in FIFO order
 			logger.info('Reading data from the binary queue')
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.bin','rb')
+			logger.info('Opened the file for reading')
+			# PROBLEM HERE - WHY DOES IT NOT READ
 			payloads = telemetyQueue.readlines()
+			logger.info('Read the lines')
 			logger.info(payloads)
 			messages_sent = 0
 			for payload in payloads:
