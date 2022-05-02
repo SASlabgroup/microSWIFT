@@ -264,9 +264,9 @@ if __name__=="__main__":
 			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt)
 
 			# Append the payload data to the end of the queue
-			telemetyQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.bin','ab')
-			telemetyQueue.write(payload_data) # write the most recent 
-			telemetyQueue.write('\n'.encode('utf-8')) # Add a new line to the binary queue
+			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.bin','ab')
+			telemetryQueue.write(payload_data) # write the most recent 
+			telemetryQueue.write('\n'.encode('utf-8')) # Add a new line to the binary queue
 			telemetryQueue.close()
 
 			# Send as many payloads as possible from the queue in FIFO order
@@ -274,7 +274,7 @@ if __name__=="__main__":
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.bin','rb')
 			logger.info('Opened the file for reading')
 			# PROBLEM HERE - WHY DOES IT NOT READ
-			payloads = telemetyQueue.readlines()
+			payloads = telemetryQueue.readlines()
 			logger.info('Read the lines')
 			logger.info(payloads)
 			messages_sent = 0
