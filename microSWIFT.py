@@ -280,10 +280,6 @@ if __name__=="__main__":
 			for payload in payloads:
 				# Check if we are still in the send window 
 				if datetime.utcnow() < next_start - timedelta(seconds=15):
-					# Check the payload to make sure that it is reading in correctly 
-					data = struct.unpack('<sbbhfff42fffffffffffiiiiii', payload[:-1])
-					logger.info('data = {}'.format(data))
-
 					# send either payload type 50 or 51
 					if sensor_type == 50:
 						successful_send = send_microSWIFT_50(payload[:-1], next_start)
@@ -298,7 +294,7 @@ if __name__=="__main__":
 
 			# Remove lines of messages that were sent based on messages sent count
 			logger.info('Messages Sent: {}'.format(int(messages_sent)))
-
+			logger.info('Messages Remaining: {}'.format(int(len(payloads))))
 
 			# Increment up the loop counter
 			loop_count += 1
