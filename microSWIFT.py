@@ -276,7 +276,6 @@ if __name__=="__main__":
 			# PROBLEM HERE - WHY DOES IT NOT READ
 			payloads = telemetryQueue.readlines()
 			logger.info('Read the lines')
-			logger.info(payloads)
 			messages_sent = 0
 			for payload in payloads:
 				# Check if we are still in the send window 
@@ -287,11 +286,12 @@ if __name__=="__main__":
 
 					# send either payload type 50 or 51
 					if sensor_type == 50:
-						send_microSWIFT_50(payload[:-1], next_start)
+						successful_send = send_microSWIFT_50(payload[:-1], next_start)
 					elif sensor_type == 51:
-						send_microSWIFT_51(payload[:-1], next_start)
-					# Index up the messages sent value
-					messages_sent += 1
+						successful_send = send_microSWIFT_51(payload[:-1], next_start)
+					# Index up the messages sent value if successful send is true
+					if successful_send == True:
+						messages_sent += 1
 				else:
 					# Exit this for loop if you are outside of the send window
 					break
