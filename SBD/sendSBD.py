@@ -396,11 +396,14 @@ def send_microSWIFT_50(payload_data, timeout):
     #check for data
     if payload_size == 0:
         logger.info('Error: payload data is empty')
-        return 
+        successful_send = False
+        return successful_send
+ 
     
     if payload_size != 1245:
         logger.info('Error: unexpected number of bytes in payload data. Expected bytes: 1245, bytes received: {}'.format(payload_size))
-        return
+        successful_send = False
+        return successful_send
     
     index = 0 #byte index
     packet_type = 1 #extended message
@@ -479,7 +482,8 @@ def send_microSWIFT_50(payload_data, timeout):
                             #turn off modem
                             logger.info('Powering down modem')    
                             GPIO.output(modemGPIO,GPIO.LOW)
-                            return 
+                            successful_send = False
+                            return successful_send
                 #increment message counter for each completed message
                 if id >= 99:
                      id = 0
@@ -491,13 +495,16 @@ def send_microSWIFT_50(payload_data, timeout):
                 #turn off modem
                 logger.info('Powering down modem')    
                 GPIO.output(modemGPIO,GPIO.LOW)
-                return 
+                successful_send = True
+                return successful_send
             
 
     #turn off modem
     logger.info('Send SBD timeout. Message not sent')
     logger.info('powering down modem')    
     GPIO.output(modemGPIO,GPIO.LOW)
+    successful_send = False
+    return successful_send
    
 
 def send_microSWIFT_51(payload_data, timeout):
@@ -509,11 +516,13 @@ def send_microSWIFT_51(payload_data, timeout):
     #check for data
     if payload_size == 0:
         logger.info('Error: payload data is empty')
-        return 
+        successful_send = False
+        return successful_send
     
     if payload_size != 249:
         logger.info('Error: unexpected number of bytes in payload data. Expected bytes: 249, bytes received: {}'.format(payload_size))
-        return
+        successful_send = False
+        return successful_send
     
     #split up payload data into packets    
     index = 0 #byte index
@@ -571,7 +580,8 @@ def send_microSWIFT_51(payload_data, timeout):
                 #turn off modem
                 logger.info('Powering down modem')    
                 GPIO.output(modemGPIO,GPIO.LOW)
-                return   
+                successful_send = True
+                return successful_send
              
             else: 
                 continue
@@ -580,7 +590,8 @@ def send_microSWIFT_51(payload_data, timeout):
     logger.info('Send SBD timeout. Message not sent')
     logger.info('powering down modem')    
     GPIO.output(modemGPIO,GPIO.LOW)
-    return
+    successful_send = False
+    return successful_send
     
 
 
