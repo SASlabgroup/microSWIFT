@@ -279,19 +279,25 @@ if __name__=="__main__":
 			logger.info(payloads)
 			messages_sent = 0
 			for payload in payloads:
-				# Check the payload to make sure that it is reading in correctly 
-				data = struct.unpack('<sbbhfff42fffffffffffiiiiii', payload[:-1])
-				logger.info('data = {}'.format(data))
+				# Check if we are still in the send window 
+				if datetime.utcnow() < next_start - timedelta(seconds=15):
+					# Check the payload to make sure that it is reading in correctly 
+					data = struct.unpack('<sbbhfff42fffffffffffiiiiii', payload[:-1])
+					logger.info('data = {}'.format(data))
 
-				# send either payload type 50 or 51
-				if sensor_type == 50:
-					send_microSWIFT_50(payload[:-1], next_start)
-				elif sensor_type == 51:
-					send_microSWIFT_51(payload[:-1], next_start)
-				# Index up the messages sent value
-				messages_sent += 1
+					# send either payload type 50 or 51
+					if sensor_type == 50:
+						send_microSWIFT_50(payload[:-1], next_start)
+					elif sensor_type == 51:
+						send_microSWIFT_51(payload[:-1], next_start)
+					# Index up the messages sent value
+					messages_sent += 1
+				else:
+					# Exit this for loop if you are outside of the send window
+					break
 
 			# Remove lines of messages that were sent based on messages sent count
+			logger.info('Messages Sent: {}'.format(int(messages_sent)))
 
 
 			# Increment up the loop counter
