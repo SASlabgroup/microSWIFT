@@ -273,7 +273,6 @@ if __name__=="__main__":
 			logger.info('Reading data from the binary queue')
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.bin','rb')
 			logger.info('Opened the file for reading')
-			# PROBLEM HERE - WHY DOES IT NOT READ
 			payloads = telemetryQueue.readlines()
 			logger.info('Read the lines')
 			messages_sent = 0
@@ -292,9 +291,16 @@ if __name__=="__main__":
 					# Exit this for loop if you are outside of the send window
 					break
 
-			# Remove lines of messages that were sent based on messages sent count
+			# Close the Queue from read mode and report final send statistics
+			telemetryQueue.close()
 			logger.info('Messages Sent: {}'.format(int(messages_sent)))
 			logger.info('Messages Remaining: {}'.format(int(len(payloads))))
+
+			# Open the queue and delete the lines for the messages that have been sent
+			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.bin','rb+')
+			messages = telemetryQueue.readlines()
+			telemetryQueue.writelines(messages[messages_sent:])
+			telemetryQueue.close()
 
 			# Increment up the loop counter
 			loop_count += 1
