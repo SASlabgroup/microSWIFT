@@ -113,7 +113,7 @@ class FXOS8700:
     _BUFFER = bytearray(13)
 
     def __init__(self, i2c, address=_FXOS8700_ADDRESS,
-                 accel_range=ACCEL_RANGE_2G):
+                 accel_range=ACCEL_RANGE_4G):
         assert accel_range in (ACCEL_RANGE_2G, ACCEL_RANGE_4G, ACCEL_RANGE_8G)
         self._accel_range = accel_range
         self._device = i2c_dev.I2CDevice(i2c, address)
