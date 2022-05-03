@@ -294,7 +294,7 @@ if __name__=="__main__":
 			# Close the Queue from read mode and report final send statistics
 			telemetryQueue.close()
 			logger.info('Messages Sent: {}'.format(int(messages_sent)))
-			logger.info('Messages Remaining: {}'.format(int(len(payloads))))
+			logger.info('Messages Remaining: {}'.format(int(len(payloads)) - messages_sent))
 
 			# Open the queue and delete the lines for the messages that have been sent
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.bin','rb+')
