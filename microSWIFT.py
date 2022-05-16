@@ -282,6 +282,7 @@ if __name__=="__main__":
 			logger.info(payload_files[0])
 			with open(payload_files[0], mode='rb') as file: # b is important -> binary
 				fileContent = file.read()
+			logger.info('read file')
 			data = struct.unpack('<sbbhfff42fffffffffffiiiiii', fileContent)
 			logger.info('data = ', data)
 
