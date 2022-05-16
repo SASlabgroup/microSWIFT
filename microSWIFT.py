@@ -304,11 +304,7 @@ if __name__=="__main__":
 			logger.info('Messages Sent: {}'.format(int(messages_sent)))
 			logger.info('Messages Remaining: {}'.format(int(len(payloads)) - messages_sent))
 
-			# Open the queue and delete the lines for the messages that have been sent
-			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.bin','rb+')
-			messages = telemetryQueue.readlines()
-			telemetryQueue.writelines(messages[messages_sent:])
-			telemetryQueue.close()
+			# Remove the sent messages from the queue
 
 			# Increment up the loop counter
 			loop_count += 1
