@@ -279,12 +279,14 @@ if __name__=="__main__":
 			logger.info('Number of Messages to send: {}'.format(len(payload_files)))
 
 			# Test section before going to loop
-			logger.info(payload_files[0])
-			with open(payload_files[0], mode='rb') as file: # b is important -> binary
-				fileContent = file.read()
-			logger.info('read file')
-			data = struct.unpack('<sbbhfff42fffffffffffiiiiii', fileContent)
-			logger.info('data = ', data)
+			filename = '../' + payload_files[0][19:]
+			logger.info(filename)
+			file = open(filename, mode='rb')
+			# with open(payload_files[0], mode='rb') as file: # b is important -> binary
+			# 	fileContent = file.read()
+			logger.info('opened file')
+			# data = struct.unpack('<sbbhfff42fffffffffffiiiiii', fileContent)
+			# logger.info('data = ', data)
 
 			# messages_sent = 0
 			# for TX_file in payload_files:
