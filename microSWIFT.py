@@ -132,8 +132,8 @@ if __name__=="__main__":
 	wait_count = 0
 
 	# Initialize the Telemetry Queue - create file and then close for thread protection
-	# Note: 'ab' in the open function opens the file in append and binary
-	telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.bin','ab')
+	# Note: 'a' opens the file in append mode so that previous data is not deleted
+	telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','a')
 	telemetryQueue.close()
 	logger.info('Created Telemetry Queue')
 
@@ -260,36 +260,41 @@ if __name__=="__main__":
 				
 			## -------------- Telemetry Section ----------------------------------
 			# Create TX file from processData.py output from combined wave products
-			logger.info('Creating TX file and packing payload data')
-			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt)
-
-			# Append the payload data to the end of the queue
-			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.bin','ab')
-			telemetryQueue.write(payload_data) # write the most recent 
-			telemetryQueue.write('\n'.encode('utf-8')) # Add a new line to the binary queue
+			# Append the telemetrry queue with the processed data
+			logger.info('Adding processed data to the telemetry queue')
+			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','a')
+			processed_data = [Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt]
+			telemetryQueue.write(', '.join(str(item) for item in processed_data))
+			telemetryQueue.write('\n') # Add a new line to the binary queue
 			telemetryQueue.close()
 
 			# Send as many payloads as possible from the queue in FIFO order
-			logger.info('Reading data from the binary queue')
-			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.bin','rb')
+			logger.info('Reading data from the queue')
+			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.bin','rw+')
 			logger.info('Opened the file for reading')
 			payloads = telemetryQueue.readlines()
 			logger.info('Read the lines')
-			messages_sent = 0
-			for payload in payloads:
-				# Check if we are still in the send window 
-				if datetime.utcnow() < next_start - timedelta(seconds=15):
-					# send either payload type 50 or 51
-					if sensor_type == 50:
-						successful_send = send_microSWIFT_50(payload[:-1], next_start)
-					elif sensor_type == 51:
-						successful_send = send_microSWIFT_51(payload[:-1], next_start)
-					# Index up the messages sent value if successful send is true
-					if successful_send == True:
-						messages_sent += 1
-				else:
-					# Exit this for loop if you are outside of the send window
-					break
+
+			# messages_sent = 0
+			# for payload in payloads:
+			# 	# Pack the data from the queue into the payload package
+			# 	logger.info('Creating TX file and packing payload data')
+			# 	TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt)
+ 
+
+			# 	# Check if we are still in the send window 
+			# 	if datetime.utcnow() < next_start - timedelta(seconds=15):
+			# 		# send either payload type 50 or 51
+			# 		if sensor_type == 50:
+			# 			successful_send = send_microSWIFT_50(payload[:-1], next_start)
+			# 		elif sensor_type == 51:
+			# 			successful_send = send_microSWIFT_51(payload[:-1], next_start)
+			# 		# Index up the messages sent value if successful send is true
+			# 		if successful_send == True:
+			# 			messages_sent += 1
+			# 	else:
+			# 		# Exit this for loop if you are outside of the send window
+			# 		break
 
 			# Close the Queue from read mode and report final send statistics
 			telemetryQueue.close()
