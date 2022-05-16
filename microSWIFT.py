@@ -26,6 +26,7 @@ Successfully merged all fixes/ bugs into microSWIFT.py-Centralized - 08/25/21
 # Main import Statemennts
 import concurrent.futures
 import datetime
+import pwd
 import numpy as np
 from datetime import datetime, timedelta
 from logging import *
@@ -279,7 +280,8 @@ if __name__=="__main__":
 			logger.info('Number of Messages to send: {}'.format(len(payload_files)))
 
 			# Test section before going to loop
-			filename = '../' + payload_files[0][20:]
+			logger.info(pwd)
+			filename = './' + payload_files[0][20:]
 			logger.info(filename)
 			file = open(filename, mode='rb')
 			# with open(payload_files[0], mode='rb') as file: # b is important -> binary
