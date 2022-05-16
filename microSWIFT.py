@@ -266,8 +266,10 @@ if __name__=="__main__":
 			processed_data = [Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt]
 			telemetryQueue.write(', '.join(str(item) for item in processed_data))
 			telemetryQueue.write('\n') # Add a new line to the queue
+			telemetryQueue.close()
 
 			# Send as many payloads as possible from the queue in FIFO order
+			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','w+')
 			logger.info('Reading data from the queue')
 			payloads = telemetryQueue.readlines()
 			logger.info('Read the lines')
@@ -293,6 +295,9 @@ if __name__=="__main__":
 			# 	else:
 			# 		# Exit this for loop if you are outside of the send window
 			# 		break
+
+			# *** DUMMY variable to get it to run through 
+			messages_sent = 0
 
 			# Close the Queue from read mode and report final send statistics
 			telemetryQueue.close()
