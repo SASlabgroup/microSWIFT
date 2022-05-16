@@ -279,7 +279,7 @@ if __name__=="__main__":
 			logger.info('Number of Messages to send: {}'.format(len(payload_files)))
 
 			# Test section before going to loop
-			filename = '../' + payload_files[0][19:]
+			filename = '../' + payload_files[0][20:]
 			logger.info(filename)
 			file = open(filename, mode='rb')
 			# with open(payload_files[0], mode='rb') as file: # b is important -> binary
