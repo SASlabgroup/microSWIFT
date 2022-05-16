@@ -274,28 +274,29 @@ if __name__=="__main__":
 			# Send as many payloads as possible from the queue in FIFO order
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','r+')
 			logger.info('Reading data from the queue')
-			payloads = telemetryQueue.readlines()
+			payload_files = telemetryQueue.readlines()
 			logger.info('Read the lines')
-			logger.info('Number of Messages to send {}'.format(len(payloads)))
+			logger.info('Number of Messages to send {}'.format(len(payload_files)))
 
-			# messages_sent = 0
-			# for payload in payloads:
-			# 	
- 
+			messages_sent = 0
+			for TX_file in payload_files:
+				# Check if we are still in the send window 
+				if datetime.utcnow() < next_start - timedelta(seconds=15):
+					# Open the TX file for the payload 
+					with open(TX_file, mode='rb') as file: # b is important -> binary
+						payload_data = file.read()
 
-			# 	# Check if we are still in the send window 
-			# 	if datetime.utcnow() < next_start - timedelta(seconds=15):
-			# 		# send either payload type 50 or 51
-			# 		if sensor_type == 50:
-			# 			successful_send = send_microSWIFT_50(payload[:-1], next_start)
-			# 		elif sensor_type == 51:
-			# 			successful_send = send_microSWIFT_51(payload[:-1], next_start)
-			# 		# Index up the messages sent value if successful send is true
-			# 		if successful_send == True:
-			# 			messages_sent += 1
-			# 	else:
-			# 		# Exit this for loop if you are outside of the send window
-			# 		break
+					# send either payload type 50 or 51
+					if sensor_type == 50:
+						successful_send = send_microSWIFT_50(payload_data, next_start)
+					elif sensor_type == 51:
+						successful_send = send_microSWIFT_51(payload_data, next_start)
+					# Index up the messages sent value if successful send is true
+					if successful_send == True:
+						messages_sent += 1
+				else:
+					# Exit this for loop if you are outside of the send window
+					break
 
 			# *** DUMMY variable to get it to run through 
 			messages_sent = 0
@@ -303,7 +304,7 @@ if __name__=="__main__":
 			# Close the Queue from read mode and report final send statistics
 			telemetryQueue.close()
 			logger.info('Messages Sent: {}'.format(int(messages_sent)))
-			logger.info('Messages Remaining: {}'.format(int(len(payloads)) - messages_sent))
+			logger.info('Messages Remaining: {}'.format(int(len(payload_files)) - messages_sent))
 
 			# Remove the sent messages from the queue
 
