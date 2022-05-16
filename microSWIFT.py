@@ -260,13 +260,14 @@ if __name__=="__main__":
 				
 			## -------------- Telemetry Section ----------------------------------
 			# Create TX file from processData.py output from combined wave products
+			# Pack the data from the queue into the payload package
+			logger.info('Creating TX file and packing payload data')
+			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt)
+
 			# Append the telemetrry queue with the processed data
-			logger.info('Adding processed data to the telemetry queue')
+			logger.info('Adding TX filename to the telemetry queue')
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','a')
-			num_inputs = 17
-			processed_data = [Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt]
-			telemetryQueue.write(', '.join(str(item) for item in processed_data)+'\n')
-			telemetryQueue.write(str(processed_data))
+			telemetryQueue.write(TX_fname)
 			telemetryQueue.write('\n') # Add a new line to the queue
 			telemetryQueue.close()
 
@@ -279,9 +280,7 @@ if __name__=="__main__":
 
 			# messages_sent = 0
 			# for payload in payloads:
-			# 	# Pack the data from the queue into the payload package
-			# 	logger.info('Creating TX file and packing payload data')
-			# 	TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt)
+			# 	
  
 
 			# 	# Check if we are still in the send window 
