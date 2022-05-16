@@ -281,7 +281,7 @@ if __name__=="__main__":
 
 			# Test section before going to loop
 			logger.info(type(payload_files[1]))
-			logger.info(payload_files[1])
+			logger.info(payload_files[1][-1])
 			file = open(payload_files[1], mode='rb')
 			logger.info('opened file')
 			# with open(payload_files[0], mode='rb') as file: # b is important -> binary
