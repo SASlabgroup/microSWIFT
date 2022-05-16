@@ -269,7 +269,7 @@ if __name__=="__main__":
 			logger.info('Adding TX filename to the telemetry queue')
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','a')
 			telemetryQueue.write(TX_fname)
-			telemetryQueue.write('\n') # Add a new line to the queue
+			# telemetryQueue.write('\n') # Add a new line to the queue
 			telemetryQueue.close()
 
 			# Send as many payloads as possible from the queue in FIFO order
@@ -281,7 +281,7 @@ if __name__=="__main__":
 
 			# Test section before going to loop
 			logger.info(type(payload_files[1]))
-			logger.info(payload_files[1][-1])
+			logger.info(payload_files[1][:-1])
 			file = open(payload_files[1], mode='rb')
 			logger.info('opened file')
 			# with open(payload_files[0], mode='rb') as file: # b is important -> binary
