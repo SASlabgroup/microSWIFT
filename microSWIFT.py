@@ -276,7 +276,8 @@ if __name__=="__main__":
 			logger.info('Reading data from the queue')
 			payload_files = telemetryQueue.readlines()
 			logger.info('Read the lines')
-			logger.info('Number of Messages to send {}'.format(len(payload_files)))
+			logger.info('Number of Messages to send: {}'.format(len(payload_files)))
+			logger.info(payload_files[0])
 
 			messages_sent = 0
 			for TX_file in payload_files:
