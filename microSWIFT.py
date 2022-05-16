@@ -263,8 +263,9 @@ if __name__=="__main__":
 			# Append the telemetrry queue with the processed data
 			logger.info('Adding processed data to the telemetry queue')
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','a')
+			num_inputs = 17
 			processed_data = [Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt]
-			# telemetryQueue.write(', '.join(str(item) for item in processed_data))
+			telemetryQueue.write(', '.join(str(item) for item in processed_data)+'\n')
 			telemetryQueue.write(str(processed_data))
 			telemetryQueue.write('\n') # Add a new line to the queue
 			telemetryQueue.close()
