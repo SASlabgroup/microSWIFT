@@ -262,18 +262,16 @@ if __name__=="__main__":
 			# Create TX file from processData.py output from combined wave products
 			# Append the telemetrry queue with the processed data
 			logger.info('Adding processed data to the telemetry queue')
-			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','a')
+			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','w+')
 			processed_data = [Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt]
 			telemetryQueue.write(', '.join(str(item) for item in processed_data))
-			telemetryQueue.write('\n') # Add a new line to the binary queue
-			telemetryQueue.close()
+			telemetryQueue.write('\n') # Add a new line to the queue
 
 			# Send as many payloads as possible from the queue in FIFO order
 			logger.info('Reading data from the queue')
-			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.bin','rw+')
-			logger.info('Opened the file for reading')
 			payloads = telemetryQueue.readlines()
 			logger.info('Read the lines')
+			logger.info('Number of Messages to send {}'.format(len(payloads)))
 
 			# messages_sent = 0
 			# for payload in payloads:
