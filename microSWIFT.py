@@ -280,6 +280,7 @@ if __name__=="__main__":
 			logger.info('Number of Messages to send: {}'.format(len(payload_files)))
 
 			# Test section before going to loop
+			logger.info(type(payload_files[0]))
 			logger.info(payload_files[0])
 			file = open(payload_files[0], mode='rb')
 			logger.info('opened file')
