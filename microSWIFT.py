@@ -267,13 +267,15 @@ if __name__=="__main__":
 
 			# Send as many payloads as possible from the queue in FIFO order
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','r+')
-			payload_files_LIFO = telemetryQueue.readlines().reverse()
-			logger.info(payload_files_LIFO)
-			logger.info('Number of Messages to send: {}'.format(len(payload_files_LIFO)))
+			payload_files = telemetryQueue.readlines()
+			logger.info(payload_files)
+			payload_files.reverse()
+			logger.info(payload_files)
+			logger.info('Number of Messages to send: {}'.format(len(payload_files)))
 
 			# Send as many messages from the queue as possible during the send window
 			messages_sent = 0
-			for TX_file in payload_files_LIFO:
+			for TX_file in payload_files:
 				# Check if we are still in the send window 
 				if datetime.utcnow() < next_start - timedelta(seconds=10):
 					# Open the TX file for the payload 
@@ -297,18 +299,18 @@ if __name__=="__main__":
 
 			# Log the send statistics
 			logger.info('Messages Sent: {}'.format(int(messages_sent)))
-			messages_remaining = int(len(payload_files_LIFO)) - messages_sent
+			messages_remaining = int(len(payload_files)) - messages_sent
 			logger.info('Messages Remaining: {}'.format(messages_remaining))
 
 			# Remove the sent messages from the queue by writing the remaining lines to the file
 			if messages_remaining > 0:
 				telemetryQueue.seek(0)
 				# Flip the order write messages back out
-				payload_files_LIFO.reverse()
+				payload_files.reverse()
 				for n in np.arange(messages_remaining):
 					logger.info('Writing line {}'.format(n))
-					logger.info(payload_files_LIFO[n])
-					telemetryQueue.write(payload_files_LIFO[n])
+					logger.info(payload_files[n])
+					telemetryQueue.write(payload_files[n])
 			else:
 				# Empty all the lines from the file if all messages were sent
 				telemetryQueue.truncate()
