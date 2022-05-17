@@ -302,9 +302,10 @@ if __name__=="__main__":
 
 			# Remove the sent messages from the queue by writing the remaining lines to the file
 			if messages_remaining > 0:
-				logger.info('in the remove loop')
 				telemetryQueue.seek(0)
 				for n in np.arange(messages_sent, len(payload_files)):
+					logger.info('Writing line {}'.format(n))
+					logger.info(payload_files[n])
 					telemetryQueue.write(payload_files[n])
 					telemetryQueue.write('\n')
 			telemetryQueue.close()
