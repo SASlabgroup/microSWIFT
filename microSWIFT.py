@@ -270,7 +270,6 @@ if __name__=="__main__":
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','r+')
 			payload_files = telemetryQueue.readlines()
 			logger.info('Number of Messages to send: {}'.format(len(payload_files)))
-			telemetryQueue.close()
 
 			# Send as many messages from the queue as possible during the send window
 			messages_sent = 0
@@ -298,10 +297,12 @@ if __name__=="__main__":
 
 			# Log the send statistics
 			logger.info('Messages Sent: {}'.format(int(messages_sent)))
-			logger.info('Messages Remaining: {}'.format(int(len(payload_files)) - messages_sent))
+			messages_remaining = int(len(payload_files)) - messages_sent
+			logger.info('Messages Remaining: {}'.format(messages_remaining))
 
 			# Remove the sent messages from the queue by writing the remaining lines to the file
-			if len(payload_files) > 0:
+			if messages_remaining > 0:
+				logger.info('in the remove loop')
 				telemetryQueue.seek(0)
 				for n in np.arange(messages_sent, len(payload_files)):
 					telemetryQueue.write(payload_files[n])
