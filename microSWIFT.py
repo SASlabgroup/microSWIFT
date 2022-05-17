@@ -306,7 +306,9 @@ if __name__=="__main__":
 			logger.info('Messages Sent: {}'.format(int(messages_sent)))
 			logger.info('Messages Remaining: {}'.format(int(len(payload_files)) - messages_sent))
 
-			# Remove the sent messages from the queue
+			# Remove the sent messages from the queue by writing the remaining lines to the file
+			telemetryQueue.write(payload_files[messages_sent:])
+			telemetryQueue.close()
 
 			# Increment up the loop counter
 			loop_count += 1
