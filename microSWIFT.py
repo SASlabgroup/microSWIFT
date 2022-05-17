@@ -278,11 +278,9 @@ if __name__=="__main__":
 			for TX_file in payload_files:
 				# Check if we are still in the send window 
 				if datetime.utcnow() < next_start - timedelta(seconds=10):
-					# Open the TX file for the payload 
-					TX_filename = TX_file[:-1] # Remove the last character since a space is saved
 					logger.info('Opening TX file from payload list')
-					logger.info(TX_filename)
-					with open(TX_filename, mode='rb') as file: # b is important -> binary
+					logger.info(TX_file)
+					with open(TX_file, mode='rb') as file: # b is important -> binary
 						payload_data = file.read()
 
 					# send either payload type 50 or 51
