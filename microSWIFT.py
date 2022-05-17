@@ -303,7 +303,9 @@ if __name__=="__main__":
 			# Remove the sent messages from the queue by writing the remaining lines to the file
 			if len(payload_files) > 0:
 				telemetryQueue.seek(0)
-				telemetryQueue.writelines(payload_files[messages_sent:])
+				for n in np.arange(messages_sent, len(payload_files)):
+					telemetryQueue.write(payload_files[n])
+					telemetryQueue.write('\n')
 			telemetryQueue.close()
 
 			# Increment up the loop counter
