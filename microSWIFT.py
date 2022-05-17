@@ -308,6 +308,9 @@ if __name__=="__main__":
 					logger.info(payload_files[n])
 					telemetryQueue.write(payload_files[n])
 					telemetryQueue.write('\n')
+			else:
+				# Empty all the lines from the file if all messages were sent
+				telemetryQueue.truncate()
 			telemetryQueue.close()
 
 			# Increment up the loop counter
