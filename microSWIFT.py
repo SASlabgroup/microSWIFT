@@ -273,9 +273,10 @@ if __name__=="__main__":
 			telemetryQueue.close()
 
 			# Send as many payloads as possible from the queue in FIFO order
-			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','r+')
+			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','r')
 			payload_files = telemetryQueue.readlines()
 			logger.info('Number of Messages to send: {}'.format(len(payload_files)))
+			telemetryQueue.close()
 
 			# Send as many messages from the queue as possible
 			messages_sent = 0
@@ -307,6 +308,7 @@ if __name__=="__main__":
 			logger.info('Messages Remaining: {}'.format(int(len(payload_files)) - messages_sent))
 
 			# Remove the sent messages from the queue by writing the remaining lines to the file
+			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','w')
 			telemetryQueue.write(payload_files[messages_sent:])
 			telemetryQueue.close()
 
