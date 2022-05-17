@@ -132,12 +132,6 @@ if __name__=="__main__":
 	loop_count = 1
 	wait_count = 0
 
-	# Initialize the Telemetry Queue - create file and then close for thread protection
-	# Note: 'a' opens the file in append mode so that previous data is not deleted
-	telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','a')
-	telemetryQueue.close()
-	logger.info('Created Telemetry Queue')
-
 	# --------------- Main Loop -------------------------
 	while True:
 
