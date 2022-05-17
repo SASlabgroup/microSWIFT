@@ -262,16 +262,14 @@ if __name__=="__main__":
 			# Append the telemetrry queue with the processed data
 			logger.info('Adding TX filename to the telemetry queue')
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','a')
-			telemetryQueue.write(TX_fname + '\n')
+			telemetryQueue.write(TX_fname)
 			telemetryQueue.close()
 
 			# Send as many payloads as possible from the queue in FIFO order
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','r+')
-			payload_files_FIFO = telemetryQueue.readlines()
-			payload_files_LIFO = payload_files_FIFO.reverse()
-			logger.info(payload_files_FIFO)
+			payload_files_LIFO = telemetryQueue.readlines().reverse()
 			logger.info(payload_files_LIFO)
-			logger.info('Number of Messages to send: {}'.format(len(payload_files_FIFO)))
+			logger.info('Number of Messages to send: {}'.format(len(payload_files_LIFO)))
 
 			# Send as many messages from the queue as possible during the send window
 			messages_sent = 0
@@ -305,10 +303,12 @@ if __name__=="__main__":
 			# Remove the sent messages from the queue by writing the remaining lines to the file
 			if messages_remaining > 0:
 				telemetryQueue.seek(0)
+				# Flip the order write messages back out
+				payload_files_LIFO.reverse()
 				for n in np.arange(messages_remaining):
 					logger.info('Writing line {}'.format(n))
-					logger.info(payload_files_FIFO[n])
-					telemetryQueue.write(payload_files_FIFO[n] + '\n')
+					logger.info(payload_files_LIFO[n])
+					telemetryQueue.write(payload_files_LIFO[n])
 			else:
 				# Empty all the lines from the file if all messages were sent
 				telemetryQueue.truncate()
