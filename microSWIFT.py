@@ -276,7 +276,7 @@ if __name__=="__main__":
 			payload_files_FIFO_nostrip = telemetryQueue.readlines()
 			payload_files_FIFO = []
 			for line in payload_files_FIFO_nostrip:
-				line_stripped = line.strip()
+				line_stripped = line.strip('\n')
 				if line_stripped != '':
 					payload_files_FIFO.append(line)
 			 	
