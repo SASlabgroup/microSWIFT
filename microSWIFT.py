@@ -313,7 +313,7 @@ if __name__=="__main__":
 			# Remove the sent messages from the queue by writing the remaining lines to the file
 			if messages_remaining > 0:
 				telemetryQueue.seek(0)
-				for n in np.arange(messages_remaining)):
+				for n in np.arange(messages_remaining):
 					logger.info('Writing line {}'.format(n))
 					logger.info(payload_files_LIFO[n])
 					telemetryQueue.write(payload_files_LIFO[n])
