@@ -268,11 +268,7 @@ if __name__=="__main__":
 			logger.info('Adding TX filename to the telemetry queue')
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','r+')
 			lines = telemetryQueue.readlines()
-			if len(lines) > 0:
-				telemetryQueue.write('\n')
-				telemetryQueue.write(TX_fname)
-			else:
-				telemetryQueue.write(TX_fname)
+			telemetryQueue.write(TX_fname)
 			telemetryQueue.close()
 
 			# Send as many payloads as possible from the queue in FIFO order
