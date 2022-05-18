@@ -277,7 +277,8 @@ if __name__=="__main__":
 
 			# Send as many payloads as possible from the queue in FIFO order
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','r+')
-			payload_files_FIFO = telemetryQueue.readlines()
+			payload_files_FIFO_nostrip = telemetryQueue.readlines()
+			payload_files_FIFO = [line.strip() for line in payload_files_FIFO_nostrip]
 			logger.info(payload_files_FIFO)
 			logger.info('Number of Messages to send: {}'.format(len(payload_files_FIFO)))
 
