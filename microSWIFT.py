@@ -132,6 +132,11 @@ if __name__=="__main__":
 	loop_count = 1
 	wait_count = 0
 
+	# Initialize the telemetry queue if it does no exist yet
+	logger.info('Initializing Telemery Queue')
+	telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','a')
+	telemetryQueue.close()
+
 	# --------------- Main Loop -------------------------
 	while True:
 
