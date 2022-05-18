@@ -269,10 +269,9 @@ if __name__=="__main__":
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','r+')
 			lines = telemetryQueue.readlines()
 			if len(lines) > 0:
-				telemetryQueue.write('\n')
 				telemetryQueue.write(TX_fname)
 			else:
-				telemetryQueue.write(TX_fname)
+				telemetryQueue.write(TX_fname + '\n')
 			telemetryQueue.close()
 
 			# Send as many payloads as possible from the queue in FIFO order
@@ -314,8 +313,7 @@ if __name__=="__main__":
 				for n in np.arange(messages_sent, len(payload_files_FIFO)):
 					logger.info('Writing line {}'.format(n))
 					logger.info(payload_files_FIFO[n])
-					telemetryQueue.write(payload_files_FIFO[n])
-					telemetryQueue.write('\n')
+					telemetryQueue.write(payload_files_FIFO[n] + '\n')
 			else:
 				# Empty all the lines from the file if all messages were sent
 				telemetryQueue.truncate()
