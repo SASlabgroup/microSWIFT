@@ -319,11 +319,12 @@ if __name__=="__main__":
 					logger.info(payload_files_LIFO[n])
 					telemetryQueue.write(payload_files_LIFO[n])
 					telemetryQueue.write('\n')
+				telemetryQueue.close()
 			else:
 				# Empty all the lines from the file if all messages were sent
-				telemetryQueue.truncate()
-			telemetryQueue.close()
-
+				telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','w')
+				telemetryQueue.close()
+			
 			# Increment up the loop counter
 			loop_count += 1
 			wait_count = 0
