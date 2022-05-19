@@ -264,29 +264,27 @@ if __name__=="__main__":
 			logger.info('Creating TX file and packing payload data')
 			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt)
 
-			# Append the telemetrry queue with the processed data
+			# Append the telemetry queue with the processed data
 			logger.info('Adding TX filename to the telemetry queue')
-			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','r+')
-			lines = telemetryQueue.readlines()
+			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','a')
 			telemetryQueue.write(TX_fname)
 			telemetryQueue.close()
 
-			# Send as many payloads as possible from the queue in FIFO order
-			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','r+')
-			payload_files_FIFO_nostrip = telemetryQueue.readlines()
-			payload_files_FIFO = []
-			for line in payload_files_FIFO_nostrip:
-				line_stripped = line.strip('\n')
-				if line_stripped != '':
-					payload_files_FIFO.append(line)
+			# Read in the file names from the telemetry queue
+			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','r')
+			payload_filenames = telemetryQueue.readlines()
+			telemetryQueue.close()
+			payload_filenames_stripped = []
+			for line in payload_filenames:
+				payload_filenames_stripped.append(line.strip())
 			 	
-			logger.info(payload_files_FIFO)
-			payload_files_LIFO = list(np.flip(payload_files_FIFO))
-			logger.info('Number of Messages to send: {}'.format(len(payload_files_FIFO)))
+			logger.info(payload_filenames_stripped)
+			payload_filenames_LIFO = list(np.flip(payload_filenames_stripped))
+			logger.info('Number of Messages to send: {}'.format(len(payload_filenames_LIFO)))
 
 			# Send as many messages from the queue as possible during the send window
 			messages_sent = 0
-			for TX_file in payload_files_LIFO:
+			for TX_file in payload_filenames_LIFO:
 				# Check if we are still in the send window 
 				if datetime.utcnow() < next_start - timedelta(seconds=10):
 					logger.info('Opening TX file from payload list')
@@ -308,22 +306,16 @@ if __name__=="__main__":
 
 			# Log the send statistics
 			logger.info('Messages Sent: {}'.format(int(messages_sent)))
-			messages_remaining = int(len(payload_files_LIFO)) - messages_sent
+			messages_remaining = int(len(payload_filenames_stripped)) - messages_sent
 			logger.info('Messages Remaining: {}'.format(messages_remaining))
 
 			# Remove the sent messages from the queue by writing the remaining lines to the file
-			if messages_remaining > 0:
-				telemetryQueue.seek(0)
-				for n in np.arange(messages_remaining):
-					logger.info('Writing line {}'.format(n))
-					logger.info(payload_files_LIFO[n])
-					telemetryQueue.write(payload_files_LIFO[n])
-					telemetryQueue.write('\n')
-				telemetryQueue.close()
-			else:
-				# Empty all the lines from the file if all messages were sent
-				telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','w')
-				telemetryQueue.close()
+			del payload_filenames_stripped[-messages_sent:]
+			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','w')
+			for line in payload_filenames_stripped:
+				telemetryQueue.write(line)
+				telemetryQueue.write('\n')
+			telemetryQueue.close()
 			
 			# Increment up the loop counter
 			loop_count += 1
