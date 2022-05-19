@@ -310,13 +310,16 @@ if __name__=="__main__":
 			logger.info('Messages Remaining: {}'.format(messages_remaining))
 
 			# Remove the sent messages from the queue by writing the remaining lines to the file
-			del payload_filenames_stripped[-messages_sent:]
+			if messages_sent > 0:
+				del payload_filenames_stripped[-messages_sent:]
+			else:
+				continue
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','w')
 			for line in payload_filenames_stripped:
 				telemetryQueue.write(line)
 				telemetryQueue.write('\n')
 			telemetryQueue.close()
-			
+
 			# Increment up the loop counter
 			loop_count += 1
 			wait_count = 0
