@@ -281,6 +281,7 @@ if __name__=="__main__":
 			logger.info(payload_filenames_stripped)
 			payload_filenames_LIFO = list(np.flip(payload_filenames_stripped))
 			logger.info('Number of Messages to send: {}'.format(len(payload_filenames_LIFO)))
+			logger.info(payload_filenames_LIFO)
 
 			# Send as many messages from the queue as possible during the send window
 			messages_sent = 0
