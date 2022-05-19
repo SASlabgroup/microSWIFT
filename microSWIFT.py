@@ -265,6 +265,7 @@ if __name__=="__main__":
 			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt)
 
 			# Append the telemetry queue with the processed data
+			logger.info(TX_fname)
 			logger.info('Adding TX filename to the telemetry queue')
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','a')
 			telemetryQueue.write('\n')
