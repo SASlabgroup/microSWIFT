@@ -316,8 +316,6 @@ if __name__=="__main__":
 			# Remove the sent messages from the queue by writing the remaining lines to the file
 			if messages_sent > 0:
 				del payload_filenames_stripped[-messages_sent:]
-			else:
-				continue
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','w')
 			for line in payload_filenames_stripped:
 				telemetryQueue.write(line)
