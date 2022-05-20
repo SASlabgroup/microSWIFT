@@ -267,7 +267,6 @@ if __name__=="__main__":
 			logger.info(TX_fname)
 			logger.info('Adding TX filename to the telemetry queue')
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','a')
-			telemetryQueue.write('\n')
 			telemetryQueue.write(TX_fname)
 			telemetryQueue.close()
 
