@@ -263,13 +263,13 @@ if __name__=="__main__":
 			logger.info('Creating TX file and packing payload data')
 			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt)
 
-			# # Append the telemetry queue with the processed data
-			# logger.info(TX_fname)
-			# logger.info('Adding TX filename to the telemetry queue')
-			# telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','a')
-			# telemetryQueue.write('\n')
-			# telemetryQueue.write(TX_fname)
-			# telemetryQueue.close()
+			# Append the telemetry queue with the processed data
+			logger.info(TX_fname)
+			logger.info('Adding TX filename to the telemetry queue')
+			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','a')
+			telemetryQueue.write('\n')
+			telemetryQueue.write(TX_fname)
+			telemetryQueue.close()
 
 			# Read in the file names from the telemetry queue
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','r')
@@ -281,7 +281,7 @@ if __name__=="__main__":
 			
 			# Append the newest file name to the list
 			logger.info(payload_filenames_stripped)
-			payload_filenames_stripped.append(TX_fname)
+			# payload_filenames_stripped.append(TX_fname)
 			payload_filenames_LIFO = list(np.flip(payload_filenames_stripped))
 			logger.info('Number of Messages to send: {}'.format(len(payload_filenames_LIFO)))
 			logger.info(payload_filenames_LIFO)
