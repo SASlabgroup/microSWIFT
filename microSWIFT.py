@@ -281,7 +281,7 @@ if __name__=="__main__":
 			
 			# Append the newest file name to the list
 			logger.info(payload_filenames_stripped)
-			payload_filenames.append(TX_fname)
+			payload_filenames_stripped.append(TX_fname)
 			payload_filenames_LIFO = list(np.flip(payload_filenames_stripped))
 			logger.info('Number of Messages to send: {}'.format(len(payload_filenames_LIFO)))
 			logger.info(payload_filenames_LIFO)
