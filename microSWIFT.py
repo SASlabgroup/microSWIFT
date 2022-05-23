@@ -286,9 +286,10 @@ if __name__=="__main__":
 
 			# Send as many messages from the queue as possible during the send window
 			messages_sent = 0
+			logger.info(payload_filenames_LIFO)
 			for TX_file in payload_filenames_LIFO:
 				# Check if we are still in the send window 
-				if datetime.utcnow() < next_start - timedelta(seconds=10):
+				if datetime.utcnow() < next_start:
 					logger.info('Opening TX file from payload list')
 					logger.info(TX_file)
 					with open(TX_file, mode='rb') as file: # b is important -> binary
@@ -303,7 +304,7 @@ if __name__=="__main__":
 					if successful_send == True:
 						messages_sent += 1
 				else:
-					# Exit this for loop if you are outside of the send window
+					# Exit the for loop if outside of the end time 
 					break
 
 			# Log the send statistics
