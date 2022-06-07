@@ -60,7 +60,7 @@ shipPass='1013ne40th'
 shipDir=Documents/microSWIFT_Test_Data
 
 #microSWIFT sensor type (50 or 51)
-sensorType=51
+sensorType=50
 
 #SWIFT V4 payload type	
 payloadType=7
