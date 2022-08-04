@@ -231,7 +231,8 @@ def GPSwaves(u, v, z, fs):
     bandwidth = Nyquist/n # Frequency (Hz) bandwidth
     # Find middle of each freq band
     #** ONLY for merging odd numbers of bands
-    f = (1/wsecs) + (bandwidth/2) + (bandwidth * np.arange(n-1))
+    f = (1/wsecs) + (bandwidth/2) + (bandwidth * np.arange(n-1)) #TODO: why is the freq only short for 12 and not 4hz?
+    # f = (1/wsecs) + (bandwidth/2) + (bandwidth * np.arange(n))
 
     # --------- Ensemble Average Windows together ----------------
     # take average of all windows at each frequency band, divide by n*samplerate to get power 

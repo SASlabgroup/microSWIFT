@@ -36,11 +36,16 @@ import struct
 
 # Import GPS functions
 from GPS.recordGPS import recordGPS
-from GPS.GPSwaves import GPSwaves
+from GPS.GPSwaves import GPSwaves #TODO: delete & replace with UVZAwaves
 from GPS.GPStoUVZ import GPStoUVZ
 
 # Import IMU functions
 from IMU.recordIMU import recordIMU
+from IMU.IMUtoXYZ import IMUtoXYZ
+
+# Import wave processing functions
+from waves.collateIMUandGPS import collateIMUandGPS
+from waves.UVZAwaves import UVZAwaves
 
 # Import SBD functions
 from SBD.sendSBD import createTX
@@ -185,17 +190,45 @@ if __name__=="__main__":
 			begin_processing_time = datetime.now()
 
 			# Prioritize GPS processing
-			if gps_initialized==True:
+			if gps_initialized and imu_initialized: #gps_initialized == True and imu_initialized == True:
 
-				# Run processGPS
+				# Compute u, v and z from raw GPS data
+				GPS = GPStoUVZ(GPSdataFilename) # u, v, z, lat, lon = GPStoUVZ(GPSdataFilename)
+
+				# Process raw IMU data
+				IMU = IMUtoXYZ(IMUdataFilename,IMU_fs) # ax, vx, px, ay, vy, py, az, vz, pz = IMUtoXYZ(IMUdataFilename,IMU_fs)
+
+				# Collate IMU and GPS onto a master time based on the IMU time
+				IMUcol,GPScol = collateIMUandGPS(IMU,GPS)
+				
+				#TODO: determine up
+
+				# UVZAwaves estimate; leave out first 500 points
+				Hs_1, Tp, Dp, E, f, a1, b1, a2, b2, check  = UVZAwaves(u[500:], v[500:], pz[500:], az[500:], fs) #TODO: check
+
+				# GPSwaves estimate as secondary estimate
+				Hs_2, Tp_2, Dp_2, E_2, f_2, a1_2, b1_2, a2_2, b2_2, check_2 = GPSwaves(GPS['u'], GPS['v'], GPS['z'], 4)
+				
+				# unpack GPS variables for remaining code; use non-interpolated values
+				u   = GPS['u']
+				v   = GPS['v']
+				z   = GPS['z']
+				lat = GPS['lat']
+				lon = GPS['lon']
+
+				# Compute Wave Statistics from GPSwaves algorithm
+				# Hs, Tp, Dp, E, f, a1, b1, a2, b2, check = GPSwaves(u, v, z, GPS_fs)
+
+			elif gps_initialized and not imu_initialized: #TODO: verify this logic
+				
 				# Compute u, v and z from raw GPS data
 				u, v, z, lat, lon = GPStoUVZ(GPSdataFilename)
 
 				# Compute Wave Statistics from GPSwaves algorithm
 				Hs, Tp, Dp, E, f, a1, b1, a2, b2, check = GPSwaves(u, v, z, GPS_fs)
 
-			elif imu_initialized==True:
-				
+			elif imu_initialized and not gps_initialized:
+				#TODO: fix
 				# Process IMU data
 				logger.info('GPS did not initialize but IMU did - Would put IMU processing here but it is not yet functional')
 				# Bad Values of the GPS did not initialize - no imu processing in place yet
@@ -237,7 +270,7 @@ if __name__=="__main__":
 			# Compute mean velocities, elevation, lat and lon
 			u_mean = np.nanmean(u)
 			v_mean = np.nanmean(v)
-			z_mean = np.nanmean(z)
+			z_mean = np.nanmean(z) #TODO: change which z to use?
 		
 			#Get last reported position
 			last_lat = _get_last(badValue, lat)
@@ -262,7 +295,9 @@ if __name__=="__main__":
 			# Pack the data from the queue into the payload package
 			logger.info('Creating TX file and packing payload data')
 			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt)
-
+			#NOTE: J. Davis added 2022-07-21 for testing
+			TX_fname_2, payload_data_2 = createTX(Hs_2, Tp_2, Dp_2, E_2, f_2, a1_2, b1_2, a2_2, b2_2, check_2, u_mean_2, v_mean, z_mean, last_lat, last_lon, temp, volt)
+			
 			# Read in the file names from the telemetry queue
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','r')
 			payload_filenames = telemetryQueue.readlines()
