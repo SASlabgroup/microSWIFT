@@ -9,7 +9,6 @@ TODO:
 """
 #--Import Statements
 import numpy as np
-import pynmea2
 from logging import getLogger
 from datetime import datetime, timedelta
 
@@ -40,7 +39,6 @@ def datetimearray2relativetime(datetimeArr,t0):
     """
     relTime = [timestep.total_seconds() for timestep in (datetimeArr-t0)]
     return relTime   
-
 
 def collateIMUandGPS(IMU,GPS):
     """

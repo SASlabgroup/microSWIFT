@@ -45,7 +45,7 @@ from IMU.IMUtoXYZ import IMUtoXYZ #TODO: fix this bug
 
 # Import wave processing functions
 from waves.collateIMUandGPS import collateIMUandGPS
-from waves.UVZAwaves import UVZAwaves
+# from waves.UVZAwaves import UVZAwaves
 
 # Import SBD functions
 from SBD.sendSBD import createTX
@@ -143,6 +143,7 @@ if __name__=="__main__":
 	telemetryQueue.close()
 
 	logger.info('IMUtoXYZ.py loaded')
+	logger.info('collateIMUandGPS.py loaded')
 	# --------------- Main Loop -------------------------
 	while True:
 
