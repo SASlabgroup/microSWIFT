@@ -142,6 +142,7 @@ if __name__=="__main__":
 	telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','a')
 	telemetryQueue.close()
 
+	logger.info('IMUtoXYZ.py loaded')
 	# --------------- Main Loop -------------------------
 	while True:
 
