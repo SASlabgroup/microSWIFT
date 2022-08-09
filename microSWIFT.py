@@ -200,14 +200,13 @@ if __name__=="__main__":
 
 				# Collate IMU and GPS onto a master time based on the IMU time
 				IMUcol,GPScol = collateIMUandGPS(IMU,GPS)
-				
-				#TODO: determine up
 
-				# UVZAwaves estimate; leave out first 500 points
-				Hs_1, Tp, Dp, E, f, a1, b1, a2, b2, check  = UVZAwaves(u[500:], v[500:], pz[500:], az[500:], fs) #TODO: check
+				# UVZAwaves estimate; leave out first 30 seconds
+				zeroPts = int(np.round(30*IMU_fs))
+				Hs_1, Tp, Dp, E, f, a1, b1, a2, b2, check  = UVZAwaves(GPScol['u'][zeroPts:], GPScol['v'][zeroPts:], IMUcol['pz'][zeroPts:], IMUcol['az'][zeroPts:], IMU_fs)
 
 				# GPSwaves estimate as secondary estimate
-				Hs_2, Tp_2, Dp_2, E_2, f_2, a1_2, b1_2, a2_2, b2_2, check_2 = GPSwaves(GPS['u'], GPS['v'], GPS['z'], 4)
+				Hs_2, Tp_2, Dp_2, E_2, f_2, a1_2, b1_2, a2_2, b2_2, check_2 = GPSwaves(GPS['u'], GPS['v'], GPS['z'], GPS_fs)
 				
 				# unpack GPS variables for remaining code; use non-interpolated values
 				u   = GPS['u']
@@ -278,7 +277,8 @@ if __name__=="__main__":
 
 			# Temperature and Voltage recordings - will be added in later versions
 			temp = 0
-			volt = 0
+			volt = 0   #NOTE: primary estimate
+			volt_2 = 1 #NOTE: secondary estimate (GPS if IMU and GPS are both initialized)
 
 			# Print some values of interest
 			logger.info('Hs = {}'.format(Hs))
@@ -296,8 +296,8 @@ if __name__=="__main__":
 			logger.info('Creating TX file and packing payload data')
 			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt)
 			#NOTE: J. Davis added 2022-07-21 for testing
-			TX_fname_2, payload_data_2 = createTX(Hs_2, Tp_2, Dp_2, E_2, f_2, a1_2, b1_2, a2_2, b2_2, check_2, u_mean_2, v_mean, z_mean, last_lat, last_lon, temp, volt)
-			
+			TX_fname_2, payload_data_2 = createTX(Hs_2, Tp_2, Dp_2, E_2, f_2, a1_2, b1_2, a2_2, b2_2, check_2, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt_2)
+
 			# Read in the file names from the telemetry queue
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','r')
 			payload_filenames = telemetryQueue.readlines()
