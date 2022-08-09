@@ -142,8 +142,6 @@ if __name__=="__main__":
 	telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','a')
 	telemetryQueue.close()
 
-	logger.info('IMUtoXYZ.py loaded')
-	logger.info('collateIMUandGPS.py loaded')
 	# --------------- Main Loop -------------------------
 	while True:
 

@@ -63,10 +63,12 @@ def collateIMUandGPS(IMU,GPS):
     IMUcrop = crop_dict(IMU,cropIMUbool)
 
     logger.info('IMU cropped')
-
+    print(GPS['time'])
     #-- convert datetimes to relative times for interpolation
     relTimeGPS = datetimearray2relativetime(GPS['time'],t0=startCrop)
     relTimeIMU = datetimearray2relativetime(IMUcrop['time'],t0=startCrop)
+    print(GPS['time'])
+    logger.info('datetimearray')
 
     #-- interpolate the GPS values onto the IMU time
     GPSintp = dict()
