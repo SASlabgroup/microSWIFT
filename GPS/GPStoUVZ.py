@@ -64,6 +64,8 @@ def GPStoUVZ(gpsfile):
             else: #if not GPGGA or GPVTG, continue to start of loop
                 continue
            
+    logger.info('GPS file read')
+
     # sort
     sortInd    = np.asarray(time).argsort()
     timeSorted = np.asarray(time)[sortInd]
