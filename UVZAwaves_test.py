@@ -9,6 +9,7 @@ from waves.UVZAwaves import UVZAwaves
 from GPS.GPSwaves import GPSwaves
 from datetime import datetime, timedelta
 from waves.collateIMUandGPS import collateIMUandGPS
+# from waves.cumtrapz import cumtrapz
 
 dataDir  = './waves/testdata/'
 IMUdataFilename = 'microSWIFT043_IMU_05May2022_200006UTC.dat'#'microSWIFT021_IMU_12Jul2021_210000UTC.dat' #'microSWIFT014_IMU_27Oct2021_190006UTC.dat' 
@@ -18,6 +19,7 @@ fs = 12 #TODO: fix from input or timestamp diff; does NOT work for 48Hz
 #%%
 GPS = GPStoUVZ(f'{dataDir}{GPSdataFilename}')
 # u, v, z, lat, lon, GPStime = GPStoUVZ(f'{dataDir}{GPSdataFilename}')
+#%%
 
 #%%
 IMU = IMUtoXYZ(f'{dataDir}{IMUdataFilename}',fs)
