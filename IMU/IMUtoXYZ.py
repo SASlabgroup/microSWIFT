@@ -11,7 +11,7 @@ TODO:
 import numpy as np
 from logging import getLogger
 from datetime import datetime, timedelta
-from scipy import integrate
+# from scipy import integrate
 
 #--helper functions:
 def sec(n_secs):
@@ -83,7 +83,7 @@ def integrate_acc(a,t,filt):
     # determine 30 second window to zero out after filtering
     fs = np.mean(np.diff(t))**(-1)
     zeroPts = int(np.round(30*fs))
-
+    ai = a.copy()
     # ai = np.delete(ai,np.s_[:250]) #TODO: wrap
     ai[:zeroPts] = 0 # zero initial oscillations from filtering
     # t  = np.delete(t,np.s_[:250])
@@ -232,7 +232,8 @@ def IMUtoXYZ(imufile,fs):
     magSorted[1] = magSorted[1]*signs[1]
     magSorted[2] = magSorted[2]*signs[2]
 
-    logger.info('Coordinate position {upIdx} assigned as up')
+    print(f'Coordinate position {upIdx} assigned as up')
+    logger.info(f'Coordinate position {upIdx} assigned as up')
 
     # create a master time array based on the specified sampling frequency and the start and end times.
     dt = sec(fs**(-1))
