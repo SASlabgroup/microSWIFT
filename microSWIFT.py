@@ -41,7 +41,7 @@ from GPS.GPStoUVZ import GPStoUVZ
 
 # Import IMU functions
 from IMU.recordIMU import recordIMU
-# from IMU.IMUtoXYZ import IMUtoXYZ #TODO: fix this bug
+from IMU.IMUtoXYZ import IMUtoXYZ #TODO: fix this bug
 
 # Import wave processing functions
 # from waves.collateIMUandGPS import collateIMUandGPS
@@ -142,7 +142,7 @@ if __name__=="__main__":
 	telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','a')
 	telemetryQueue.close()
 
-	# logger.info('IMUtoXYZ.py loaded')
+	logger.info('IMUtoXYZ.py loaded')
 	# --------------- Main Loop -------------------------
 	while True:
 
