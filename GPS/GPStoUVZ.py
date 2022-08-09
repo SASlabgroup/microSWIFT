@@ -66,14 +66,14 @@ def GPStoUVZ(gpsfile):
            
     logger.info('GPS file read')
 
-    # sort
-    sortInd    = np.asarray(time).argsort()
-    timeSorted = np.asarray(time)[sortInd]
-    uSorted    = np.asarray(u)[sortInd].transpose()
-    vSorted    = np.asarray(v)[sortInd].transpose()
-    zSorted    = np.asarray(z)[sortInd].transpose()
-    latSorted  = np.asarray(lat)[sortInd].transpose()
-    lonSorted  = np.asarray(lon)[sortInd].transpose()
+    # TODO: bug here, fix!
+    # sortInd    = np.asarray(time).argsort()
+    # timeSorted = np.asarray(time)[sortInd]
+    # uSorted    = np.asarray(u)[sortInd].transpose()
+    # vSorted    = np.asarray(v)[sortInd].transpose()
+    # zSorted    = np.asarray(z)[sortInd].transpose()
+    # latSorted  = np.asarray(lat)[sortInd].transpose()
+    # lonSorted  = np.asarray(lon)[sortInd].transpose()
 
     logger.info('GPS sorted')
 
