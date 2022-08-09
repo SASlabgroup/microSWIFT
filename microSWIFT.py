@@ -41,7 +41,7 @@ from GPS.GPStoUVZ import GPStoUVZ
 
 # Import IMU functions
 from IMU.recordIMU import recordIMU
-# from IMU.IMUtoXYZ import IMUtoXYZ
+from IMU.IMUtoXYZ import IMUtoXYZ
 
 # Import wave processing functions
 # from waves.collateIMUandGPS import collateIMUandGPS
