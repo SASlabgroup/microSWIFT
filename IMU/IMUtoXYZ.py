@@ -83,13 +83,6 @@ def integrate_acc(a,t,filt):
     # determine 30 second window to zero out after filtering
     fs = np.mean(np.diff(t))**(-1)
     zeroPts = int(np.round(30*fs))
-    import matplotlib.pyplot as plt
-    fig,ax = plt.subplots(1,1)
-    ax.plot(t,a)
-
-    ai = filt(a)
-
-    ax.plot(t,a)
 
     # ai = np.delete(ai,np.s_[:250]) #TODO: wrap
     ai[:zeroPts] = 0 # zero initial oscillations from filtering
