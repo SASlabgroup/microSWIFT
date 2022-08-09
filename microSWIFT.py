@@ -44,8 +44,8 @@ from IMU.recordIMU import recordIMU
 from IMU.IMUtoXYZ import IMUtoXYZ #TODO: fix this bug
 
 # Import wave processing functions
-# from waves.collateIMUandGPS import collateIMUandGPS
-# from waves.UVZAwaves import UVZAwaves
+from waves.collateIMUandGPS import collateIMUandGPS
+from waves.UVZAwaves import UVZAwaves
 
 # Import SBD functions
 from SBD.sendSBD import createTX
