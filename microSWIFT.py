@@ -195,25 +195,28 @@ if __name__=="__main__":
 			if gps_initialized and imu_initialized: #gps_initialized == True and imu_initialized == True:
 				logger.info('GPS and IMU initialized')
 				# Compute u, v and z from raw GPS data
+				logger.info('entering GPStoUVZ.py')
 				GPS = GPStoUVZ(GPSdataFilename) # u, v, z, lat, lon = GPStoUVZ(GPSdataFilename)
 				logger.info('GPStoUVZ executed')
 
 				# Process raw IMU data
+				logger.info('entering IMUtoXYZ.py')
 				IMU = IMUtoXYZ(IMUdataFilename,IMU_fs) # ax, vx, px, ay, vy, py, az, vz, pz = IMUtoXYZ(IMUdataFilename,IMU_fs)
-				logger.info('IMUtoXYZ executed')
+				logger.info('IMUtoXYZ.py executed')
 
 				# Collate IMU and GPS onto a master time based on the IMU time
+				logger.info('entering collateIMUandGPS.py')
 				IMUcol,GPScol = collateIMUandGPS(IMU,GPS)
-				logger.info('GPS and IMU collated')
+				logger.info('collateIMUandGPS.py executed')
 
 				# UVZAwaves estimate; leave out first 30 seconds
 				zeroPts = int(np.round(30*IMU_fs))
 				Hs_1, Tp, Dp, E, f, a1, b1, a2, b2, check  = UVZAwaves(GPScol['u'][zeroPts:], GPScol['v'][zeroPts:], IMUcol['pz'][zeroPts:], IMUcol['az'][zeroPts:], IMU_fs)
-				logger.info('UVZAwaves executed, primary estimate (voltage==0)')
+				logger.info('UVZAwaves.py executed, primary estimate (voltage==0)')
 
 				# GPSwaves estimate as secondary estimate
 				Hs_2, Tp_2, Dp_2, E_2, f_2, a1_2, b1_2, a2_2, b2_2, check_2 = GPSwaves(GPS['u'], GPS['v'], GPS['z'], GPS_fs)
-				logger.info('UVZAwaves executed, secondary estimate (voltage==1)')
+				logger.info('GPSwaves.py executed, secondary estimate (voltage==1)')
 
 				# unpack GPS variables for remaining code; use non-interpolated values
 				u   = GPS['u']
