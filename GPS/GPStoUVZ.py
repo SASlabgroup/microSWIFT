@@ -75,12 +75,11 @@ def GPStoUVZ(gpsfile):
     # latSorted  = np.asarray(lat)[sortInd].transpose()
     # lonSorted  = np.asarray(lon)[sortInd].transpose()
 
-    logger.info('GPS sorted')
+    
 
     # assign outputs to GPS dict
-    # GPS.update {'u':u,'v':v,'z':z,'lat':lat,'lon':lon,'time':time}
-    GPS.update({'u':uSorted,'v':vSorted,'z':zSorted,'lat':latSorted,'lon':lonSorted,'time':timeSorted})
-
+    GPS.update({'u':u,'v':v,'z':z,'lat':lat,'lon':lon,'time':time})
+    # GPS.update({'u':uSorted,'v':vSorted,'z':zSorted,'lat':latSorted,'lon':lonSorted,'time':timeSorted})
 
     logger.info('GPGGA lines: {}.'.format(ipos))
     logger.info('GPVTG lines: {}'.format(ivel))
