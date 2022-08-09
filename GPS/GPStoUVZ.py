@@ -75,6 +75,7 @@ def GPStoUVZ(gpsfile):
     latSorted  = np.asarray(lat)[sortInd].transpose()
     lonSorted  = np.asarray(lon)[sortInd].transpose()
 
+    logger.info('GPS sorted')
 
     # assign outputs to GPS dict
     # GPS.update {'u':u,'v':v,'z':z,'lat':lat,'lon':lon,'time':time}
