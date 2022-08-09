@@ -12,7 +12,7 @@ import numpy as np
 from logging import getLogger
 from datetime import datetime, timedelta
 # from scipy import integrate
-
+import scipy
 #--helper functions:
 def sec(n_secs):
     """
