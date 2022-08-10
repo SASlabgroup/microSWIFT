@@ -206,9 +206,10 @@ if __name__=="__main__":
 				logger.info('entering collateIMUandGPS.py')
 				IMUcol,GPScol = collateIMUandGPS(IMU,GPS)
 				logger.info('collateIMUandGPS.py executed')
-				
-				logger.info(print(GPScol['u']))
 
+
+				logger.info(f"{len(GPScol['u'])}")
+				
 				# UVZAwaves estimate; leave out first 30 seconds
 				zeroPts = int(np.round(30*IMU_fs))
 				Hs, Tp, Dp, E, f, a1, b1, a2, b2, check  = UVZAwaves(GPScol['u'][zeroPts:], GPScol['v'][zeroPts:], IMUcol['pz'][zeroPts:], IMUcol['az'][zeroPts:], IMU_fs)
