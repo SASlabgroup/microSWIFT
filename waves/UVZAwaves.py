@@ -95,6 +95,10 @@ def UVZAwaves(u, v, z, a, fs):
         logger.info(f'sum(badv): {np.sum(badv)}')
     else:
         logger.info('Data is NOT Sufficient for Processing - Program Exit')
+        logger.info(f'num points: {num_points}')
+        logger.info(f'fs*wsecs: {fs*wsecs}')
+        logger.info(f'sum(badu): {np.sum(badu)}')
+        logger.info(f'sum(badv): {np.sum(badv)}')
         Hs = 999
         Tp = 999
         Dp = 999
