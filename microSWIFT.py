@@ -206,7 +206,8 @@ if __name__=="__main__":
 				logger.info('entering collateIMUandGPS.py')
 				IMUcol,GPScol = collateIMUandGPS(IMU,GPS)
 				logger.info('collateIMUandGPS.py executed')
-				print(GPScol['u'])
+				
+				logger.info(print(GPScol['u']))
 
 				# UVZAwaves estimate; leave out first 30 seconds
 				zeroPts = int(np.round(30*IMU_fs))
@@ -305,7 +306,6 @@ if __name__=="__main__":
 			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt)
 			#NOTE: J. Davis added 2022-07-21 for testing
 		
-								
 			try: # GPSwaves estimate as secondary estimate
 				TX_fname_2, payload_data_2 = createTX(Hs_2, Tp_2, Dp_2, E_2, f_2, a1_2, b1_2, a2_2, b2_2, check_2, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt_2)
 			except:
