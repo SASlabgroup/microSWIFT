@@ -84,8 +84,15 @@ def UVZAwaves(u, v, z, a, fs):
 
     # ----------------- Begin Processing ----------------------
     num_points = u.shape[0] # number of points
+
+
+
     if ( (num_points >= fs*wsecs ) and (fs >= 1 ) and ( np.sum(badu) < 100 ) and (np.sum(badv) < 100) ):
         logger.info('Data is Sufficient for Processing - Processing Start')
+        logger.info(f'num points: {num_points}')
+        logger.info(f'fs*wsecs: {fs*wsecs}')
+        logger.info(f'sum(badu): {np.sum(badu)}')
+        logger.info(f'sum(badv): {np.sum(badv)}')
     else:
         logger.info('Data is NOT Sufficient for Processing - Program Exit')
         Hs = 999
