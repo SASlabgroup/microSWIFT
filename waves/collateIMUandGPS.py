@@ -77,6 +77,8 @@ def collateIMUandGPS(IMU,GPS):
         print(len(relTimeIMU))
         print(len(relTimeGPS))
         print(len(GPS[key]))
+        if len(GPS[key]) < len(relTimeGPS):
+            relTimeGPS = np.delete(relTimeGPS,-1)
         GPSintp[key] = np.interp(relTimeIMU,relTimeGPS,GPS[key]) # interpolate GPS onto IMU
         NaNbools.append(~np.isnan(GPSintp[key])) # record any NaNs as False
 
