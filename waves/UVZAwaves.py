@@ -261,6 +261,8 @@ def UVZAwaves(u, v, z, a, fs):
         UAwindowmerged[int(n/merge)-1, :] = np.mean( UAwindow[ind_low:ind_high, :], axis=0 )
         VAwindowmerged[int(n/merge)-1, :] = np.mean( VAwindow[ind_low:ind_high, :], axis=0 )
 
+    logger.info('merged')
+
     # Define Frequnecy range and bandwidth
     n = (win/2) / merge # number of frequnecy bands
     Nyquist = 0.5 * fs  # Highest spectral frequnecy
@@ -272,6 +274,8 @@ def UVZAwaves(u, v, z, a, fs):
     f = (1/wsecs) + (bandwidth/2) + (bandwidth * np.arange(n))
     #TODO: fix freq length
     # print(f[-1])
+
+    logger.info('ensemble averaged')
     # --------- Ensemble Average Windows together ----------------
     # take average of all windows at each frequency band, divide by n*samplerate to get power 
     # spectral density. Use factor of 2 since we are using one-sided spectrum
@@ -291,7 +295,7 @@ def UVZAwaves(u, v, z, a, fs):
     b2 = 2*np.real(UV)/(UU+VV)             # [-]
     #TODO: fix check
     check = 999 * np.ones(42)
-
+    logger.info('spectral results')
     #-- From GPSandIMUwaves:
 
     # %% convert to displacement spectra (from velocity and acceleration)
@@ -399,12 +403,12 @@ def UVZAwaves(u, v, z, a, fs):
     # ----------- Screen for presence/absence of vertical data --------
     #TODO: fix this:
 
-    if zdummy == 1: 
-        Ezz[:] = 0
-        a1[:] = 9999
-        b1[:] = 9999
-        dir1[:] = 9999
-        spread1[:] = 9999
+    # if zdummy == 1: 
+    #     Ezz[:] = 0
+    #     a1[:] = 9999
+    #     b1[:] = 9999
+    #     dir1[:] = 9999
+    #     spread1[:] = 9999
     
     # # ------ Compute Scalar Energy Spectra -------------
     # E = Exx + Eyy
