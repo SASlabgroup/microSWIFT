@@ -41,6 +41,8 @@ def UVZAwaves(u, v, z, a, fs):
         return x_demean
 
     # ------------------- Convert Inputs to Numpy Arrays ------
+    logger.info(f"{u}")
+    
     u = np.squeeze(u)
     v = np.squeeze(v)
     z = np.squeeze(z)
@@ -83,6 +85,7 @@ def UVZAwaves(u, v, z, a, fs):
     a[bada] = np.mean( a[~bada] )
 
     # ----------------- Begin Processing ----------------------
+    logger.info(f"{u}")
     num_points = u.shape[0] # number of points
 
 

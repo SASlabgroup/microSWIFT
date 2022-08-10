@@ -209,6 +209,7 @@ if __name__=="__main__":
 
 
 				logger.info(f"{len(GPScol['u'])}")
+				logger.info(f"{GPScol['u']}")
 				
 				# UVZAwaves estimate; leave out first 30 seconds
 				zeroPts = int(np.round(30*IMU_fs))
