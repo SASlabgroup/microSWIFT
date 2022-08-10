@@ -86,7 +86,7 @@ def UVZAwaves(u, v, z, a, fs):
     a[bada] = np.mean( a[~bada] )
 
     # ----------------- Begin Processing ----------------------
-    logger.info(f"{u}")
+    
     num_points = u.shape[0] # number of points
 
     #TODO: uncomment for final rollout
@@ -238,7 +238,7 @@ def UVZAwaves(u, v, z, a, fs):
     UAwindow = (Uwindow * np.conj(Awindow))
     VAwindow = (Vwindow * np.conj(Awindow))
    
-
+    logger.info('merging freq bands')
     # ----------- Merge Neighboring Frequency Bands -------- 
     UUwindowmerged = np.zeros((int(np.floor(win/(2*merge))), windows))
     VVwindowmerged = np.zeros((int(np.floor(win/(2*merge))), windows))
