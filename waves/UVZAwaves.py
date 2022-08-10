@@ -88,8 +88,8 @@ def UVZAwaves(u, v, z, a, fs):
     logger.info(f"{u}")
     num_points = u.shape[0] # number of points
 
-
-    if ( (num_points >= fs*wsecs ) and (fs >= 1 ) and ( np.sum(badu) < 100 ) and (np.sum(badv) < 100) ):
+    #TODO: uncomment for final rollout
+    if (fs >= 1 ): #( (num_points >= fs*wsecs ) and (fs >= 1 ) and ( np.sum(badu) < 100 ) and (np.sum(badv) < 100) )
         logger.info('Data is Sufficient for Processing - Processing Start')
         logger.info(f'num points: {num_points}')
         logger.info(f'fs*wsecs: {fs*wsecs}')
