@@ -206,8 +206,6 @@ if __name__=="__main__":
 				logger.info('entering collateIMUandGPS.py')
 				IMUcol,GPScol = collateIMUandGPS(IMU,GPS)
 				logger.info('collateIMUandGPS.py executed')
-
-
 				logger.info(f"{len(GPScol['u'])}")
 				logger.info(f"{GPScol['u']}")
 

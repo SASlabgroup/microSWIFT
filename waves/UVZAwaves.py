@@ -56,7 +56,8 @@ def UVZAwaves(u, v, z, a, fs):
     RC = 3.5
 
     # ----------------------- Fixed Parameters ---------------
-    wsecs = 256 # window length in seconds
+    # wsecs = 256 # window length in seconds
+    wsecs = 1 #TODO: fix wsecs
     merge = 3   # Frequency bands to merge
     maxf = 0.5  # Frequency cutoff for telemetry, Hz
 
