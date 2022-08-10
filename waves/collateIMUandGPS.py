@@ -67,13 +67,16 @@ def collateIMUandGPS(IMU,GPS):
     #-- convert datetimes to relative times for interpolation
     relTimeGPS = datetimearray2relativetime(GPS['time'],t0=startCrop)
     relTimeIMU = datetimearray2relativetime(IMUcrop['time'],t0=startCrop)
-    print(GPS['time'])
-    logger.info('datetimearray')
+    
+    logger.info('datetimearray conversion complete')
 
     #-- interpolate the GPS values onto the IMU time
     GPSintp = dict()
     NaNbools = [] # initialize a list of to store logical array of NaN locations
     for key in GPS.keys()-['time']:
+        print(len(relTimeIMU))
+        print(len(relTimeGPS))
+        print(len(GPS[key]))
         GPSintp[key] = np.interp(relTimeIMU,relTimeGPS,GPS[key]) # interpolate GPS onto IMU
         NaNbools.append(~np.isnan(GPSintp[key])) # record any NaNs as False
 

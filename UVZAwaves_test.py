@@ -59,8 +59,6 @@ IMUcol,GPScol = collateIMUandGPS(IMU,GPS)
 # ax, ay, az, vx, vy, vz, px, py, pz, IMUtime = IMUcol.values() #TODO: beware: unpacking can be unordered...
 # u, v, z, lat, lon, GPStime = GPScol.values() # 
 
-
-
 #%%
 zeroPts = int(np.round(30*fs))
 
