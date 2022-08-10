@@ -37,9 +37,7 @@ def datetimearray2relativetime(datetimeArr,t0):
     Outputs:
         relTime - 
     """
-    print(t0)
-    print((datetimeArr-t0))
-    relTime = [timestep.total_seconds() for timestep in (datetimeArr-t0)]
+    relTime = [timestep.total_seconds() for timestep in (np.asarray(datetimeArr)-t0)]
     return relTime   
 
 def collateIMUandGPS(IMU,GPS):
