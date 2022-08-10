@@ -84,7 +84,7 @@ def UVZAwaves(u, v, z, a, fs):
 
     # ----------------- Begin Processing ----------------------
     num_points = u.shape[0] # number of points
-
+    print(u)
 
 
     if ( (num_points >= fs*wsecs ) and (fs >= 1 ) and ( np.sum(badu) < 100 ) and (np.sum(badv) < 100) ):
