@@ -207,18 +207,14 @@ if __name__=="__main__":
 				IMUcol,GPScol = collateIMUandGPS(IMU,GPS)
 				logger.info('collateIMUandGPS.py executed')
 				print(GPScol['u'])
-				
+
 				# UVZAwaves estimate; leave out first 30 seconds
 				zeroPts = int(np.round(30*IMU_fs))
 				Hs, Tp, Dp, E, f, a1, b1, a2, b2, check  = UVZAwaves(GPScol['u'][zeroPts:], GPScol['v'][zeroPts:], IMUcol['pz'][zeroPts:], IMUcol['az'][zeroPts:], IMU_fs)
 				logger.info('UVZAwaves.py executed, primary estimate (voltage==0)')
 
-				# GPSwaves estimate as secondary estimate
-				try:
-					Hs_2, Tp_2, Dp_2, E_2, f_2, a1_2, b1_2, a2_2, b2_2, check_2 = GPSwaves(GPS['u'], GPS['v'], GPS['z'], GPS_fs)
-					logger.info('GPSwaves.py executed, secondary estimate (voltage==1)')
-				except:
-					logger.info('No secondary estimate exists.')
+				Hs_2, Tp_2, Dp_2, E_2, f_2, a1_2, b1_2, a2_2, b2_2, check_2 = GPSwaves(GPS['u'], GPS['v'], GPS['z'], GPS_fs)
+				logger.info('GPSwaves.py executed, secondary estimate (voltage==1)')
 
 				# unpack GPS variables for remaining code; use non-interpolated values
 				u   = GPS['u']
@@ -308,7 +304,12 @@ if __name__=="__main__":
 			logger.info('Creating TX file and packing payload data')
 			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt)
 			#NOTE: J. Davis added 2022-07-21 for testing
-			TX_fname_2, payload_data_2 = createTX(Hs_2, Tp_2, Dp_2, E_2, f_2, a1_2, b1_2, a2_2, b2_2, check_2, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt_2)
+		
+								
+			try: # GPSwaves estimate as secondary estimate
+				TX_fname_2, payload_data_2 = createTX(Hs_2, Tp_2, Dp_2, E_2, f_2, a1_2, b1_2, a2_2, b2_2, check_2, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt_2)
+			except:
+				logger.info('No secondary estimate exists.')
 
 			# Read in the file names from the telemetry queue
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','r')
