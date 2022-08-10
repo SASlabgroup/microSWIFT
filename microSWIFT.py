@@ -36,12 +36,12 @@ import struct
 
 # Import GPS functions
 from GPS.recordGPS import recordGPS
-from GPS.GPSwaves import GPSwaves #TODO: delete & replace with UVZAwaves
+from GPS.GPSwaves import GPSwaves 
 from GPS.GPStoUVZ import GPStoUVZ
 
 # Import IMU functions
 from IMU.recordIMU import recordIMU
-from IMU.IMUtoXYZ import IMUtoXYZ #TODO: fix this bug
+from IMU.IMUtoXYZ import IMUtoXYZ 
 
 # Import wave processing functions
 from waves.collateIMUandGPS import collateIMUandGPS
@@ -210,8 +210,7 @@ if __name__=="__main__":
 				logger.info(f"{GPScol['u']}")
 
 				# UVZAwaves estimate; leave out first 30 seconds
-				# zeroPts = int(np.round(30*IMU_fs)) 
-				zeroPts = 0 #TODO: change to 30s
+				zeroPts = int(np.round(30*IMU_fs)) 
 				Hs, Tp, Dp, E, f, a1, b1, a2, b2, check  = UVZAwaves(GPScol['u'][zeroPts:], GPScol['v'][zeroPts:], IMUcol['pz'][zeroPts:], IMUcol['az'][zeroPts:], IMU_fs)
 				logger.info('UVZAwaves.py executed, primary estimate (voltage==0)')
 
@@ -309,6 +308,7 @@ if __name__=="__main__":
 		
 			try: # GPSwaves estimate as secondary estimate
 				TX_fname_2, payload_data_2 = createTX(Hs_2, Tp_2, Dp_2, E_2, f_2, a1_2, b1_2, a2_2, b2_2, check_2, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt_2)
+				logger.info('Packed secondary estimate exists.')
 			except:
 				logger.info('No secondary estimate exists.')
 

@@ -41,8 +41,6 @@ def UVZAwaves(u, v, z, a, fs):
         return x_demean
 
     # ------------------- Convert Inputs to Numpy Arrays ------
-    logger.info(f"{u}")
-    logger.info(f"{z}")
     u = np.squeeze(u)
     v = np.squeeze(v)
     z = np.squeeze(z)
@@ -56,8 +54,7 @@ def UVZAwaves(u, v, z, a, fs):
     RC = 3.5
 
     # ----------------------- Fixed Parameters ---------------
-    # wsecs = 256 # window length in seconds
-    wsecs = 1 #TODO: fix wsecs
+    wsecs = 256 # window length in seconds
     merge = 3   # Frequency bands to merge
     maxf = 0.5  # Frequency cutoff for telemetry, Hz
 
@@ -89,8 +86,7 @@ def UVZAwaves(u, v, z, a, fs):
     
     num_points = u.shape[0] # number of points
 
-    #TODO: uncomment for final rollout
-    if (fs >= 1 ): #( (num_points >= fs*wsecs ) and (fs >= 1 ) and ( np.sum(badu) < 100 ) and (np.sum(badv) < 100) )
+    if ( (num_points >= fs*wsecs ) and (fs >= 1 ) and ( np.sum(badu) < 100 ) and (np.sum(badv) < 100) ):
         logger.info('Data is Sufficient for Processing - Processing Start')
         logger.info(f'num points: {num_points}')
         logger.info(f'fs*wsecs: {fs*wsecs}')
