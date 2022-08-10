@@ -42,7 +42,7 @@ def UVZAwaves(u, v, z, a, fs):
 
     # ------------------- Convert Inputs to Numpy Arrays ------
     logger.info(f"{u}")
-    
+    logger.info(f"{z}")
     u = np.squeeze(u)
     v = np.squeeze(v)
     z = np.squeeze(z)
@@ -200,6 +200,7 @@ def UVZAwaves(u, v, z, a, fs):
     zwindowready = np.repeat(np.reshape(factz, (1, factz.shape[0])), win, axis=0) * zwindowtaper
     awindowready = np.repeat(np.reshape(factz, (1, facta.shape[0])), win, axis=0) * awindowtaper
 
+    logger.info('FFT')
     # ---------------- FFT ------------------
     # Calculate Fourer Coefficients
     #**** Note: this FFT funcion is slightly different than the MATLAB version 
