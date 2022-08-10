@@ -213,8 +213,11 @@ if __name__=="__main__":
 				logger.info('UVZAwaves.py executed, primary estimate (voltage==0)')
 
 				# GPSwaves estimate as secondary estimate
-				Hs_2, Tp_2, Dp_2, E_2, f_2, a1_2, b1_2, a2_2, b2_2, check_2 = GPSwaves(GPS['u'], GPS['v'], GPS['z'], GPS_fs)
-				logger.info('GPSwaves.py executed, secondary estimate (voltage==1)')
+				try:
+					Hs_2, Tp_2, Dp_2, E_2, f_2, a1_2, b1_2, a2_2, b2_2, check_2 = GPSwaves(GPS['u'], GPS['v'], GPS['z'], GPS_fs)
+					logger.info('GPSwaves.py executed, secondary estimate (voltage==1)')
+				except:
+					logger.info('No secondary estimate exists.')
 
 				# unpack GPS variables for remaining code; use non-interpolated values
 				u   = GPS['u']
