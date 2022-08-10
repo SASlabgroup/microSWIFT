@@ -73,13 +73,16 @@ def collateIMUandGPS(IMU,GPS):
     #-- interpolate the GPS values onto the IMU time
     GPSintp = dict()
     NaNbools = [] # initialize a list of to store logical array of NaN locations
+    GPS['z'] = GPS['z'][:-1]
+    GPSlens = [len(GPS[key]) for key in GPS.keys()-['time']]
+    minLen = np.min(GPSlens)
+
     for key in GPS.keys()-['time']:
         print(len(relTimeIMU))
         print(len(relTimeGPS))
         print(len(GPS[key]))
-        if len(GPS[key]) < len(relTimeGPS):
-            relTimeGPS = np.delete(relTimeGPS,-1)
-        GPSintp[key] = np.interp(relTimeIMU,relTimeGPS,GPS[key]) # interpolate GPS onto IMU
+
+        GPSintp[key] = np.interp(relTimeIMU,relTimeGPS[:minLen],GPS[key][:minLen]) # interpolate GPS onto IMU
         NaNbools.append(~np.isnan(GPSintp[key])) # record any NaNs as False
 
     GPSintp.update({'time':IMUcrop['time']}) # update new GPS dict with datetime 
