@@ -270,8 +270,8 @@ def UVZAwaves(u, v, z, a, fs):
 
     # Find middle of each freq band
     #** ONLY for merging odd numbers of bands
-    # f = (1/wsecs) + (bandwidth/2) + (bandwidth * np.arange(n-1))
-    f = (1/wsecs) + (bandwidth/2) + (bandwidth * np.arange(n))
+    f = (1/wsecs) + (bandwidth/2) + (bandwidth * np.arange(n-1))
+    # f = (1/wsecs) + (bandwidth/2) + (bandwidth * np.arange(n))
     #TODO: fix freq length
     # print(f[-1])
 
