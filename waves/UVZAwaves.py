@@ -426,7 +426,7 @@ def UVZAwaves(u, v, z, a, fs):
     logger.info(f'{len(E)}')
     logger.info(f'{len(f)}')
     logger.info(f'{len(fwaves)}')
-
+    logger.info(f'{fwaves}')
 
 
     # Compute Significant Wave Height
