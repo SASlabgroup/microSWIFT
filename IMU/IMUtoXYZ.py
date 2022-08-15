@@ -296,7 +296,7 @@ def IMUtoXYZ(imufile,fs):
     magSorted = np.asarray(mag)[sortInd,:].transpose()
     gyoSorted = np.asarray(gyo)[sortInd,:].transpose()
     
-    #TODO:--determine which way is up
+    # Determine which way is up
     accMeans = list()
     for ai in accSorted:
         accMeans.append(np.mean(ai))

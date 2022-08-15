@@ -136,8 +136,6 @@ def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, la
 
 
     #Create file name
-    # TX_fname = dataDir+floatID+'_TX_'+"{:%d%b%Y_%H%M%SUTC}}".format(now)+'_2.dat'
-
     TX_fname = dataDir + floatID+'_TX_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(now) 
     if os.path.exists(TX_fname): # support secondary estimate
         TX_fname = dataDir+floatID+'_TX_'+"{:%d%b%Y_%H%M%SUTC}".format(now)+'_2.dat'

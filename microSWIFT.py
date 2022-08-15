@@ -168,20 +168,17 @@ if __name__=="__main__":
 				next_start = current_start + timedelta(minutes=burst_int)
 				
 				# Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
-				#--- TODO: uncomment: modified for testing
-				# with concurrent.futures.ThreadPoolExecutor() as executor:
-				# 	# Submit Futures 
-				# 	recordGPS_future = executor.submit(recordGPS, end_times[i])
-				# 	recordIMU_future = executor.submit(recordIMU, end_times[i])
+				with concurrent.futures.ThreadPoolExecutor() as executor:
+					# Submit Futures 
+					recordGPS_future = executor.submit(recordGPS, end_times[i])
+					recordIMU_future = executor.submit(recordIMU, end_times[i])
 
-				# 	# get results from Futures
-				# 	GPSdataFilename, gps_initialized = recordGPS_future.result()
-				# 	IMUdataFilename, imu_initialized = recordIMU_future.result()
-				#--- TODO: uncomment: modified for testing
+					# get results from Futures
+					GPSdataFilename, gps_initialized = recordGPS_future.result()
+					IMUdataFilename, imu_initialized = recordIMU_future.result()
 
 				#exit out of loop once burst is finished
 				recording_complete = True
-
 				
 				break
 
@@ -192,10 +189,10 @@ if __name__=="__main__":
 			begin_processing_time = datetime.now()
 			
 			# #---TODO: delete
-			gps_initialized = True
-			imu_initialized = True
-			IMUdataFilename = '/home/pi/microSWIFT/data/microSWIFT043_IMU_15Aug2022_210005UTC.dat' #'microSWIFT043_IMU_05May2022_200006UTC.dat'#'microSWIFT021_IMU_12Jul2021_210000UTC.dat' #'microSWIFT014_IMU_27Oct2021_190006UTC.dat' 
-			GPSdataFilename = '/home/pi/microSWIFT/data/microSWIFT043_GPS_15Aug2022_210006UTC.dat'
+			# gps_initialized = True
+			# imu_initialized = True
+			# IMUdataFilename = '/home/pi/microSWIFT/data/microSWIFT043_IMU_15Aug2022_210005UTC.dat' #'microSWIFT043_IMU_05May2022_200006UTC.dat'#'microSWIFT021_IMU_12Jul2021_210000UTC.dat' #'microSWIFT014_IMU_27Oct2021_190006UTC.dat' 
+			# GPSdataFilename = '/home/pi/microSWIFT/data/microSWIFT043_GPS_15Aug2022_210006UTC.dat'
 			# #---TODO: delete
 				
 			# Prioritize GPS processing
@@ -217,8 +214,8 @@ if __name__=="__main__":
 				logger.info('collateIMUandGPS.py executed')
 
 				# UVZAwaves estimate; leave out first 30 seconds
-				# zeroPts = int(np.round(30*IMU_fs)) #TODO: uncomment and delete next line
-				zeroPts = int(np.round(2*IMU_fs)) 
+				zeroPts = int(np.round(30*IMU_fs)) #TODO: uncomment and delete next line
+				# zeroPts = int(np.round(2*IMU_fs)) 
 				Hs, Tp, Dp, E, f, a1, b1, a2, b2, check  = UVZAwaves(GPScol['u'][zeroPts:], GPScol['v'][zeroPts:], IMUcol['pz'][zeroPts:], IMUcol['az'][zeroPts:], IMU_fs)
 				logger.info('UVZAwaves.py executed, primary estimate (voltage==0)')
 
