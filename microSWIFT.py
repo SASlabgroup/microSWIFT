@@ -169,14 +169,14 @@ if __name__=="__main__":
 				
 				# Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
 				#--- TODO: uncomment: modified for testing
-				with concurrent.futures.ThreadPoolExecutor() as executor:
-					# Submit Futures 
-					recordGPS_future = executor.submit(recordGPS, end_times[i])
-					recordIMU_future = executor.submit(recordIMU, end_times[i])
+				# with concurrent.futures.ThreadPoolExecutor() as executor:
+				# 	# Submit Futures 
+				# 	recordGPS_future = executor.submit(recordGPS, end_times[i])
+				# 	recordIMU_future = executor.submit(recordIMU, end_times[i])
 
-					# get results from Futures
-					GPSdataFilename, gps_initialized = recordGPS_future.result()
-					IMUdataFilename, imu_initialized = recordIMU_future.result()
+				# 	# get results from Futures
+				# 	GPSdataFilename, gps_initialized = recordGPS_future.result()
+				# 	IMUdataFilename, imu_initialized = recordIMU_future.result()
 				#--- TODO: uncomment: modified for testing
 
 				#exit out of loop once burst is finished
@@ -192,22 +192,22 @@ if __name__=="__main__":
 			begin_processing_time = datetime.now()
 			
 			# #---TODO: delete
-			# gps_initialized = True
-			# imu_initialized = True
-			# IMUdataFilename = '~/microSWIFT/data/microSWIFT043_IMU_15Aug2022_210005UTC.dat' #'microSWIFT043_IMU_05May2022_200006UTC.dat'#'microSWIFT021_IMU_12Jul2021_210000UTC.dat' #'microSWIFT014_IMU_27Oct2021_190006UTC.dat' 
-			# GPSdataFilename = '~/microSWIFT/data/microSWIFT043_GPS_15Aug2022_210006UTC.dat'
+			gps_initialized = True
+			imu_initialized = True
+			IMUdataFilename = '/home/pi/microSWIFT/data/microSWIFT043_IMU_15Aug2022_210005UTC.dat' #'microSWIFT043_IMU_05May2022_200006UTC.dat'#'microSWIFT021_IMU_12Jul2021_210000UTC.dat' #'microSWIFT014_IMU_27Oct2021_190006UTC.dat' 
+			GPSdataFilename = '/home/pi/microSWIFT/data/microSWIFT043_GPS_15Aug2022_210006UTC.dat'
 			# #---TODO: delete
 				
 			# Prioritize GPS processing
 			if gps_initialized and imu_initialized: #gps_initialized == True and imu_initialized == True:
 				logger.info('GPS and IMU initialized')
 				# Compute u, v and z from raw GPS data
-				logger.info(f'entering GPStoUVZ.py :{GPSdataFilename}')
+				logger.info(f'entering GPStoUVZ.py: {GPSdataFilename}')
 				GPS = GPStoUVZ(GPSdataFilename) # u, v, z, lat, lon = GPStoUVZ(GPSdataFilename)
 				logger.info('GPStoUVZ executed')
 
 				# Process raw IMU data
-				logger.info('entering IMUtoXYZ.py')
+				logger.info(f'entering IMUtoXYZ.py: {IMUdataFilename}')
 				IMU = IMUtoXYZ(IMUdataFilename,IMU_fs) # ax, vx, px, ay, vy, py, az, vz, pz = IMUtoXYZ(IMUdataFilename,IMU_fs)
 				logger.info('IMUtoXYZ.py executed')
 
