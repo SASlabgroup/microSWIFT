@@ -423,13 +423,13 @@ def UVZAwaves(u, v, z, a, fs):
     # print(f'{len(E)}')
     # print(f'{len(f)}')
     # print(f'{len(fwaves)}')
-    # logger.info(f'{len(E)}')
-    # logger.info(f'{len(f)}')
-    # logger.info(f'{len(fwaves)}')
+    logger.info(f'{len(E)}')
+    logger.info(f'{len(f)}')
+    logger.info(f'{len(fwaves)}')
     # logger.info(f'{fwaves}')
     # logger.info(f'E: {E}')
-    # logger.info(f'E[fwaves]: {E[fwaves]}')
-    # logger.info(f'f: {f}')
+    logger.info(f'E[fwaves]: {E[fwaves]}')
+    logger.info(f'f[fwaves]: {f[fwaves]}')
 
     # Compute Significant Wave Height
     Hs = 4 * np.sqrt( np.sum(E[fwaves]) * bandwidth)
