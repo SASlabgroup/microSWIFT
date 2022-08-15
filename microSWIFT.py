@@ -194,8 +194,8 @@ if __name__=="__main__":
 			#---TODO: delete
 			gps_initialized = True
 			imu_initialized = True
-			IMUdataFilename = './data/microSWIFT043_IMU_15Aug2022_210005UTC.dat' #'microSWIFT043_IMU_05May2022_200006UTC.dat'#'microSWIFT021_IMU_12Jul2021_210000UTC.dat' #'microSWIFT014_IMU_27Oct2021_190006UTC.dat' 
-			GPSdataFilename = './data/microSWIFT043_GPS_15Aug2022_210006UTC.dat'
+			IMUdataFilename = 'microSWIFT043_IMU_15Aug2022_210005UTC.dat' #'microSWIFT043_IMU_05May2022_200006UTC.dat'#'microSWIFT021_IMU_12Jul2021_210000UTC.dat' #'microSWIFT014_IMU_27Oct2021_190006UTC.dat' 
+			GPSdataFilename = 'microSWIFT043_GPS_15Aug2022_210006UTC.dat'
 			#---TODO: delete
 				
 			# Prioritize GPS processing
