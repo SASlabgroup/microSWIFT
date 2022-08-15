@@ -54,10 +54,10 @@ def UVZAwaves(u, v, z, a, fs):
     RC = 3.5
 
     # ----------------------- Fixed Parameters ---------------
-    # wsecs = 256 # window length in seconds
-    wsecs = 4 # window length in seconds #TODO: MODIFIED FOR TESTING delete
-    # merge = 3   # Frequency bands to merge
-    merge = 1   # Frequency bands to merge #TODO: MODIFIED FOR TESTING delete
+    wsecs = 256 # window length in seconds
+    # wsecs = 4 # window length in seconds #TODO: MODIFIED FOR TESTING delete
+    merge = 3   # Frequency bands to merge
+    # merge = 1   # Frequency bands to merge #TODO: MODIFIED FOR TESTING delete
 
     maxf = 0.5  # Frequency cutoff for telemetry, Hz
 
@@ -441,7 +441,7 @@ def UVZAwaves(u, v, z, a, fs):
     Ta = 1 / fe
 
     # Compute Peak Period
-    #TODO: use E?
+    #TODO: use E? or Az
     fpindex = np.argmax(UU + VV) # can use velocity and it picks out more distinct peak
     Tp = 1/f[fpindex]
     if Tp > 20: # if peak is not found, use centroid
