@@ -137,10 +137,11 @@ def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, la
 
     #Create file name
     TX_fname = dataDir + floatID+'_TX_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(now) 
+    if os.path.isFile(TX_fname): # support secondary estimate
+        TX_fname = dataDir + floatID+'_TX_'+"{:%d%b%Y_%H%M%SUTC}_2.dat}".format(now) 
 
     # Open the TX file and start to write to it    
     with open(TX_fname, 'wb') as file:
-        
         logger.info('create telemetry file: {}'.format(TX_fname))
         # Write the binary packed data to a file 
         logger.info('writing data to file')

@@ -294,7 +294,7 @@ def UVZAwaves(u, v, z, a, fs):
     a2 = (UU-VV)/(UU+VV)                   # [-]
     b2 = 2*np.real(UV)/(UU+VV)             # [-]
     #TODO: fix check
-    check = 999 * np.ones(42)
+    check = 999 * np.ones(len(E))
     logger.info('spectral results')
     #-- From GPSandIMUwaves:
 
@@ -423,13 +423,13 @@ def UVZAwaves(u, v, z, a, fs):
     # print(f'{len(E)}')
     # print(f'{len(f)}')
     # print(f'{len(fwaves)}')
-    logger.info(f'{len(E)}')
-    logger.info(f'{len(f)}')
-    logger.info(f'{len(fwaves)}')
+    # logger.info(f'{len(E)}')
+    # logger.info(f'{len(f)}')
+    # logger.info(f'{len(fwaves)}')
     # logger.info(f'{fwaves}')
     # logger.info(f'E: {E}')
-    logger.info(f'E[fwaves]: {E[fwaves]}')
-    logger.info(f'f[fwaves]: {f[fwaves]}')
+    # logger.info(f'E[fwaves]: {E[fwaves]}')
+    # logger.info(f'f[fwaves]: {f[fwaves]}')
 
     # Compute Significant Wave Height
     Hs = 4 * np.sqrt( np.sum(E[fwaves]) * bandwidth)
@@ -481,17 +481,10 @@ def UVZAwaves(u, v, z, a, fs):
     b1 = np.delete(b1, ind_to_delete)
     a2 = np.delete(a2, ind_to_delete)
     b2 = np.delete(b2, ind_to_delete)
-    #TODO: check = np.delete(check, ind_to_delete)
+    check = np.delete(check, ind_to_delete)
     f = np.delete(f, ind_to_delete)
 
     logger.info(f'len(E): {len(E)}; len(f): {len(f)}; len(a1): {len(a1)}; len(b1): {len(b1)}; len(a2): {len(a2)}; len(b2): {len(b2)}')
-    print(f'{len(E)}')
-    print(f'{len(f)}')
-    print(f'{len(a1)}')
-    print(f'{len(b1)}')
-    print(f'{len(a2)}')
-    print(f'{len(b2)}')
-    print(f'{len(check)}')
     
     # Return values
     return Hs, Tp, Dp, E, f, a1, b1, a2, b2, check

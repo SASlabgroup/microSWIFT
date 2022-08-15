@@ -298,12 +298,12 @@ if __name__=="__main__":
 			volt = 0   #NOTE: primary estimate
 			volt_2 = 1 #NOTE: secondary estimate (GPS if IMU and GPS are both initialized)
 
-			# Print some values of interest
-			logger.info('Hs = {}'.format(Hs))
-			logger.info('Tp = {}'.format(Tp))
-			logger.info('Dp = {}'.format(Dp))
-			logger.info('u_mean = {}'.format(u_mean))
-			logger.info('v_mean = {}'.format(v_mean))
+			# Print some values of interest J. Davis 08-15-22 not neccessary bc they are spit out in sendSBD
+			# logger.info(f'Hs = {round(Hs,2)}')
+			# logger.info(f'Tp = {round(Tp,2)}')
+			# logger.info(f'Dp = {round(Dp,2)}')
+			# logger.info(f'u_mean = {round(u_mean,2)}')
+			# logger.info(f'v_mean = {round(v_mean,2)}')
 
 			# End Timing of recording
 			logger.info('Processing section took {}'.format(datetime.now() - begin_processing_time))
@@ -311,15 +311,15 @@ if __name__=="__main__":
 			## -------------- Telemetry Section ----------------------------------
 			# Create TX file from processData.py output from combined wave products
 			# Pack the data from the queue into the payload package
-			logger.info('Creating TX file and packing payload data')
+			logger.info('Creating TX file and packing payload data from primary estimate')
 			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt)
 			#NOTE: J. Davis added 2022-07-21 for testing
 		
 			try: # GPSwaves estimate as secondary estimate
+				logger.info('Creating TX file and packing payload data from secondary estimate')
 				TX_fname_2, payload_data_2 = createTX(Hs_2, Tp_2, Dp_2, E_2, f_2, a1_2, b1_2, a2_2, b2_2, check_2, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt_2)
-				logger.info('Packed secondary estimate exists.')
 			except:
-				logger.info('No secondary estimate exists.')
+				logger.info('No secondary estimate exists')
 
 			# Read in the file names from the telemetry queue
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','r')
@@ -351,8 +351,8 @@ if __name__=="__main__":
 			for TX_file in payload_filenames_LIFO:
 				# Check if we are still in the send window 
 				if datetime.utcnow() < next_start:
-					logger.info('Opening TX file from payload list')
-					logger.info(TX_file)
+					logger.info(f'Opening TX file from payload list: {TX_file}')
+					
 					with open(TX_file, mode='rb') as file: # b is important -> binary
 						payload_data = file.read()
 
