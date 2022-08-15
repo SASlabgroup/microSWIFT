@@ -137,7 +137,7 @@ if __name__=="__main__":
 	loop_count = 1
 	wait_count = 0
 
-	# Initialize the telemetry queue if it does no exist yet
+	# Initialize the telemetry queue if it does not exist yet
 	logger.info('Initializing Telemetry Queue')
 	telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','a')
 	telemetryQueue.close()
@@ -168,14 +168,16 @@ if __name__=="__main__":
 				next_start = current_start + timedelta(minutes=burst_int)
 				
 				# Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
-				with concurrent.futures.ThreadPoolExecutor() as executor:
-					# Submit Futures 
-					recordGPS_future = executor.submit(recordGPS, end_times[i])
-					recordIMU_future = executor.submit(recordIMU, end_times[i])
+				#--- TODO: uncomment: modified for testing
+				# with concurrent.futures.ThreadPoolExecutor() as executor:
+				# 	# Submit Futures 
+				# 	recordGPS_future = executor.submit(recordGPS, end_times[i])
+				# 	recordIMU_future = executor.submit(recordIMU, end_times[i])
 
-					# get results from Futures
-					GPSdataFilename, gps_initialized = recordGPS_future.result()
-					IMUdataFilename, imu_initialized = recordIMU_future.result()
+				# 	# get results from Futures
+				# 	GPSdataFilename, gps_initialized = recordGPS_future.result()
+				# 	IMUdataFilename, imu_initialized = recordIMU_future.result()
+				#--- TODO: uncomment: modified for testing
 
 				#exit out of loop once burst is finished
 				recording_complete = True
@@ -188,7 +190,14 @@ if __name__=="__main__":
 			# Time processing section
 			logger.info('Starting Processing')
 			begin_processing_time = datetime.now()
-
+			
+			#---TODO: delete
+			gps_initialized = True
+			imu_initialized = True
+			IMUdataFilename = './data/microSWIFT043_IMU_15Aug2022_210005UTC.dat' #'microSWIFT043_IMU_05May2022_200006UTC.dat'#'microSWIFT021_IMU_12Jul2021_210000UTC.dat' #'microSWIFT014_IMU_27Oct2021_190006UTC.dat' 
+			GPSdataFilename = './data/microSWIFT043_GPS_15Aug2022_210006UTC.dat'
+			#---TODO: delete
+				
 			# Prioritize GPS processing
 			if gps_initialized and imu_initialized: #gps_initialized == True and imu_initialized == True:
 				logger.info('GPS and IMU initialized')
@@ -206,8 +215,6 @@ if __name__=="__main__":
 				logger.info('entering collateIMUandGPS.py')
 				IMUcol,GPScol = collateIMUandGPS(IMU,GPS)
 				logger.info('collateIMUandGPS.py executed')
-				# logger.info(f"{len(GPScol['u'])}")
-				# logger.info(f"{GPScol['u']}")
 
 				# UVZAwaves estimate; leave out first 30 seconds
 				# zeroPts = int(np.round(30*IMU_fs)) #TODO: uncomment and delete next line
@@ -241,6 +248,7 @@ if __name__=="__main__":
 				# Process IMU data
 				logger.info('GPS did not initialize but IMU did - Would put IMU processing here but it is not yet functional')
 				# Bad Values of the GPS did not initialize - no imu processing in place yet
+				# put into a function?
 				u = 999
 				v = 999
 				z = 999

@@ -88,7 +88,7 @@ def UVZAwaves(u, v, z, a, fs):
     # ----------------- Begin Processing ----------------------
     
     # num_points = u.shape[0] # number of points
-    num_points = len(u)
+    num_points = len(u) #TODO: revert to above line?
 
     if ( (num_points >= fs*wsecs ) and (fs >= 1 ) and ( np.sum(badu) < 100 ) and (np.sum(badv) < 100) ):
         logger.info('Data is Sufficient for Processing - Processing Start')
@@ -420,17 +420,16 @@ def UVZAwaves(u, v, z, a, fs):
     #TODO: a1, b1?
     # E[np.logical_not(fwaves)] = 0 #TODO: J. Davis Jul 21 2022 modified to not set to zero, but to use fwaves for computing Hs,fe, etc.
 
-    print(f'{len(E)}')
-    print(f'{len(f)}')
-    print(f'{len(fwaves)}')
-    logger.info(f'{len(E)}')
-    logger.info(f'{len(f)}')
-    logger.info(f'{len(fwaves)}')
-    logger.info(f'{fwaves}')
-    logger.info(f'E: {E}')
-    logger.info(f'E[fwaves]: {E[fwaves]}')
-    logger.info(f'f: {f}')
-
+    # print(f'{len(E)}')
+    # print(f'{len(f)}')
+    # print(f'{len(fwaves)}')
+    # logger.info(f'{len(E)}')
+    # logger.info(f'{len(f)}')
+    # logger.info(f'{len(fwaves)}')
+    # logger.info(f'{fwaves}')
+    # logger.info(f'E: {E}')
+    # logger.info(f'E[fwaves]: {E[fwaves]}')
+    # logger.info(f'f: {f}')
 
     # Compute Significant Wave Height
     Hs = 4 * np.sqrt( np.sum(E[fwaves]) * bandwidth)
@@ -486,7 +485,13 @@ def UVZAwaves(u, v, z, a, fs):
     f = np.delete(f, ind_to_delete)
 
     logger.info(f'len(E): {len(E)}; len(f): {len(f)}; len(a1): {len(a1)}; len(b1): {len(b1)}; len(a2): {len(a2)}; len(b2): {len(b2)}')
-    
+    print(f'{len(E)}')
+    print(f'{len(f)}')
+    print(f'{len(a1)}')
+    print(f'{len(b1)}')
+    print(f'{len(a2)}')
+    print(f'{len(b2)}')
+    print(f'{len(check)}')
     
     # Return values
     return Hs, Tp, Dp, E, f, a1, b1, a2, b2, check

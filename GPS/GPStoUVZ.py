@@ -64,6 +64,13 @@ def GPStoUVZ(gpsfile):
             else: #if not GPGGA or GPVTG, continue to start of loop
                 continue
            
+    if ivel < ipos: # if an extra GPGGA line exists, remove the last entry
+        del z[-(ipos-ivel)]
+        del lat[-(ipos-ivel)]
+        del lon[-(ipos-ivel)]
+        del time[-(ipos-ivel)]
+        logger.info(f'{ipos-ivel} GPGGA lines removed at end')
+
     logger.info('GPS file read')
 
     # TODO: bug here, fix!

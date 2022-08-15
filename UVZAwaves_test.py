@@ -12,15 +12,13 @@ from waves.collateIMUandGPS import collateIMUandGPS
 # from waves.cumtrapz import cumtrapz
 
 dataDir  = './waves/testdata/'
-IMUdataFilename = 'microSWIFT043_IMU_05May2022_200006UTC.dat'#'microSWIFT021_IMU_12Jul2021_210000UTC.dat' #'microSWIFT014_IMU_27Oct2021_190006UTC.dat' 
-GPSdataFilename = 'microSWIFT043_GPS_05May2022_200007UTC.dat'#'microSWIFT021_GPS_12Jul2021_210000UTC.dat' #'microSWIFT014_GPS_27Oct2021_190009UTC.dat'
+IMUdataFilename = 'microSWIFT043_IMU_15Aug2022_210005UTC.dat' #'microSWIFT043_IMU_05May2022_200006UTC.dat'#'microSWIFT021_IMU_12Jul2021_210000UTC.dat' #'microSWIFT014_IMU_27Oct2021_190006UTC.dat' 
+GPSdataFilename = 'microSWIFT043_GPS_15Aug2022_210006UTC.dat' #'microSWIFT043_GPS_05May2022_200007UTC.dat'#'microSWIFT021_GPS_12Jul2021_210000UTC.dat' #'microSWIFT014_GPS_27Oct2021_190009UTC.dat'
 fs = 12 #TODO: fix from input or timestamp diff; does NOT work for 48Hz
 #%%
 #%%
 GPS = GPStoUVZ(f'{dataDir}{GPSdataFilename}')
 # u, v, z, lat, lon, GPStime = GPStoUVZ(f'{dataDir}{GPSdataFilename}')
-#%%
-
 #%%
 IMU = IMUtoXYZ(f'{dataDir}{IMUdataFilename}',fs)
 # ax, ay, az, vx, vy, vz, px, py, pz, IMUtime = IMUtoXYZ(f'{dataDir}{IMUdataFilename}',fs)
