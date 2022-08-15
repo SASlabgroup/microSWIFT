@@ -54,7 +54,8 @@ def UVZAwaves(u, v, z, a, fs):
     RC = 3.5
 
     # ----------------------- Fixed Parameters ---------------
-    wsecs = 256 # window length in seconds
+    # wsecs = 256 # window length in seconds
+    wsecs = 4 # window length in seconds #TODO: MODIFIED FOR TESTING
     merge = 3   # Frequency bands to merge
     maxf = 0.5  # Frequency cutoff for telemetry, Hz
 
@@ -84,7 +85,8 @@ def UVZAwaves(u, v, z, a, fs):
 
     # ----------------- Begin Processing ----------------------
     
-    num_points = u.shape[0] # number of points
+    # num_points = u.shape[0] # number of points
+    num_points = len(u)
 
     if ( (num_points >= fs*wsecs ) and (fs >= 1 ) and ( np.sum(badu) < 100 ) and (np.sum(badv) < 100) ):
         logger.info('Data is Sufficient for Processing - Processing Start')
@@ -468,6 +470,9 @@ def UVZAwaves(u, v, z, a, fs):
     b2 = np.delete(b2, ind_to_delete)
     #TODO: check = np.delete(check, ind_to_delete)
     f = np.delete(f, ind_to_delete)
+
+    logger.info(f'len(E): {len(E)}; len(f): {len(f)}; len(a1): {len(a1)}; len(b1): {len(b1)}; len(a2): {len(a2)}; len(b2): {len(b2)}')
+    
     
     # Return values
     return Hs, Tp, Dp, E, f, a1, b1, a2, b2, check
