@@ -55,8 +55,10 @@ def UVZAwaves(u, v, z, a, fs):
 
     # ----------------------- Fixed Parameters ---------------
     # wsecs = 256 # window length in seconds
-    wsecs = 4 # window length in seconds #TODO: MODIFIED FOR TESTING
-    merge = 3   # Frequency bands to merge
+    wsecs = 4 # window length in seconds #TODO: MODIFIED FOR TESTING delete
+    # merge = 3   # Frequency bands to merge
+    merge = 1   # Frequency bands to merge #TODO: MODIFIED FOR TESTING delete
+
     maxf = 0.5  # Frequency cutoff for telemetry, Hz
 
     # ---------- Variable input data, priority for GPS velocity -----------
@@ -417,6 +419,15 @@ def UVZAwaves(u, v, z, a, fs):
     # clean Scalar Energy spectra from frequencies above and below cutoff 
     #TODO: a1, b1?
     # E[np.logical_not(fwaves)] = 0 #TODO: J. Davis Jul 21 2022 modified to not set to zero, but to use fwaves for computing Hs,fe, etc.
+
+    print(f'{len(E)}')
+    print(f'{len(f)}')
+    print(f'{len(fwaves)}')
+    logger.info(f'{len(E)}')
+    logger.info(f'{len(f)}')
+    logger.info(f'{len(fwaves)}')
+
+
 
     # Compute Significant Wave Height
     Hs = 4 * np.sqrt( np.sum(E[fwaves]) * bandwidth)
