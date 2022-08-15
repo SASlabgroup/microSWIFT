@@ -202,7 +202,7 @@ if __name__=="__main__":
 			if gps_initialized and imu_initialized: #gps_initialized == True and imu_initialized == True:
 				logger.info('GPS and IMU initialized')
 				# Compute u, v and z from raw GPS data
-				logger.info('entering GPStoUVZ.py')
+				logger.info('entering GPStoUVZ.py :{GPSdataFilename}')
 				GPS = GPStoUVZ(GPSdataFilename) # u, v, z, lat, lon = GPStoUVZ(GPSdataFilename)
 				logger.info('GPStoUVZ executed')
 
