@@ -23,8 +23,8 @@ TODO:
 import numpy as np
 from logging import getLogger
 from datetime import datetime, timedelta
-from integrateIMU import integrate_acc
-from transformIMU import ekfCorrection
+from IMU.integrateIMU import integrate_acc
+from IMU.transformIMU import ekfCorrection
 # from scipy import integrate
 
 #--helper functions:
