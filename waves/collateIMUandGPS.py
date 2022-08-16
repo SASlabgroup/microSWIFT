@@ -22,9 +22,11 @@ from datetime import datetime, timedelta
 def crop_dict(d,cropBool):
     """
     Helper function to crop each key of dict based on a boolean array
+
     Input:
         - d, input dict
         - cropBool, boolean array
+
     Output:
         - d, cropped dict
     """
@@ -36,6 +38,7 @@ def crop_dict(d,cropBool):
 def datetimearray2relativetime(datetimeArr,t0):
     """
     Helper function to convert datetime array to relative time in seconds
+    
     Inputs:
         - datetimeArr, array of datetimes
         - t0, initial (or reference) time 
