@@ -26,6 +26,7 @@ if( not ok ):
 
 # Create the TX file named for the current time
 logger = getLogger('microSWIFT.'+__name__)  
+logger.info('---------------sendSBD.py------------------')
 
 
 # System Parameters

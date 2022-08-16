@@ -34,12 +34,13 @@ def UVZAwaves(u, v, z, a, fs):
 
     # Set up module level logger
     logger = getLogger('microSWIFT.'+__name__) 
+    logger.info('---------------UVZAwaves.py------------------')
 
     # Define demean function
     def demean(x):
         x_demean = x - np.mean(x)
         return x_demean
-
+    
     # ------------------- Convert Inputs to Numpy Arrays ------
     u = np.squeeze(u)
     v = np.squeeze(v)
@@ -270,8 +271,8 @@ def UVZAwaves(u, v, z, a, fs):
 
     # Find middle of each freq band
     #** ONLY for merging odd numbers of bands
-    f = (1/wsecs) + (bandwidth/2) + (bandwidth * np.arange(n-1))
-    # f = (1/wsecs) + (bandwidth/2) + (bandwidth * np.arange(n))
+    # f = (1/wsecs) + (bandwidth/2) + (bandwidth * np.arange(n-1))
+    f = (1/wsecs) + (bandwidth/2) + (bandwidth * np.arange(n))
     #TODO: fix freq length
     # print(f[-1])
 
@@ -420,9 +421,9 @@ def UVZAwaves(u, v, z, a, fs):
     #TODO: a1, b1?
     # E[np.logical_not(fwaves)] = 0 #TODO: J. Davis Jul 21 2022 modified to not set to zero, but to use fwaves for computing Hs,fe, etc.
 
-    # print(f'{len(E)}')
-    # print(f'{len(f)}')
-    # print(f'{len(fwaves)}')
+    print(f'{len(E)}')
+    print(f'{len(f)}')
+    print(f'{len(fwaves)}')
     # logger.info(f'{len(E)}')
     # logger.info(f'{len(f)}')
     # logger.info(f'{len(fwaves)}')

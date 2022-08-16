@@ -268,6 +268,7 @@ def IMUtoXYZ(imufile,fs):
     """
     #-- Set up module level logger
     logger = getLogger('microSWIFT.'+__name__) 
+    logger.info('---------------IMUtoXYZ.py------------------')
 
     #TODO: handle badvalues
 

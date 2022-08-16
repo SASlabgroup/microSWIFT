@@ -30,6 +30,7 @@ if( not ok ):
 
 # Set up module level logger
 logger = getLogger('microSWIFT.'+__name__)  
+logger.info('---------------recordGPS.py------------------')
 
 #GPS parameters 
 dataDir = config.getString('System', 'dataDir')
