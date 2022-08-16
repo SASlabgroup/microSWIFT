@@ -1,9 +1,10 @@
 ## microSWIFT.py 
 """
-author: @EJ Rainville, @Alex de Klerk, @Viviana Castillo
+author: @edwinrainville, @alexdeklerk, @vivianacastillo, @jacobrdavis
 
-Description: This script is the main operational script that runs on the microSWIFT. It is the scheduler that runs the recording of the GPS
-and IMU as well as schedules the processing scripts after they are done recording.
+Description: This script is the main operational script that runs on the microSWIFT. It is the 
+scheduler that runs the recording of the GPS and IMU as well as schedules the processing scripts 
+after they are done recording.
 
 Outline: 
 1. Load modules
@@ -16,11 +17,13 @@ Outline:
 8. createTX file and pack payload data
 9. Send SBD over telemetry
 
-Stable version that does not include sendSBD yet - 08/09/21
-Stable version that does include sendSBD - 08/20/21
-Successfully merged all fixes/ bugs into microSWIFT.py-Centralized - 08/25/21
-
-
+Log:
+    - 08/09/21, @edwinrainville, @alexdeklerk, @vivianacastillo: Stable version that does not include sendSBD yet
+    - 08/20/21, @edwinrainville, @alexdeklerk, @vivianacastillo: Stable version that does include sendSBD
+ 	- 08/25/21, @edwinrainville, @alexdeklerk, @vivianacastillo: Successfully merged all fixes/ bugs into microSWIFT.py-Centralized
+ 	- Sep 2021, @edwinrainville: DUNEX development
+ 	- Jun 2022, @edwinrainville: telemetry queue
+	- Aug 2022, @jacobrdavis: UVZAwaves
 """
 
 # Main import Statemennts
@@ -55,8 +58,9 @@ from SBD.sendSBD import initModem
 from SBD.sendSBD import send_microSWIFT_50
 from SBD.sendSBD import send_microSWIFT_51
 
-# Import Configuration functions
+# Import configuration and utility functions
 from utils.config3 import Config
+from utils.fillBadValues import fillBadValues
 
 def _get_uvzmean(badValue, pts):
 	mean = badValue     #set values to 999 initially and fill if valid value
@@ -102,7 +106,6 @@ if __name__=="__main__":
 	GPS_fs = config.getInt('GPS', 'gps_frequency') #currently not used, hardcoded at 4 Hz (see init_gps function)
 	# IMU parameters
 	IMU_fs = config.getFloat('IMU', 'imuFreq')
-
 
 	#Compute number of bursts per hour
 	num_bursts = int(60 / burst_int)
@@ -195,9 +198,9 @@ if __name__=="__main__":
 			# GPSdataFilename = '/home/pi/microSWIFT/data/microSWIFT043_GPS_15Aug2022_210006UTC.dat'
 			# #---TODO: delete
 				
-			# Prioritize GPS processing
 			if gps_initialized and imu_initialized: #gps_initialized == True and imu_initialized == True:
 				logger.info('GPS and IMU initialized')
+
 				# Compute u, v and z from raw GPS data
 				logger.info(f'entering GPStoUVZ.py: {GPSdataFilename}')
 				GPS = GPStoUVZ(GPSdataFilename) # u, v, z, lat, lon = GPStoUVZ(GPSdataFilename)
@@ -215,24 +218,18 @@ if __name__=="__main__":
 
 				# UVZAwaves estimate; leave out first 120 seconds
 				zeroPts = int(np.round(120*IMU_fs)) 
-				
+				logger.info(f'Zeroing out first 120 seconds ({zeroPts} pts)')
 				Hs, Tp, Dp, E, f, a1, b1, a2, b2, check  = UVZAwaves(GPScol['u'][zeroPts:], GPScol['v'][zeroPts:], IMUcol['pz'][zeroPts:], IMUcol['az'][zeroPts:], IMU_fs)
 				logger.info('UVZAwaves.py executed, primary estimate (voltage==0)')
 
+				# GPSwaves estimate (secondary estimate)
 				Hs_2, Tp_2, Dp_2, E_2, f_2, a1_2, b1_2, a2_2, b2_2, check_2 = GPSwaves(GPS['u'], GPS['v'], GPS['z'], GPS_fs)
 				logger.info('GPSwaves.py executed, secondary estimate (voltage==1)')
 
-				# unpack GPS variables for remaining code; use non-interpolated values
-				u   = GPS['u']
-				v   = GPS['v']
-				z   = GPS['z']
-				lat = GPS['lat']
-				lon = GPS['lon']
+				# Unpack GPS variables for remaining code; use non-interpolated values
+				u=GPS['u']; v=GPS['v']; z=GPS['z']; lat=GPS['lat']; lon=GPS['lon']
 
-				# Compute Wave Statistics from GPSwaves algorithm
-				# Hs, Tp, Dp, E, f, a1, b1, a2, b2, check = GPSwaves(u, v, z, GPS_fs)
-
-			elif gps_initialized and not imu_initialized: #TODO: verify this logic
+			elif gps_initialized and not imu_initialized: 
 				
 				# Compute u, v and z from raw GPS data
 				u, v, z, lat, lon = GPStoUVZ(GPSdataFilename)
@@ -241,50 +238,22 @@ if __name__=="__main__":
 				Hs, Tp, Dp, E, f, a1, b1, a2, b2, check = GPSwaves(u, v, z, GPS_fs)
 
 			elif imu_initialized and not gps_initialized:
-				#TODO: fix
-				# Process IMU data
-				logger.info('GPS did not initialize but IMU did - Would put IMU processing here but it is not yet functional')
-				# Bad Values of the GPS did not initialize - no imu processing in place yet
-				# put into a function?
-				u = 999
-				v = 999
-				z = 999
-				lat = [999]
-				lon = [999]
-				Hs = 999
-				Tp = 999
-				Dp = 999
-				E = 999 * np.ones(42)
-				f = 999 * np.ones(42)
-				a1 = 999 * np.ones(42)
-				b1 = 999 * np.ones(42)
-				a2 = 999 * np.ones(42) 
-				b2 = 999 * np.ones(42)
-				check = 999 * np.ones(42)
-			
-			else:
-				logger.info('Neither GPS or IMU initialized - entering bad values')
-				# Bad Values of the GPS did not initialize
-				u = 999
-				v = 999
-				z = 999
-				lat = 999
-				lon = 999
-				Hs = 999
-				Tp = 999
-				Dp = 999
-				E = 999 * np.ones(42)
-				f = 999 * np.ones(42)
-				a1 = 999 * np.ones(42)
-				b1 = 999 * np.ones(42)
-				a2 = 999 * np.ones(42) 
-				b2 = 999 * np.ones(42)
-				check = 999 * np.ones(42)
+				#TODO: Process IMU data
+				logger.info(f'GPS did not initialize but IMU did; would put IMU processing here but it is not yet functional... entering bad values ({badValue})')
+				u,v,z,lat,lon,Hs,Tp,Dp,E,f,a1,b1,a2,b2,check = fillBadValues(badVal=badValue,spectralLen=numCoef)
+
+			else: # no IMU or GPS, enter bad values
+				logger.info(f'Neither GPS or IMU initialized - entering bad values ({badValue})')
+				u,v,z,lat,lon,Hs,Tp,Dp,E,f,a1,b1,a2,b2,check = fillBadValues(badVal=badValue,spectralLen=numCoef)
+
+			# check lengths of spectral quanities:
+			if len(E)!=numCoef or len(f)!=numCoef:
+				logger.info(f'WARNING: the length of E or f does not match the specified number of coefficients, {numCoef}; (len(E)={len(E)}, len(f)={len(f)})')
 
 			# Compute mean velocities, elevation, lat and lon
 			u_mean = np.nanmean(u)
 			v_mean = np.nanmean(v)
-			z_mean = np.nanmean(z) #TODO: change which z to use?
+			z_mean = np.nanmean(z) 
 		
 			#Get last reported position
 			last_lat = _get_last(badValue, lat)
@@ -295,22 +264,15 @@ if __name__=="__main__":
 			volt = 0   #NOTE: primary estimate
 			volt_2 = 1 #NOTE: secondary estimate (GPS if IMU and GPS are both initialized)
 
-			# Print some values of interest J. Davis 08-15-22 not neccessary bc they are spit out in sendSBD
-			# logger.info(f'Hs = {round(Hs,2)}')
-			# logger.info(f'Tp = {round(Tp,2)}')
-			# logger.info(f'Dp = {round(Dp,2)}')
-			# logger.info(f'u_mean = {round(u_mean,2)}')
-			# logger.info(f'v_mean = {round(v_mean,2)}')
-
 			# End Timing of recording
 			logger.info('Processing section took {}'.format(datetime.now() - begin_processing_time))
 				
 			## -------------- Telemetry Section ----------------------------------
 			# Create TX file from processData.py output from combined wave products
+
 			# Pack the data from the queue into the payload package
 			logger.info('Creating TX file and packing payload data from primary estimate')
 			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt)
-			#NOTE: J. Davis added 2022-07-21 for testing
 		
 			try: # GPSwaves estimate as secondary estimate
 				logger.info('Creating TX file and packing payload data from secondary estimate')

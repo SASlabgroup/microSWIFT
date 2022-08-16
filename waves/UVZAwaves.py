@@ -1,5 +1,7 @@
 def UVZAwaves(u, v, z, a, fs): 
     """
+    Author: @jacobrdavis
+
     UVZAwaves.py computes a scalar spectrum from an IMU heave estimate 'z' (made outside of this code)
     and estimates directional moments using GPS velocities 'u' and 'v' and raw IMU vertical acceleration 'a'.
     NOTE: UVZAwaves is similar to the SWIFT codes version of GPSandIMUwaves, but differs in that the 
@@ -24,6 +26,14 @@ def UVZAwaves(u, v, z, a, fs):
     b1 : second " " 
     a2 : " "
     b2 : " "
+
+    TODO:
+        - log filter? 
+        - filter that works for other frequencies, RC? bw?
+        - fix check factor
+        - fix f len
+        - validate peak period selection
+        - validate dir coeffs
     """
 
     # Packages
@@ -56,20 +66,12 @@ def UVZAwaves(u, v, z, a, fs):
 
     # ----------------------- Fixed Parameters ---------------
     wsecs = 256 # window length in seconds
-    # wsecs = 4 # window length in seconds #TODO: MODIFIED FOR TESTING delete
     merge = 3   # Frequency bands to merge
-    # merge = 1   # Frequency bands to merge #TODO: MODIFIED FOR TESTING delete
-
     maxf = 0.5  # Frequency cutoff for telemetry, Hz
 
-    # ---------- Variable input data, priority for GPS velocity -----------
-    # if no vertical, assign a dummy but then void a1 and a2 results later
-    if not z.any(): 
-        z = np.zeros(u.shape)
-        zdummy = 1
-    else:
-        zdummy = 0
-
+    # report settigns to log
+    #TODO: log filter?
+    logger.info(f'Processing settings: fs={fs}; wsecs={wsecs}; merge={merge}; maxf={maxf}')
 
     # ----------------- Quality Control and Despiking --------
     # Find Spike values
@@ -87,9 +89,7 @@ def UVZAwaves(u, v, z, a, fs):
     a[bada] = np.mean( a[~bada] )
 
     # ----------------- Begin Processing ----------------------
-    
-    # num_points = u.shape[0] # number of points
-    num_points = len(u) #TODO: revert to above line?
+    num_points = u.shape[0] # = len(u)
 
     if ( (num_points >= fs*wsecs ) and (fs >= 1 ) and ( np.sum(badu) < 100 ) and (np.sum(badv) < 100) ):
         logger.info('Data is Sufficient for Processing - Processing Start')
@@ -227,7 +227,6 @@ def UVZAwaves(u, v, z, a, fs):
     # Zwindow[-1, :] = 0
     # Awindow[-1, :] = 0
     
-
     # Compute auto-spectra
     UUwindow = np.real(Uwindow * np.conj(Uwindow))
     VVwindow = np.real(Vwindow * np.conj(Vwindow))
@@ -297,7 +296,87 @@ def UVZAwaves(u, v, z, a, fs):
     #TODO: fix check
     check = 999 * np.ones(len(E))
     logger.info('spectral results')
-    #-- From GPSandIMUwaves:
+    
+    # ---------- Compute Wave Directions ---------------
+    # note tha 0 deg is for waves headed towards positive x (EAST, right hand system)
+    dir1 = np.arctan2(b1, a1) # [rad], 4 quadrant
+    dir2 = np.arctan2(b2, a2) / 2 # [rad], only 2 quadrant
+    # spread1 = np.sqrt( 2 * (1 - np.sqrt(np.abs((a1 ** 2) + (b2 ** 2))) ) ) # Getting a strange value - commenting out for now
+    # spread2 = np.sqrt( np.abs( 0.5 - 0.5 * (a2 * np.cos(2 * dir2) + b2 * np.cos(2 * dir2) ) ) ) 
+
+    # ------ Compute Wave Statistics -------------
+    # clean Scalar Energy spectra from frequencies above and below cutoff 
+    fwaves = np.logical_and(f > 0.05, f < 1)# Frequency cutoff for wave stats, 0.4 is specific to SWIFT hull
+    
+    #--TODO: clean up later
+    print(f'{len(E)}')
+    print(f'{len(f)}')
+    print(f'{len(fwaves)}')
+    logger.info(f'len(E): {len(E)}')
+    logger.info(f'len(f): {len(f)}')
+    logger.info(f'len(fwaves): {len(fwaves)}')
+    #--
+
+    # Compute Significant Wave Height
+    Hs = 4 * np.sqrt( np.sum(E[fwaves]) * bandwidth)
+
+    # Compute Energy Period 
+    fe = np.sum( f[fwaves] * E[fwaves] ) / np.sum( E[fwaves])
+    feindex = np.argmin( np.abs(f - fe))
+    Ta = 1 / fe
+
+    # Compute Peak Period
+    #TODO: use E? or Az
+    fpindex = np.argmax(UU + VV) # can use velocity and it picks out more distinct peak
+    Tp = 1/f[fpindex]
+    if Tp > 20: # if peak is not found, use centroid
+        Tp = Ta
+        fpindex = feindex
+
+    # --------- Spectral Directions ---------------
+    dir = -180 / np.pi * dir1 # switch from rad to deg, and CCz to Cz (negate)
+    dir = dir + 90 # rotate from eastward = 0 to northward  = 0 
+    dir[ dir < 0 ] = dir[ dir < 0 ] + 360 
+    westdirs = dir > 180
+    eastdirs = dir < 180
+    dir[ westdirs ] = dir[ westdirs ] - 180 # take reciprocal such wave direction is FROM, not TOWARDS
+    dir[ eastdirs ] = dir[ eastdirs ] + 180 # take reciprocal such wave direction is FROM, not TOWARDS
+
+    # Directional Spread
+    # spread = 180 / np.pi * spread1
+
+    # Compute Dominant Direction 
+    Dp = dir[fpindex] 
+
+    if Tp > 20: 
+        Hs = 999
+        Tp = 999
+        Dp = 999
+
+    # ----------- Clean High frequency results ------------
+    ind_to_delete = np.squeeze(np.argwhere(f > maxf))
+    E = np.delete(E, ind_to_delete)
+    dir = np.delete(dir, ind_to_delete)
+    # spread = np.delete( spread, ind_to_delete)
+    a1 = np.delete(a1, ind_to_delete)
+    b1 = np.delete(b1, ind_to_delete)
+    a2 = np.delete(a2, ind_to_delete)
+    b2 = np.delete(b2, ind_to_delete)
+    check = np.delete(check, ind_to_delete)
+    f = np.delete(f, ind_to_delete)
+
+    logger.info(f'len(E): {len(E)}; len(f): {len(f)}; len(a1): {len(a1)}; len(b1): {len(b1)}; len(a2): {len(a2)}; len(b2): {len(b2)}')
+    
+    # Return values
+    return Hs, Tp, Dp, E, f, a1, b1, a2, b2, check
+
+
+
+
+
+#------------directional alternatives------------#
+
+#-- From GPSandIMUwaves:
 
     # %% convert to displacement spectra (from velocity and acceleration)
     # % assumes perfectly circular deepwater orbits
@@ -331,7 +410,6 @@ def UVZAwaves(u, v, z, a, fs):
     # b1 = Cyz / np.sqrt( (Exx+Eyy) * Ezz )  #[], would use Qyz for actual displacements
     # a2 = (Exx - Eyy) / (Exx + Eyy)
     # b2 = 2 * Cxy / (Exx + Eyy)
-    #TODO:
 
 #################
     # # Convert to displacement spectra (from velocity and heave)
@@ -393,99 +471,3 @@ def UVZAwaves(u, v, z, a, fs):
     # b2 = 2 .* Cxy ./ ( Exx + Eyy );
 
 #################
-
-    # ---------- Compute Wave Directions ---------------
-    # note tha 0 deg is for waves headed towards positive x (EAST, right hand system)
-    dir1 = np.arctan2(b1, a1) # [rad], 4 quadrant
-    dir2 = np.arctan2(b2, a2) / 2 # [rad], only 2 quadrant
-    # spread1 = np.sqrt( 2 * (1 - np.sqrt(np.abs((a1 ** 2) + (b2 ** 2))) ) ) # Getting a strange value - commenting out for now
-    # spread2 = np.sqrt( np.abs( 0.5 - 0.5 * (a2 * np.cos(2 * dir2) + b2 * np.cos(2 * dir2) ) ) ) 
-
-    # ----------- Screen for presence/absence of vertical data --------
-    #TODO: fix this:
-
-    # if zdummy == 1: 
-    #     Ezz[:] = 0
-    #     a1[:] = 9999
-    #     b1[:] = 9999
-    #     dir1[:] = 9999
-    #     spread1[:] = 9999
-    
-    # # ------ Compute Scalar Energy Spectra -------------
-    # E = Exx + Eyy
-
-    # ------ Compute Wave Statistics -------------
-    #TODO: adjust f limits?
-    fwaves = np.logical_and(f > 0.05, f < 1)# Frequency cutoff for wave stats, 0.4 is specific to SWIFT hull
-    # clean Scalar Energy spectra from frequencies above and below cutoff 
-    #TODO: a1, b1?
-    # E[np.logical_not(fwaves)] = 0 #TODO: J. Davis Jul 21 2022 modified to not set to zero, but to use fwaves for computing Hs,fe, etc.
-
-    print(f'{len(E)}')
-    print(f'{len(f)}')
-    print(f'{len(fwaves)}')
-    # logger.info(f'{len(E)}')
-    # logger.info(f'{len(f)}')
-    # logger.info(f'{len(fwaves)}')
-    # logger.info(f'{fwaves}')
-    # logger.info(f'E: {E}')
-    # logger.info(f'E[fwaves]: {E[fwaves]}')
-    # logger.info(f'f[fwaves]: {f[fwaves]}')
-
-    # Compute Significant Wave Height
-    Hs = 4 * np.sqrt( np.sum(E[fwaves]) * bandwidth)
-
-    # Compute Energy Period 
-    fe = np.sum( f[fwaves] * E[fwaves] ) / np.sum( E[fwaves])
-    feindex = np.argmin( np.abs(f - fe))
-    Ta = 1 / fe
-
-    # Compute Peak Period
-    #TODO: use E? or Az
-    fpindex = np.argmax(UU + VV) # can use velocity and it picks out more distinct peak
-    Tp = 1/f[fpindex]
-    if Tp > 20: # if peak is not found, use centroid
-        Tp = Ta
-        fpindex = feindex
-
-    # --------- Spectral Directions ---------------
-    dir = -180 / np.pi * dir1 # switch from rad to deg, and CCz to Cz (negate)
-    dir = dir + 90 # rotate from eastward = 0 to northward  = 0 
-    dir[ dir < 0 ] = dir[ dir < 0 ] + 360 
-    westdirs = dir > 180
-    eastdirs = dir < 180
-    dir[ westdirs ] = dir[ westdirs ] - 180 # take reciprocal such wave direction is FROM, not TOWARDS
-    dir[ eastdirs ] = dir[ eastdirs ] + 180 # take reciprocal such wave direction is FROM, not TOWARDS
-
-    # Directional Spread
-    # spread = 180 / np.pi * spread1
-
-    # Compute Dominant Direction 
-    Dp = dir[fpindex] 
-
-    # Quality control
-    if zdummy == 1:
-        Dp = 999
-
-    if Tp > 20: 
-        Hs = 999
-        Tp = 999
-        Dp = 999
-
-    # ----------- Clean High frequency results ------------
-    ind_to_delete = np.squeeze(np.argwhere(f > maxf))
-    E = np.delete(E, ind_to_delete)
-    # Ezz = np.delete(Ezz, ind_to_delete)
-    dir = np.delete(dir, ind_to_delete)
-    # spread = np.delete( spread, ind_to_delete)
-    a1 = np.delete(a1, ind_to_delete)
-    b1 = np.delete(b1, ind_to_delete)
-    a2 = np.delete(a2, ind_to_delete)
-    b2 = np.delete(b2, ind_to_delete)
-    check = np.delete(check, ind_to_delete)
-    f = np.delete(f, ind_to_delete)
-
-    logger.info(f'len(E): {len(E)}; len(f): {len(f)}; len(a1): {len(a1)}; len(b1): {len(b1)}; len(a2): {len(a2)}; len(b2): {len(b2)}')
-    
-    # Return values
-    return Hs, Tp, Dp, E, f, a1, b1, a2, b2, check

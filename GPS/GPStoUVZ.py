@@ -1,11 +1,12 @@
 def GPStoUVZ(gpsfile):
     '''
-    Author: @AlexdeKlerk
-    Edited: @edwinrainville
-            @jacobrdavis 2022-07-20: added timestamp parsing; wrapped outputs in GPS dictionary
+    Author: @AlexdeKlerk, @edwinrainville
+    
     This function reads in data from the GPS files and saves it as python variables to be used in calculations 
     for wave properties. 
 
+    Log:
+        - Jul 2022, @jacobrdavis: added timestamp parsing; wrapped outputs in GPS dictionary
     '''
     # Import Statements
     import numpy as np

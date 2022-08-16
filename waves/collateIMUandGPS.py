@@ -3,6 +3,11 @@ Author: @jacobrdavis
 
 A collection of functions that collate the IMU and GPS records in preparation for final processing.
 
+Contents:
+    - crop_dict(d,cropBool) 
+    - datetimearray2relativetime(datetimeArr,t0)
+    - collateIMUandGPS(IMU,GPS) [main]
+
 TODO:
     - remove reassignment of the same variable?
 
@@ -12,16 +17,16 @@ import numpy as np
 from logging import getLogger
 from datetime import datetime, timedelta
 
-#--helper functions: #TODO: create more clear function descriptions
+#--helper functions: 
 
 def crop_dict(d,cropBool):
     """
     Helper function to crop each key of dict based on a boolean array
     Input:
-        - d, description...
-        - cropBool, description...
+        - d, input dict
+        - cropBool, boolean array
     Output:
-        - relTime, description...
+        - d, cropped dict
     """
     # loop over the keys of the input dictonary
     for key in d.keys():
@@ -32,10 +37,11 @@ def datetimearray2relativetime(datetimeArr,t0):
     """
     Helper function to convert datetime array to relative time in seconds
     Inputs:
-        datetimeArr - 
-        t0 - 
+        - datetimeArr, array of datetimes
+        - t0, initial (or reference) time 
+
     Outputs:
-        relTime - 
+        relTime - list of floats describing time (in sec) relative to t0
     """
     relTime = [timestep.total_seconds() for timestep in (np.asarray(datetimeArr)-t0)]
     return relTime   
@@ -46,12 +52,12 @@ def collateIMUandGPS(IMU,GPS):
     GPS record and then the GPS is interpolated up to the IMU rate using the IMU as the master time.
 
     Inputs:
-        - IMU, description...
-        - GPS, description...
+        - IMU, input dictionary containing acc ['ai'], vel ['vi'], pos ['pi'], and time ['time'] as entries.
+        - GPS, input dictionary containing GPS records as entries
         
     Outputs:
-        - IMU, description...
-        - GPS, description...
+        - IMU, output dictionary containing collated IMU fields
+        - GPS, output dictionary containing collated GPS fields
     """
     #-- Set up module level logger
     logger = getLogger('microSWIFT.'+__name__) 

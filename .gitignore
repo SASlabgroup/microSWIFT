@@ -4,7 +4,6 @@ data/ #data files
 logs/ #log files
 *.pyc #pycache files
 **/*.pyc
-*.nc
 *.project #Eclipse project file
 *.pydevproject #Eclipse pydev project file
 .project

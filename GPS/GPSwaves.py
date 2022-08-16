@@ -1,6 +1,8 @@
 def GPSwaves(u, v, z, fs): 
     """
-    GPSwaves takes a 
+    Author: @edwinrainville
+
+    GPSwaves processing
 
     Parameters
     -----
@@ -22,9 +24,6 @@ def GPSwaves(u, v, z, fs):
     a2 : 
     b2 : 
     
-    Filtering Technique: 
-
-
     """
 
     # Packages

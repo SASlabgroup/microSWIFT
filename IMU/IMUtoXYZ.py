@@ -3,23 +3,38 @@ Author: @jacobrdavis
 
 A collection of functions to read in data from an IMU file, process it, and store 
 the output as python variables to be used in calculations for wave properties.
+
+Contents:
+    - sec(n_secs)
+    - datetimearray2relativetime(datetimeArr)
+    - RCfilter(b, fc, fs)
+    - add_ms_to_IMUtime(timestampSorted)
+    - IMUtoXYZ(imufile,fs) [main]
+
+Log:
+    - Jun 2022, J.Davis: created IMUtoXYZ.py
+    - Aug 2022, J.Davis: created integrateIMU.py and moved demean(), cumtrapz(), and integrate_acc() there
+    - Aug 2022, J.Davis: created transformIMU.py and moved ekfCorrection() there
+
 TODO:
     - remove reassignment of the same variable?
-    
 """
 #--Import Statements
 import numpy as np
 from logging import getLogger
 from datetime import datetime, timedelta
-from numpy import add, diff, asarray
+from integrateIMU import integrate_acc
+from transformIMU import ekfCorrection
 # from scipy import integrate
 
 #--helper functions:
 def sec(n_secs):
     """
-    Helper function to convert timedelta into seconds
+    Helper function to convert timedelta into second
+    
     Input:
-        - n_secs, description...
+        - n_secs, float indicating number of seconds
+
     Output:
         - s, time delta in seconds
     """
@@ -30,8 +45,10 @@ def sec(n_secs):
 def datetimearray2relativetime(datetimeArr):
     """
     Helper function to convert datetime array to relative time in seconds
+
     Input:
         - datetimeArr, input array of datetimes
+
     Output:
         - relTime, time array (in seconds) relative to the first time in datetimeArr
     """
@@ -43,10 +60,12 @@ def datetimearray2relativetime(datetimeArr):
 def RCfilter(b, fc, fs):
     """
     Helper function to perform RC filtering
+
     Input:
         - b, array of values to be filtered
         - fc, cutoff frequency, fc = 1/(2πRC)
         - fs, sampling frequency 
+
     Output:
         - a, array of filtered input values
     """
@@ -57,50 +76,6 @@ def RCfilter(b, fc, fs):
         a[ui] = alpha * a[ui-1] + alpha * ( b[ui] - b[ui-1] )
     return a
 
-def demean(x):
-    """
-    Helper function to demean an array
-    Input:
-        - x, array of values to be demeaned
-    Output:
-        - x_demean, array of demeaned input values
-    """
-    x_demean = x - np.mean(x)
-    return x_demean
-
-def integrate_acc(a,t,filt):
-    """
-    Helper function to perform double integration of acceleration values
-    Input:
-        - a, acceleration array
-        - t, time array
-        - filt, filter function (e.g. lambda function)
-    Output:
-        - x_demean, array of demeaned input values
-    """
-    #TODO: trim or zero out initial oscillations?
-    #TODO: validate initial condition, can also just append the last point
-    
-    # determine 30 second window to zero out after filtering
-    fs = np.mean(np.diff(t))**(-1)
-    zeroPts = int(np.round(30*fs))
-    ai = a.copy()
-    # ai = np.delete(ai,np.s_[:250]) #TODO: wrap
-    ai[:zeroPts] = 0 # zero initial oscillations from filtering
-    # t  = np.delete(t,np.s_[:250])
-    ai = demean(ai) #IMU.acc(:,i) - 10.025;
-    vi = cumtrapz(y=ai,x=t,initial=0)  # [m/s]
-    vi = filt(vi)
-    vi[:zeroPts] = 0
-    # vi = np.delete(vi,np.s_[:500])
-    # t  = np.delete(t,np.s_[:500])
-    vi = demean(vi) 
-    pi = cumtrapz(y=vi,x=t,initial=0)  # [m/s]
-    pi = filt(pi)
-    pi[:zeroPts] = 0
-    pi = demean(pi) 
-
-    return ai,vi,pi
 
 def add_ms_to_IMUtime(timestampSorted):
     """
@@ -109,8 +84,10 @@ def add_ms_to_IMUtime(timestampSorted):
     then adds an array of millisecond increments to the datetimes in that second. This assumes
     the samples in a second are centered in that second, and thus does not bias the samples to 
     either the start of end of the second.
+
     Input:
         - timestampSorted, sorted array of rounded IMU timestamps (as datetimes)
+
     Output:
         - timestampSorted_ms, sorted datetime array with added milliseconds
     """
@@ -127,144 +104,22 @@ def add_ms_to_IMUtime(timestampSorted):
             timestampSorted_ms[n-i:n] = timestampSorted[n-i:n] + secSteps
             i = 1 # restart i at one so that it can start again on the next second 
     return timestampSorted_ms
-
-# from ahrs.filters import EKF
-# from scipy.spatial.transform import Rotation as R
-
-# def ekfCorrection(accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z, mag_x, mag_y, mag_z):
-#     '''
-#     @edwinrainville
-
-#     Correct the body frame accelerations to the earth frame of reference through and extended Kalman Filter
-#     '''
-
-#     # Organize the acceleration data into arrays to be used in the ekf algorithm
-#     acc_data = np.array([accel_x-np.mean(accel_x), accel_y-np.mean(accel_y), accel_z-np.mean(accel_z)]).transpose()
-#     gyr_data = np.array([gyro_x-np.mean(gyro_x), gyro_y-np.mean(gyro_y), gyro_z-np.mean(gyro_z)]).transpose()
-#     mag_data = np.array([mag_x-np.mean(mag_x), mag_y-np.mean(mag_y), mag_z-np.mean(mag_z)]).transpose()
-
-#     # Rotate the acceleration data with extended Kalman filter
-#     # ** the variance of each sensor needs to be further examined
-#     # ** Variance is assumed from spec sheet
-#     # ekf = EKF(gyr=gyr_data, acc=acc_data, mag_data=mag_data, frequency=12, var_acc=0.000003, var_gyro=0.04, var_mag=.1, frame='NED')
-#     ekf = EKF(gyr=gyr_data, acc=acc_data, frequency=12, var_acc=0.000003, var_gyro=0.04, frame='NED')
-
-    # # Rotate the acclerations from the computed Quaterions
-    # r = R.from_quat(ekf.Q)
-    # accel_rotated = r.apply(acc_data)
-
-    # # Get acceleration data from the rotated structure
-    # accel_x_earth = accel_rotated[:,0]
-    # accel_y_earth = accel_rotated[:,1]
-    # accel_z_earth = accel_rotated[:,2]
-
-    # return accel_x_earth, accel_y_earth, accel_z_earth
-
-
-
-def tupleset(t, i, value):
-    l = list(t)
-    l[i] = value
-    return tuple(l)
     
-def cumtrapz(y, x=None, dx=1.0, axis=-1, initial=None):
-    """
-    Cumulatively integrate y(x) using the composite trapezoidal rule.
-    Parameters
-    ----------
-    y : array_like
-        Values to integrate.
-    x : array_like, optional
-        The coordinate to integrate along.  If None (default), use spacing `dx`
-        between consecutive elements in `y`.
-    dx : int, optional
-        Spacing between elements of `y`.  Only used if `x` is None.
-    axis : int, optional
-        Specifies the axis to cumulate.  Default is -1 (last axis).
-    initial : scalar, optional
-        If given, uses this value as the first value in the returned result.
-        Typically this value should be 0.  Default is None, which means no
-        value at ``x[0]`` is returned and `res` has one element less than `y`
-        along the axis of integration.
-    Returns
-    -------
-    res : ndarray
-        The result of cumulative integration of `y` along `axis`.
-        If `initial` is None, the shape is such that the axis of integration
-        has one less value than `y`.  If `initial` is given, the shape is equal
-        to that of `y`.
-    See Also
-    --------
-    numpy.cumsum, numpy.cumprod
-    quad: adaptive quadrature using QUADPACK
-    romberg: adaptive Romberg quadrature
-    quadrature: adaptive Gaussian quadrature
-    fixed_quad: fixed-order Gaussian quadrature
-    dblquad: double integrals
-    tplquad: triple integrals
-    romb: integrators for sampled data
-    ode: ODE integrators
-    odeint: ODE integrators
-    Examples
-    --------
-    >>> from scipy import integrate
-    >>> import matplotlib.pyplot as plt
-    >>> x = np.linspace(-2, 2, num=20)
-    >>> y = x
-    >>> y_int = integrate.cumtrapz(y, x, initial=0)
-    >>> plt.plot(x, y_int, 'ro', x, y[0] + 0.5 * x**2, 'b-')
-    >>> plt.show()
-    """
-    y = asarray(y)
-    if x is None:
-        d = dx
-    else:
-        x = asarray(x)
-        if x.ndim == 1:
-            d = diff(x)
-            # reshape to correct shape
-            shape = [1] * y.ndim
-            shape[axis] = -1
-            d = d.reshape(shape)
-        elif len(x.shape) != len(y.shape):
-            raise ValueError("If given, shape of x must be 1-d or the "
-                    "same as y.")
-        else:
-            d = diff(x, axis=axis)
-
-        if d.shape[axis] != y.shape[axis] - 1:
-            raise ValueError("If given, length of x along axis must be the "
-                             "same as y.")
-
-    nd = len(y.shape)
-    slice1 = tupleset((slice(None),)*nd, axis, slice(1, None))
-    slice2 = tupleset((slice(None),)*nd, axis, slice(None, -1))
-    res = add.accumulate(d * (y[slice1] + y[slice2]) / 2.0, axis)
-
-    if initial is not None:
-        if not np.isscalar(initial):
-            raise ValueError("`initial` parameter should be a scalar.")
-
-        shape = list(res.shape)
-        shape[axis] = 1
-        res = np.concatenate([np.ones(shape, dtype=res.dtype) * initial, res],
-                             axis=axis)
-
-    return res
-
-
 
 def IMUtoXYZ(imufile,fs):
     """ 
     Main function to collate IMU and GPS records. The IMU fields are cropped to lie within the available 
     GPS record and then the GPS is interpolated up to the IMU rate using the IMU as the master time.
+    
     Inputs:
-        - IMU, description...
-        - GPS, description...
+        - imufile, path to file containing IMU data
+        - fs, sampling frequency
         
     Outputs:
-        - IMU, description...
-        - GPS, description...
+        - IMU, dictionary containing acc ['ai'], vel ['vi'], pos ['pi'], and time ['time'] as entries
+    
+    Example:
+        IMU = IMUtoXYZ(imufile,fs)
     """
     #-- Set up module level logger
     logger = getLogger('microSWIFT.'+__name__) 
@@ -290,14 +145,14 @@ def IMUtoXYZ(imufile,fs):
                 gyo.append(list(map(float,currentLine[7:10]))) # gyo = [gx,gy,gz]
           
 
-    #--sorting: #TODO: log sorting errors?
+    #--sorting:
     sortInd = np.asarray(timestamp).argsort()
     timestampSorted = np.asarray(timestamp)[sortInd]
     accSorted = np.asarray(acc)[sortInd,:].transpose()
     magSorted = np.asarray(mag)[sortInd,:].transpose()
     gyoSorted = np.asarray(gyo)[sortInd,:].transpose()
     
-    # Determine which way is up
+    # determine which way is up
     accMeans = list()
     for ai in accSorted:
         accMeans.append(np.mean(ai))
@@ -355,13 +210,12 @@ def IMUtoXYZ(imufile,fs):
     np.isnan(magInterp).sum()
     np.isnan(gyoInterp).sum()
     
-    #-- reference frame transformation and integration
-    
-    #TODO: reference frame transformation 
+    #-- reference frame transformation #TODO: reference frame transformation 
     # ax_earth, ay_earth, az_earth = ekfCorrection(*accInterp,*gyoInterp,*magInterp)
     # *accEarth = ekfCorrection(*accInterp,*gyoInterp,*magInterp)
     # accEarth = [ax_earth,ay_earth,az_earth]
 
+    #-- integration
     fc = 0.04
     filt = lambda *b : RCfilter(*b,fc,fs)
     # X,Y,Z=[integrate_acc(a,masterTimeSec,filt) for a in accEarth][:] # X = [ax,ay,az], Y = ... 
@@ -374,72 +228,3 @@ def IMUtoXYZ(imufile,fs):
     IMU['time'] = masterTime
 
     return IMU # X[0], Y[0], Z[0], X[1], Y[1], Z[1], X[2], Y[2], Z[2], masterTime # ax, ay, az, vx, vy, vz, px, py, pz
-
-
-#---deleted:
-
-    # def percent_diff(x1,x2):
-    #     absDiff = np.abs(x2-x1)
-    #     meanValue = (x2+x1)/2
-    #     percentDiff = (absDiff/meanValue)*100
-    #     return percentDiff
-
-    # # check if inferred sampling frequency is different from specified frequency
-    # fs0 = np.mean(np.diff(datetimearray2relativetime(timestampSorted)))**(-1)
-    # fsPercentDiff = percent_diff(fs,fs0)
-    # if fsPercentDiff > 10: # [%]
-    #     #TODO: log this event?
-    #     print(f'The IMU sampling frequency, inferred from the reported time series, is greater than 10 percent different from the set sampling frequency. Percent difference: {round(fsPercentDiff,1)}')
-
-
-#---
-
-
-    #--unpack variables and return
-    # ax,vx,px = X; ay,vy,py = Y; az,vz,pz = X
-
-    # ax, ay, az, vx, vy, vz, px, py, pz
-    # X[0], Y[0], Z[0], X[1], Y[1], Z[1], X[2], Y[2], Z[2]
-    # ax, ay, az, vx, vy, vz, x, y, z
-
-
-
-
-    #%%
-    # fig,ax = plt.subplots()
-    # ax.plot(imuTimeSec,accSorted[:,1],marker='.',alpha=0.5)
-    # ax.plot(masterTimeSec,accInterp,marker='.',alpha=0.5)
-    # ax.set_xlim([110,120]) #[0,10]
-
-    # fig,ax = plt.subplots()
-    # ax.plot(imuTimeSec,magSorted[:,1],marker='.',alpha=0.5)
-    # ax.plot(masterTimeSec,magInterp,marker='.',alpha=0.5)
-    # ax.set_xlim([110,120]) #[0,10]
-    # #%%
-    # fig,ax = plt.subplots()
-    # ax.plot(masterTimeSec,accInterp[2],marker='.',alpha=0.5)
-    # ax.plot(masterTimeSec,accInterpTest,marker='.',alpha=0.5)
-
-    # masterTimeSec = [step.total_seconds() for step in (masterTime-masterTime[0])]
-    # imuTimeSec = [step.total_seconds() for step in (timestampSorted_ms-timestampSorted_ms[0])]
-
-
-    # cnt = []
-    # timestampSorted_ms = timestampSorted.copy()
-    # i = 1
-    # for n in np.arange(1, len(timestampSorted)):
-    #     if timestampSorted[n] == timestampSorted[n-1]: 
-    #         timestampSorted_ms[n] = timestampSorted[n] + (i * dt) 
-    #         i += 1
-    #         # if i > 12: #check for n > dt^(-1)
-    #         #     cnt.append(n)     
-    #     else:
-    #         # Restart i at one so that it can start again on the next second 
-    #         i = 1 
-
-# from scipy import signal
-
-# nperseg = 256*fs # [samples]
-# overlap = 0.75
-# f,accPSD = signal.welch(accInterpTest, fs= fs, window='hann', nperseg=nperseg, noverlap=np.floor(nperseg*overlap))
-# f_filt,accPSD_filt  = signal.welch(accInterp_filt, fs=fs, window='hann', nperseg=nperseg, noverlap=np.floor(nperseg*overlap))
