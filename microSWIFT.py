@@ -327,9 +327,15 @@ if __name__=="__main__":
 				payload_filenames_stripped.append(line.strip())
 
 			# Append with the newest file name
-			logger.info(TX_fname)
-			logger.info('Adding TX filename to the telemetry queue')
+			logger.info(f'Adding TX file {TX_fname} to the telemetry queue')
 			payload_filenames_stripped.append(TX_fname)
+			
+			# Append secondary estimate
+			try:
+				logger.info(f'Adding TX file {TX_fname_2} to the telemetry queue')
+				payload_filenames_stripped.append(TX_fname_2)
+			except:
+				logger.info('No secondary estimate exists to add to queue')
 
 			# Write all the filenames to the file including the newest file name
 			telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','w')
