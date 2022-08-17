@@ -105,7 +105,7 @@ if __name__=="__main__":
 	# GPS parameters
 	GPS_fs = config.getInt('GPS', 'gps_frequency') #currently not used, hardcoded at 4 Hz (see init_gps function)
 	# IMU parameters
-	IMU_fs = config.getFloat('IMU', 'imuFreq')
+	IMU_fs = config.getFloat('IMU', 'imuFreq') #TODO: NOTE this has been changed to 12 from 12.5 (actual) to obtain proper # of pts in processing
 
 	#Compute number of bursts per hour
 	num_bursts = int(60 / burst_int)

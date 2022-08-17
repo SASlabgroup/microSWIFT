@@ -100,7 +100,7 @@ gps_frequency=4
 timeout=60
 #========================== IMU Parameters ========================
 [IMU]
-imuFreq=12.5
+imuFreq=12
 imu_gpio=20
 
 #===================== Temperature Parameters =====================
