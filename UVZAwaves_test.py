@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 from IMU.IMUtoXYZ import IMUtoXYZ
 from GPS.GPStoUVZ import GPStoUVZ
 from waves.UVZAwaves import UVZAwaves
-from GPS.GPSwaves import GPSwaves
+from waves.GPSwaves import GPSwaves
 from datetime import datetime, timedelta
-from waves.collateIMUandGPS import collateIMUandGPS
+from utils.collateIMUandGPS import collateIMUandGPS
 # from waves.cumtrapz import cumtrapz
 
 dataDir  = './waves/testdata/'

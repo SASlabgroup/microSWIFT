@@ -39,7 +39,6 @@ import struct
 
 # Import GPS functions
 from GPS.recordGPS import recordGPS
-from GPS.GPSwaves import GPSwaves 
 from GPS.GPStoUVZ import GPStoUVZ
 
 # Import IMU functions
@@ -47,8 +46,8 @@ from IMU.recordIMU import recordIMU
 from IMU.IMUtoXYZ import IMUtoXYZ 
 
 # Import wave processing functions
-from waves.collateIMUandGPS import collateIMUandGPS
 from waves.UVZAwaves import UVZAwaves
+from waves.GPSwaves import GPSwaves 
 
 # Import SBD functions
 from SBD.sendSBD import createTX
@@ -60,6 +59,7 @@ from SBD.sendSBD import send_microSWIFT_51
 
 # Import configuration and utility functions
 from utils.config3 import Config
+from utils.collateIMUandGPS import collateIMUandGPS
 from utils.fillBadValues import fillBadValues
 
 def _get_uvzmean(badValue, pts):

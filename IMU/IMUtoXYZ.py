@@ -135,6 +135,7 @@ def IMUtoXYZ(imufile,fs):
     IMU = {'ax':None,'ay':None,'az':None,'vx':None,'vy':None,'vz':None,'px':None,'py':None,'pz':None,'time':None}
     
     #--open imu file and read in acceleration, magnetometer, and gyroscope data
+    logger.info('Reading and sorting IMU')
     with open(imufile, 'r') as file: #encoding="utf8", errors='ignore'
         for line in file:
             currentLine = line.strip('\n').rstrip('\x00').split(',')
@@ -153,6 +154,7 @@ def IMUtoXYZ(imufile,fs):
     gyoSorted = np.asarray(gyo)[sortInd,:].transpose()
     
     # determine which way is up
+    logger.info('Finding up')
     accMeans = list()
     for ai in accSorted:
         accMeans.append(np.mean(ai))
@@ -196,6 +198,7 @@ def IMUtoXYZ(imufile,fs):
     timestampSorted_ms = add_ms_to_IMUtime(timestampSorted)
 
     #--Interpolate IMU onto master clock
+    logger.info('Interpolating IMU onto master clock')
     # convert datetime ranges to a relative number of total seconds
     masterTimeSec = datetimearray2relativetime(masterTime)
     imuTimeSec    = datetimearray2relativetime(timestampSorted_ms)
@@ -216,15 +219,17 @@ def IMUtoXYZ(imufile,fs):
     # accEarth = [ax_earth,ay_earth,az_earth]
 
     #-- integration
+    logger.info('Integrating IMU')
     fc = 0.04
     filt = lambda *b : RCfilter(*b,fc,fs)
     # X,Y,Z=[integrate_acc(a,masterTimeSec,filt) for a in accEarth][:] # X = [ax,ay,az], Y = ... 
     X,Y,Z=[integrate_acc(a,masterTimeSec,filt) for a in accInterp][:] # X = [ax,ay,az], Y = ... 
-
+    
     # assign outputs to IMU dict
     IMU['ax'],IMU['vx'],IMU['px'] = X # IMU.update({'ax': X[0], 'ay': Y[0], 'az': Z[0]})
     IMU['ay'],IMU['vy'],IMU['py'] = Y
     IMU['az'],IMU['vz'],IMU['pz'] = Z
     IMU['time'] = masterTime
-
+    
+    logger.info('--------------------------------------------')
     return IMU # X[0], Y[0], Z[0], X[1], Y[1], Z[1], X[2], Y[2], Z[2], masterTime # ax, ay, az, vx, vy, vz, px, py, pz

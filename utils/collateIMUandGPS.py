@@ -67,20 +67,18 @@ def collateIMUandGPS(IMU,GPS):
     logger.info('---------------collateIMUandGPS.py------------------')
 
     #-- crop IMU values to lie within the GPS times (since GPS is being interpolated onto IMU time)
+    logger.info('Cropping IMU')
     startCrop = GPS['time'][0]
     endCrop   = GPS['time'][-1]
     cropIMUbool = np.logical_and(IMU['time'] >= startCrop, IMU['time'] <= endCrop)
     IMUcrop = crop_dict(IMU,cropIMUbool)
 
-    logger.info('IMU cropped')
-
     #-- convert datetimes to relative times for interpolation
     relTimeGPS = datetimearray2relativetime(GPS['time'],t0=startCrop)
     relTimeIMU = datetimearray2relativetime(IMUcrop['time'],t0=startCrop)
     
-    logger.info('datetimearray conversion complete')
-
     #-- interpolate the GPS values onto the IMU time
+    logger.info('Interpolating GPS')
     GPSintp = dict()
     NaNbools = [] # initialize a list of to store logical array of NaN locations
     GPS['z'] = GPS['z'][:-1]
@@ -93,8 +91,6 @@ def collateIMUandGPS(IMU,GPS):
 
     GPSintp.update({'time':IMUcrop['time']}) # update new GPS dict with datetime 
 
-    logger.info('GPS interpolated')
-
     #-- Crop NaN values; if NaNs exist, they should be exterior
     nonNaN = np.logical_and.reduce(np.asarray(NaNbools)) # intersect all NaN locations
     numNaNs = len(nonNaN) - sum(nonNaN)
@@ -103,6 +99,8 @@ def collateIMUandGPS(IMU,GPS):
         IMUcrop   = crop_dict(IMU,nonNaN)
         GPSintp = crop_dict(GPSintp,nonNaN)
         logger.info(f'{numNaNs} NaNs removed')
+
+    logger.info('----------------------------------------------------')
 
     return IMU,GPSintp
     

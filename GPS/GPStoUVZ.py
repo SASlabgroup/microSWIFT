@@ -71,7 +71,7 @@ def GPStoUVZ(gpsfile):
         del lat[-(ipos-ivel)]
         del lon[-(ipos-ivel)]
         del time[-(ipos-ivel)]
-        logger.info(f'{ipos-ivel} GPGGA lines removed at end')
+        logger.info(f'{ipos-ivel} GPGGA line(s) removed at end')
 
     logger.info('GPS file read')
 
@@ -92,5 +92,6 @@ def GPStoUVZ(gpsfile):
 
     logger.info('GPGGA lines: {}'.format(len(lat)))
     logger.info('GPVTG lines: {}'.format(len(u)))
+    logger.info('------------------------------------------')
 
     return GPS #u,v,z,lat,lon, time

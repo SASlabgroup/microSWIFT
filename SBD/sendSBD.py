@@ -26,8 +26,6 @@ if( not ok ):
 
 # Create the TX file named for the current time
 logger = getLogger('microSWIFT.'+__name__)  
-logger.info('---------------sendSBD.py------------------')
-
 
 # System Parameters
 dataDir = config.getString('System', 'dataDir')
@@ -55,6 +53,7 @@ id = 0
 
 # Telemetry test functions
 def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, lat, lon,  temp, volt):
+    logger.info('---------------sendSBD.createTX.py------------------')
 
     if payload_type != 7:
         logger.info('invalid payload type: {}'.format(payload_type))
@@ -149,6 +148,8 @@ def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, la
         file.write(payload_data)
         logger.info('done')
         file.flush()
+
+    logger.info('----------------------------------------------------')
 
     return TX_fname, payload_data
 
@@ -390,6 +391,7 @@ def transmit_ascii(ser,msg):
 #    ,<id>,<start-byte>:
 #--------------------------------------------------------------------------------------------
 def send_microSWIFT_50(payload_data, timeout):
+    logger.info('---------------sendSBD.send_microSWIFT_50------------------')
     logger.info('sending microSWIFT telemetry (type 50)')
     
     global id
@@ -498,6 +500,9 @@ def send_microSWIFT_50(payload_data, timeout):
                 logger.info('Powering down modem')    
                 GPIO.output(modemGPIO,GPIO.LOW)
                 successful_send = True
+                
+                logger.info('-----------------------------------------------------------')
+
                 return successful_send
             
 
@@ -506,10 +511,13 @@ def send_microSWIFT_50(payload_data, timeout):
     logger.info('powering down modem')    
     GPIO.output(modemGPIO,GPIO.LOW)
     successful_send = False
+
+    logger.info('-----------------------------------------------------------')
     return successful_send
    
 
 def send_microSWIFT_51(payload_data, timeout):
+    logger.info('---------------sendSBD.send_microSWIFT_51------------------')
     logger.info('sending microSWIFT telemetry (type 51)')
     
     global id
@@ -583,6 +591,9 @@ def send_microSWIFT_51(payload_data, timeout):
                 logger.info('Powering down modem')    
                 GPIO.output(modemGPIO,GPIO.LOW)
                 successful_send = True
+                
+                logger.info('-----------------------------------------------------------')
+
                 return successful_send
              
             else: 
@@ -593,6 +604,9 @@ def send_microSWIFT_51(payload_data, timeout):
     logger.info('powering down modem')    
     GPIO.output(modemGPIO,GPIO.LOW)
     successful_send = False
+
+    logger.info('-----------------------------------------------------------')
+
     return successful_send
     
 
@@ -603,6 +617,7 @@ def sendSBD(ser, payload_data, next_start):
     
     # Setup loging 
     logger = getLogger('microSWIFT.'+__name__) 
+    logger.info('---------------sendSBD------------------')
 
     # Setup instance of RockBlock 
     rockblock = RockBlock(ser)
@@ -628,3 +643,6 @@ def sendSBD(ser, payload_data, next_start):
 
     else:
         logger.info('Could not send SBD')
+
+    logger.info('----------------------------------------')
+    

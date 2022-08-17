@@ -74,6 +74,7 @@ def UVZAwaves(u, v, z, a, fs):
     logger.info(f'Processing settings: fs={fs}; wsecs={wsecs}; merge={merge}; maxf={maxf}')
 
     # ----------------- Quality Control and Despiking --------
+    logger.info('Quality control')
     # Find Spike values
     # badu = np.abs(signal.detrend(u)) >= Nstd * np.std(u)
     # badv = np.abs(signal.detrend(v)) >= Nstd * np.std(v)
@@ -113,10 +114,14 @@ def UVZAwaves(u, v, z, a, fs):
         a2 = 999 * np.ones(42)
         b2 = 999 * np.ones(42)
         check = 999 * np.ones(42)
+    
+        logger.info('---------------------------------------------')
+
         # Return values and exit
         return Hs, Tp, Dp, E, f, a1, b1, a2, b2, check
 
     # --------------- Detrend and High Pass Filter -------------
+    logger.info('Detrending')
     u = demean(u)
     v = demean(v)
     z = demean(z)
@@ -152,6 +157,7 @@ def UVZAwaves(u, v, z, a, fs):
     a = np.convolve(a, h)
 
     # ---------------- Break Data into Windows ------------------
+    logger.info('Windowing')
     # Windows have 75% Overlap 
     win = int(np.round(fs * wsecs))  # Window length in points
     if (np.mod(win, 2) != 0):
@@ -201,7 +207,7 @@ def UVZAwaves(u, v, z, a, fs):
     zwindowready = np.repeat(np.reshape(factz, (1, factz.shape[0])), win, axis=0) * zwindowtaper
     awindowready = np.repeat(np.reshape(factz, (1, facta.shape[0])), win, axis=0) * awindowtaper
 
-    logger.info('FFT')
+    logger.info('Performing FFT on windows')
     # ---------------- FFT ------------------
     # Calculate Fourer Coefficients
     #**** Note: this FFT funcion is slightly different than the MATLAB version 
@@ -227,6 +233,7 @@ def UVZAwaves(u, v, z, a, fs):
     Zwindow[-1, :] = 0
     Awindow[-1, :] = 0
     
+    logger.info('Computing auto- and cross-spectra')
     # Compute auto-spectra
     UUwindow = np.real(Uwindow * np.conj(Uwindow))
     VVwindow = np.real(Vwindow * np.conj(Vwindow))
@@ -238,7 +245,7 @@ def UVZAwaves(u, v, z, a, fs):
     UAwindow = (Uwindow * np.conj(Awindow))
     VAwindow = (Vwindow * np.conj(Awindow))
    
-    logger.info('merging freq bands')
+    logger.info('Merging frequency bands')
     # ----------- Merge Neighboring Frequency Bands -------- 
     UUwindowmerged = np.zeros((int(np.floor(win/(2*merge))), windows))
     VVwindowmerged = np.zeros((int(np.floor(win/(2*merge))), windows))
@@ -261,8 +268,6 @@ def UVZAwaves(u, v, z, a, fs):
         UAwindowmerged[int(n/merge)-1, :] = np.mean( UAwindow[ind_low:ind_high, :], axis=0 )
         VAwindowmerged[int(n/merge)-1, :] = np.mean( VAwindow[ind_low:ind_high, :], axis=0 )
 
-    logger.info('merged')
-
     # Define Frequnecy range and bandwidth
     n = (win/2) / merge # number of frequnecy bands
     Nyquist = 0.5 * fs  # Highest spectral frequnecy
@@ -275,7 +280,7 @@ def UVZAwaves(u, v, z, a, fs):
     #TODO: fix freq length
     # print(f[-1])
 
-    logger.info('ensemble averaged')
+    logger.info('Ensemble averaging windows')
     # --------- Ensemble Average Windows together ----------------
     # take average of all windows at each frequency band, divide by n*samplerate to get power 
     # spectral density. Use factor of 2 since we are using one-sided spectrum
@@ -288,6 +293,7 @@ def UVZAwaves(u, v, z, a, fs):
     VA = np.mean( VAwindowmerged / (win/2 * fs), axis=1)
 
     # ------------------ Spectral results -----------------------
+    logger.info('Computing scalar energy and directional moments')
     E  = ZZ.copy()                         # scalar spectral density [m^2/Hz]
     a1 = np.real(UA) / np.sqrt((UU+VV)*AA) # first normalized directional moment [-] (see Thomson et al. 2018)
     b1 = np.real(VA) / np.sqrt((UU+VV)*AA) # second normalized directional moment [-]
@@ -295,9 +301,10 @@ def UVZAwaves(u, v, z, a, fs):
     b2 = 2*np.real(UV)/(UU+VV)             # [-]
     #TODO: fix check
     check = 999 * np.ones(len(E))
-    logger.info('spectral results')
+    
     
     # ---------- Compute Wave Directions ---------------
+    logger.info('Computing wave directions')
     # note tha 0 deg is for waves headed towards positive x (EAST, right hand system)
     dir1 = np.arctan2(b1, a1) # [rad], 4 quadrant
     dir2 = np.arctan2(b2, a2) / 2 # [rad], only 2 quadrant
@@ -305,6 +312,7 @@ def UVZAwaves(u, v, z, a, fs):
     # spread2 = np.sqrt( np.abs( 0.5 - 0.5 * (a2 * np.cos(2 * dir2) + b2 * np.cos(2 * dir2) ) ) ) 
 
     # ------ Compute Wave Statistics -------------
+    logger.info('Computing bulk parameters')
     # clean Scalar Energy spectra from frequencies above and below cutoff 
     fwaves = np.logical_and(f > 0.05, f < 1)# Frequency cutoff for wave stats, 0.4 is specific to SWIFT hull
     
@@ -354,6 +362,7 @@ def UVZAwaves(u, v, z, a, fs):
         Dp = 999
 
     # ----------- Clean High frequency results ------------
+    logger.info('Cleaning high frequency results')
     ind_to_delete = np.squeeze(np.argwhere(f > maxf))
     E = np.delete(E, ind_to_delete)
     dir = np.delete(dir, ind_to_delete)
@@ -366,7 +375,8 @@ def UVZAwaves(u, v, z, a, fs):
     f = np.delete(f, ind_to_delete)
 
     logger.info(f'len(E): {len(E)}; len(f): {len(f)}; len(a1): {len(a1)}; len(b1): {len(b1)}; len(a2): {len(a2)}; len(b2): {len(b2)}')
-    
+    logger.info('---------------------------------------------')
+
     # Return values
     return Hs, Tp, Dp, E, f, a1, b1, a2, b2, check
 
