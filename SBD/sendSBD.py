@@ -487,6 +487,9 @@ def send_microSWIFT_50(payload_data, timeout):
                             logger.info('Powering down modem')    
                             GPIO.output(modemGPIO,GPIO.LOW)
                             successful_send = False
+                            
+                            logger.info('-----------------------------------------------------------')
+
                             return successful_send
                 #increment message counter for each completed message
                 if id >= 99:
