@@ -64,6 +64,7 @@ def collateIMUandGPS(IMU,GPS):
     """
     #-- Set up module level logger
     logger = getLogger('microSWIFT.'+__name__) 
+    logger.info('---------------collateIMUandGPS.py------------------')
 
     #-- crop IMU values to lie within the GPS times (since GPS is being interpolated onto IMU time)
     startCrop = GPS['time'][0]
@@ -72,7 +73,6 @@ def collateIMUandGPS(IMU,GPS):
     IMUcrop = crop_dict(IMU,cropIMUbool)
 
     logger.info('IMU cropped')
-    logger.info('---------------collateIMUandGPS.py------------------')
 
     #-- convert datetimes to relative times for interpolation
     relTimeGPS = datetimearray2relativetime(GPS['time'],t0=startCrop)

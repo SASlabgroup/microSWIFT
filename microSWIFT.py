@@ -171,14 +171,16 @@ if __name__=="__main__":
 				next_start = current_start + timedelta(minutes=burst_int)
 				
 				# Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
-				with concurrent.futures.ThreadPoolExecutor() as executor:
-					# Submit Futures 
-					recordGPS_future = executor.submit(recordGPS, end_times[i])
-					recordIMU_future = executor.submit(recordIMU, end_times[i])
+				#TODO: uncomment
+				# with concurrent.futures.ThreadPoolExecutor() as executor:
+				# 	# Submit Futures 
+				# 	recordGPS_future = executor.submit(recordGPS, end_times[i])
+				# 	recordIMU_future = executor.submit(recordIMU, end_times[i])
 
-					# get results from Futures
-					GPSdataFilename, gps_initialized = recordGPS_future.result()
-					IMUdataFilename, imu_initialized = recordIMU_future.result()
+				# 	# get results from Futures
+				# 	GPSdataFilename, gps_initialized = recordGPS_future.result()
+				# 	IMUdataFilename, imu_initialized = recordIMU_future.result()
+				#TODO: uncomment 
 
 				#exit out of loop once burst is finished
 				recording_complete = True
@@ -192,10 +194,10 @@ if __name__=="__main__":
 			begin_processing_time = datetime.now()
 			
 			# #---TODO: delete
-			# gps_initialized = True
-			# imu_initialized = True
-			# IMUdataFilename = '/home/pi/microSWIFT/data/microSWIFT043_IMU_15Aug2022_210005UTC.dat' #'microSWIFT043_IMU_05May2022_200006UTC.dat'#'microSWIFT021_IMU_12Jul2021_210000UTC.dat' #'microSWIFT014_IMU_27Oct2021_190006UTC.dat' 
-			# GPSdataFilename = '/home/pi/microSWIFT/data/microSWIFT043_GPS_15Aug2022_210006UTC.dat'
+			gps_initialized = True
+			imu_initialized = True
+			IMUdataFilename = '/home/pi/microSWIFT/data/microSWIFT057_IMU_17Aug2022_000146UTC.dat' #'microSWIFT043_IMU_05May2022_200006UTC.dat'#'microSWIFT021_IMU_12Jul2021_210000UTC.dat' #'microSWIFT014_IMU_27Oct2021_190006UTC.dat' 
+			GPSdataFilename = '/home/pi/microSWIFT/data/microSWIFT057_GPS_17Aug2022_000151UTC.dat'
 			# #---TODO: delete
 				
 			if gps_initialized and imu_initialized: #gps_initialized == True and imu_initialized == True:
