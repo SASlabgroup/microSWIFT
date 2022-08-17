@@ -222,10 +222,10 @@ def UVZAwaves(u, v, z, a, fs):
     Vwindow = np.delete(Vwindow, 0, axis=0)
     Zwindow = np.delete(Zwindow, 0, axis=0)
     Awindow = np.delete(Awindow, 0, axis=0)
-    # Uwindow[-1, :] = 0
-    # Vwindow[-1, :] = 0
-    # Zwindow[-1, :] = 0
-    # Awindow[-1, :] = 0
+    Uwindow[-1, :] = 0
+    Vwindow[-1, :] = 0
+    Zwindow[-1, :] = 0
+    Awindow[-1, :] = 0
     
     # Compute auto-spectra
     UUwindow = np.real(Uwindow * np.conj(Uwindow))
