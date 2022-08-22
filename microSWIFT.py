@@ -24,6 +24,9 @@ Log:
  	- Sep 2021, @edwinrainville: DUNEX development
  	- Jun 2022, @edwinrainville: telemetry queue
 	- Aug 2022, @jacobrdavis: UVZAwaves
+
+TODO:
+	- generateHeader function for each script? (i.e. --fun.py---)
 """
 
 # Main import Statemennts

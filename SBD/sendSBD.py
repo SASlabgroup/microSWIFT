@@ -50,7 +50,6 @@ timeout = config.getInt('Iridium', 'timeout')
 #arbitrary message counter
 id = 0
 
-
 # Telemetry test functions
 def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, lat, lon,  temp, volt):
     logger.info('---------------sendSBD.createTX.py------------------')
@@ -403,7 +402,6 @@ def send_microSWIFT_50(payload_data, timeout):
         successful_send = False
         return successful_send
  
-    
     if payload_size != 1245:
         logger.info('Error: unexpected number of bytes in payload data. Expected bytes: 1245, bytes received: {}'.format(payload_size))
         successful_send = False
@@ -545,7 +543,7 @@ def send_microSWIFT_51(payload_data, timeout):
     header = str(packet_type).encode('ascii') #packet type as as ascii number
     sub_header0 = str(','+str(id)+','+str(index)+','+str(payload_size)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
     payload_bytes0 = payload_data[index:249] #data bytes for packet
-    packet0 = header + sub_header0 + payload_bytes0
+    packet0 = header + sub_header0 + payload_bytes0 #TODO: <= 340 bytes
     
     while datetime.utcnow() < timeout:
     

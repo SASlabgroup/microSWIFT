@@ -294,13 +294,16 @@ def UVZAwaves(u, v, z, a, fs):
 
     # ------------------ Spectral results -----------------------
     logger.info('Computing scalar energy and directional moments')
-    E  = ZZ.copy()                         # scalar spectral density [m^2/Hz]
-    a1 = np.real(UA) / np.sqrt((UU+VV)*AA) # first normalized directional moment [-] (see Thomson et al. 2018)
-    b1 = np.real(VA) / np.sqrt((UU+VV)*AA) # second normalized directional moment [-]
-    a2 = (UU-VV)/(UU+VV)                   # [-]
-    b2 = 2*np.real(UV)/(UU+VV)             # [-]
-    #TODO: fix check
-    check = 999 * np.ones(len(E))
+    E   = ZZ.copy()                         # scalar spectral density [m^2/Hz]
+    Exx = UU / ((2*np.pi*f)**2)             #[m^2/Hz]
+    Eyy = VV / ((2*np.pi*f)**2)             #[m^2/Hz]
+    a1  = np.real(UA) / np.sqrt((UU+VV)*AA) # first normalized directional moment [-] (see Thomson et al. 2018)
+    b1  = np.real(VA) / np.sqrt((UU+VV)*AA) # second normalized directional moment [-]
+    a2  = (UU-VV)/(UU+VV)                   # [-]
+    b2  = 2*np.real(UV)/(UU+VV)             # [-]
+    
+    # check = 999 * np.ones(len(E)) #check = E./ (Eyy + Exx);
+    check = E / (Eyy + Exx) 
     
     
     # ---------- Compute Wave Directions ---------------
