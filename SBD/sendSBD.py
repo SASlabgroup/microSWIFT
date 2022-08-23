@@ -610,7 +610,98 @@ def send_microSWIFT_51(payload_data, timeout):
 
     return successful_send
     
+def send_microSWIFT_52(payload_data, timeout): #TODO: finish working on!
+    logger.info('---------------sendSBD.send_microSWIFT_52------------------')
+    logger.info('sending microSWIFT telemetry (type 51)')
+    
+    global id
+    payload_size = len(payload_data)
+    
+    #check for data
+    if payload_size == 0:
+        logger.info('Error: payload data is empty')
+        successful_send = False
+        return successful_send
+    
+    if payload_size != 249:
+        logger.info('Error: unexpected number of bytes in payload data. Expected bytes: 249, bytes received: {}'.format(payload_size))
+        successful_send = False
+        return successful_send
+    
+    #split up payload data into packets    
+    index = 0 #byte index
+    packet_type = 0 #single packet
+    
+    #packet to send
+    header = str(packet_type).encode('ascii') #packet type as as ascii number
+    sub_header0 = str(','+str(id)+','+str(index)+','+str(payload_size)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
+    payload_bytes0 = payload_data[index:249] #data bytes for packet
+    packet0 = header + sub_header0 + payload_bytes0 #TODO: <= 340 bytes
+    
+    while datetime.utcnow() < timeout:
+    
+        #initialize modem
+        ser, modem_initialized = initModem()
 
+        if not modem_initialized:
+            logger.info('Modem not initialized')
+            GPIO.output(modemGPIO,GPIO.LOW) #power off modem
+            continue
+        
+        #send packets
+        logger.info('Sending single packet message (51)')
+        
+        i=0
+        signal=[]
+        while datetime.utcnow() < timeout:
+            
+            isignal = sig_qual(ser)
+            if isignal < 0:
+                continue
+            else: 
+                signal.append(isignal)
+                i+=1
+            
+            if len(signal) >= 3 and np.mean(signal[i-3:i]) >= 3: #check rolling average of last 3 values, must be at least 3 bars
+                signal.clear() #clear signal values
+                i=0 #reset counter
+                
+                #attempt to transmit packets
+                retry = 0
+                issent  = False
+                while issent == False and datetime.utcnow() < timeout:
+                    logger.info('Sending packet. Retry {}'.format(retry))
+                    issent  = transmit_bin(ser, packet0)            
+                    retry += 1
+                #increment message counter for each completed message
+                if id >= 99:
+                    id = 0
+                else:   
+                    id+=1
+
+                # Final print statement that it sent
+                logger.info('Sent SBD successfully')      
+                #turn off modem
+                logger.info('Powering down modem')    
+                GPIO.output(modemGPIO,GPIO.LOW)
+                successful_send = True
+                
+                logger.info('-----------------------------------------------------------')
+
+                return successful_send
+             
+            else: 
+                continue
+ 
+    #turn off modem
+    logger.info('Send SBD timeout. Message not sent')
+    logger.info('powering down modem')    
+    GPIO.output(modemGPIO,GPIO.LOW)
+    successful_send = False
+
+    logger.info('-----------------------------------------------------------')
+
+    return successful_send
 
 def sendSBD(ser, payload_data, next_start):
     import time
