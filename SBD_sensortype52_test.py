@@ -364,4 +364,7 @@ payloadStart = payload_data.index(b':')
 sensorType = ord(payload_data[payloadStart+2:payloadStart+3]) # read from start of header
 
 sensorType = ord(payload_data[-326:-325]) # read from end
+
+
+sensorType not in [50,51,52]
 # %%

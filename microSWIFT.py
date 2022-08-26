@@ -335,14 +335,22 @@ if __name__=="__main__":
 					payloadStartIdx = payload_data.index(b':') # find end of header
 					sensor_type0 = ord(payload_data[payloadStartIdx+2:payloadStartIdx+3]) # sensor type is the 2 byte after the header
 					
-					# send either payload type 50, 51, or 52
-					if sensor_type0 == 50:
-						successful_send = send_microSWIFT_50(payload_data, next_start)
-					elif sensor_type0 == 51:
-						successful_send = send_microSWIFT_51(payload_data, next_start)
-					elif sensor_type0 == 52:
-						successful_send = send_microSWIFT_52(payload_data, next_start)
+					if sensor_type0 not in [50,51,52]:
+						logger.info(f'Failed to read sensor type properly; read sensor type as: {sensor_type0}')
+						logger.info(f'Trying to send as configured sensor type instead ({sensor_type})')
+						send_sensor_type = sensor_type
+					else:
+						send_sensor_type = sensor_type0
 
+					# send either payload type 50, 51, or 52
+					if send_sensor_type == 50:
+						successful_send = send_microSWIFT_50(payload_data, next_start)
+					elif send_sensor_type == 51:
+						successful_send = send_microSWIFT_51(payload_data, next_start)
+					elif send_sensor_type == 52:
+						successful_send = send_microSWIFT_52(payload_data, next_start)
+					else:
+						logger.info(f'Specified sensor type ({send_sensor_type}) is invalid or not currently supported')
 
 					# send either payload type 50, 51, or 52
 					# if len(payload_data) >= 1245 and len(payload_data) < 1284: # sensor_type == 50
