@@ -3,6 +3,13 @@
 author: @edwinrainville
 All functions are heavily adapted from Viviana Castillo and Alex de Klerk.
 
+Log:
+    - Aug 2022, @jacobrdavis: sensor_type_52, send_microSWIFT_52()
+
+TODO:
+    - lookup table for status codes 
+    - pull out into functions?
+    - combine repeated code for send_microSWIFT_50,51,52
 '''
 
 # Import Statements
@@ -51,7 +58,7 @@ timeout = config.getInt('Iridium', 'timeout')
 id = 0
 
 # Telemetry test functions
-def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, lat, lon,  temp, volt):
+def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, lat, lon,  temp, salinity, volt):
     logger.info('---------------sendSBD.createTX.py------------------')
 
     if payload_type != 7:
@@ -127,12 +134,53 @@ def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, la
                         struct.pack('<i', int(now.hour)) +
                         struct.pack('<i', int(now.minute)) +
                         struct.pack('<i', int(now.second)))
+    
+    
+    elif sensor_type == 52:
+
+        # extract frequency range
+        fmin = np.min(f)
+        fmax = np.max(f)
+        # fstep = (fmax - fmin)/(len(E)-1)
+
+        # round, scale, and convert a1,b1...+ to 8-bit, signed integers
+        a1_8bit = np.byte(np.round(100*a1)) # could be 127
+        b1_8bit = np.byte(np.round(100*b1))
+        a2_8bit = np.byte(np.round(100*a2))
+        b2_8bit = np.byte(np.round(100*b2))
+
+        # round, scale, clip, and convert check to 8-bit, unsigned integers
+        checkRoundedAndScaled = np.round(10*check)
+        checkRoundedAndScaled[checkRoundedAndScaled > 255] = 255
+        check_8bit = np.ubyte(checkRoundedAndScaled)
+
+        # current time to UNIX timestamp
+        nowEpoch = now.timestamp() # unpack with datetime.fromtimestamp(nowEpoch)  
+
+        # create formatted struct with all payload data
+        payload_size = struct.calcsize('<sbbheee42eee42b42b42b42b42Bffeeef') 
+        payload_data = (struct.pack('<sbbh', str(payload_type).encode(), sensor_type, port, payload_size) + 
+                        struct.pack('<eee', Hs,Tp,Dp) +
+                        struct.pack('<42e', *E) +
+                        struct.pack('<e', fmin) +
+                        struct.pack('<e', fmax) +
+                        struct.pack('<42b', *a1_8bit) +
+                        struct.pack('<42b', *b1_8bit) +
+                        struct.pack('<42b', *a2_8bit) +
+                        struct.pack('<42b', *b2_8bit) +
+                        struct.pack('<42B', *check_8bit) +
+                        struct.pack('<f', lat) +
+                        struct.pack('<f', lon) +
+                        struct.pack('<e', temp) + 
+                        struct.pack('<e', salinity) +
+                        struct.pack('<e', volt) +
+                        struct.pack('<f', nowEpoch) # float saves 4 bytes but looses +/- 1s precision 
+                        )
 
     else: 
         logger.info('invalid sensor type: {}'.format(sensor_type))
         logger.info('exiting')
         sys.exit(1)
-
 
     #Create file name
     TX_fname = dataDir + floatID+'_TX_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(now) 
@@ -305,6 +353,7 @@ def transmit_bin(ser,msg):
                         return True
                     else:
                         logger.info('Message send failure, status code = {}'.format(r[0]))
+                        #TODO: lookup table of status codes here
                         return False
                 else:
                     logger.info('Unexpected response from modem')
@@ -543,7 +592,7 @@ def send_microSWIFT_51(payload_data, timeout):
     header = str(packet_type).encode('ascii') #packet type as as ascii number
     sub_header0 = str(','+str(id)+','+str(index)+','+str(payload_size)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
     payload_bytes0 = payload_data[index:249] #data bytes for packet
-    packet0 = header + sub_header0 + payload_bytes0 #TODO: <= 340 bytes
+    packet0 = header + sub_header0 + payload_bytes0 
     
     while datetime.utcnow() < timeout:
     
@@ -612,10 +661,11 @@ def send_microSWIFT_51(payload_data, timeout):
     
 def send_microSWIFT_52(payload_data, timeout): #TODO: finish working on!
     logger.info('---------------sendSBD.send_microSWIFT_52------------------')
-    logger.info('sending microSWIFT telemetry (type 51)')
+    logger.info('sending microSWIFT telemetry (type 52)')
     
     global id
     payload_size = len(payload_data)
+    payload_size_exp = 327 #struct.calcsize('<sbbheee42eee42b42b42b42b42Bffeeef') 
     
     #check for data
     if payload_size == 0:
@@ -623,7 +673,7 @@ def send_microSWIFT_52(payload_data, timeout): #TODO: finish working on!
         successful_send = False
         return successful_send
     
-    if payload_size != 249:
+    if payload_size != payload_size_exp:
         logger.info('Error: unexpected number of bytes in payload data. Expected bytes: 249, bytes received: {}'.format(payload_size))
         successful_send = False
         return successful_send
@@ -635,8 +685,8 @@ def send_microSWIFT_52(payload_data, timeout): #TODO: finish working on!
     #packet to send
     header = str(packet_type).encode('ascii') #packet type as as ascii number
     sub_header0 = str(','+str(id)+','+str(index)+','+str(payload_size)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
-    payload_bytes0 = payload_data[index:249] #data bytes for packet
-    packet0 = header + sub_header0 + payload_bytes0 #TODO: <= 340 bytes
+    payload_bytes0 = payload_data[index:payload_size_exp] #data bytes for packet
+    packet0 = header + sub_header0 + payload_bytes0 
     
     while datetime.utcnow() < timeout:
     
@@ -649,7 +699,7 @@ def send_microSWIFT_52(payload_data, timeout): #TODO: finish working on!
             continue
         
         #send packets
-        logger.info('Sending single packet message (51)')
+        logger.info('Sending single packet message with complete wave statistics (52)')
         
         i=0
         signal=[]

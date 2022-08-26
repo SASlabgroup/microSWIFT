@@ -11,6 +11,7 @@ Contents:
 
 Log:
     - Aug 2022, J.Davis: created integrateIMU.py
+    - Aug 25, 2022, J. Davis: swapped order of demean and post-filter zeroing
 """
 import numpy as np
 from numpy import add, diff, asarray
@@ -146,18 +147,21 @@ def integrate_acc(a,t,filt):
     zeroPts = int(np.round(30*fs))
 
     ai = a.copy()
-    ai[:zeroPts] = 0 # zero initial oscillations from filtering
     ai = demean(ai) #IMU.acc(:,i) - 10.025;
+    ai[:zeroPts] = 0 # zero initial oscillations from filtering
+    # ai = demean(ai) #IMU.acc(:,i) - 10.025;
 
     vi = cumtrapz(y=ai,x=t,initial=0)  # [m/s]
     vi = filt(vi)
-    vi[:zeroPts] = 0
     vi = demean(vi) 
+    vi[:zeroPts] = 0
+    # vi = demean(vi) 
 
     pi = cumtrapz(y=vi,x=t,initial=0)  # [m/s]
     pi = filt(pi)
-    pi[:zeroPts] = 0
     pi = demean(pi) 
+    pi[:zeroPts] = 0
+    # pi = demean(pi) 
 
     return ai,vi,pi
 

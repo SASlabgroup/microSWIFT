@@ -24,7 +24,8 @@ Log:
  	- Sep 2021, @edwinrainville: DUNEX development
  	- Jun 2022, @edwinrainville: telemetry queue
 	- Aug 2022, @jacobrdavis: UVZAwaves
-
+	- Aug 2022, @jacobrdavis: sensor_type_52, salinity placeholder
+	
 TODO:
 	- generateHeader function for each script? (i.e. --fun.py---)
 """
@@ -59,6 +60,7 @@ from SBD.sendSBD import checkTX
 from SBD.sendSBD import initModem
 from SBD.sendSBD import send_microSWIFT_50
 from SBD.sendSBD import send_microSWIFT_51
+from SBD.sendSBD import send_microSWIFT_52
 
 # Import configuration and utility functions
 from utils.config3 import Config
@@ -213,12 +215,12 @@ if __name__=="__main__":
 
 				# Process raw IMU data
 				logger.info(f'entering IMUtoXYZ.py: {IMUdataFilename}')
-				IMU = IMUtoXYZ(IMUdataFilename,IMU_fs) # ax, vx, px, ay, vy, py, az, vz, pz = IMUtoXYZ(IMUdataFilename,IMU_fs)
+				IMU = IMUtoXYZ(IMUdataFilename, IMU_fs) # ax, vx, px, ay, vy, py, az, vz, pz = IMUtoXYZ(IMUdataFilename,IMU_fs)
 				logger.info('IMUtoXYZ.py executed')
 
 				# Collate IMU and GPS onto a master time based on the IMU time
 				logger.info('entering collateIMUandGPS.py')
-				IMUcol,GPScol = collateIMUandGPS(IMU,GPS)
+				IMUcol,GPScol = collateIMUandGPS(IMU, GPS)
 				logger.info('collateIMUandGPS.py executed')
 
 				# UVZAwaves estimate; leave out first 120 seconds
@@ -245,11 +247,11 @@ if __name__=="__main__":
 			elif imu_initialized and not gps_initialized:
 				#TODO: Process IMU data
 				logger.info(f'GPS did not initialize but IMU did; would put IMU processing here but it is not yet functional... entering bad values ({badValue})')
-				u,v,z,lat,lon,Hs,Tp,Dp,E,f,a1,b1,a2,b2,check = fillBadValues(badVal=badValue,spectralLen=numCoef)
+				u,v,z,lat,lon,Hs,Tp,Dp,E,f,a1,b1,a2,b2,check = fillBadValues(badVal=badValue, spectralLen=numCoef)
 
 			else: # no IMU or GPS, enter bad values
 				logger.info(f'Neither GPS or IMU initialized - entering bad values ({badValue})')
-				u,v,z,lat,lon,Hs,Tp,Dp,E,f,a1,b1,a2,b2,check = fillBadValues(badVal=badValue,spectralLen=numCoef)
+				u,v,z,lat,lon,Hs,Tp,Dp,E,f,a1,b1,a2,b2,check = fillBadValues(badVal=badValue, spectralLen=numCoef)
 
 			# check lengths of spectral quanities:
 			if len(E)!=numCoef or len(f)!=numCoef:
@@ -265,7 +267,8 @@ if __name__=="__main__":
 			last_lon = _get_last(badValue, lon)
 
 			# Temperature and Voltage recordings - will be added in later versions
-			temp = 0
+			temp = 0.0
+			salinity = 0.0
 			volt = 0   #NOTE: primary estimate
 			volt_2 = 1 #NOTE: secondary estimate (GPS if IMU and GPS are both initialized)
 
@@ -277,11 +280,11 @@ if __name__=="__main__":
 
 			# Pack the data from the queue into the payload package
 			logger.info('Creating TX file and packing payload data from primary estimate')
-			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt)
+			TX_fname, payload_data = createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, salinity, volt)
 		
 			try: # GPSwaves estimate as secondary estimate
 				logger.info('Creating TX file and packing payload data from secondary estimate')
-				TX_fname_2, payload_data_2 = createTX(Hs_2, Tp_2, Dp_2, E_2, f_2, a1_2, b1_2, a2_2, b2_2, check_2, u_mean, v_mean, z_mean, last_lat, last_lon, temp, volt_2)
+				TX_fname_2, payload_data_2 = createTX(Hs_2, Tp_2, Dp_2, E_2, f_2, a1_2, b1_2, a2_2, b2_2, check_2, u_mean, v_mean, z_mean, last_lat, last_lon, temp, salinity, volt_2)
 			except:
 				logger.info('No secondary estimate exists')
 
@@ -326,11 +329,13 @@ if __name__=="__main__":
 					with open(TX_file, mode='rb') as file: # b is important -> binary
 						payload_data = file.read()
 
-					# send either payload type 50 or 51
+					# send either payload type 50, 51, or 52
 					if sensor_type == 50:
 						successful_send = send_microSWIFT_50(payload_data, next_start)
 					elif sensor_type == 51:
 						successful_send = send_microSWIFT_51(payload_data, next_start)
+					elif sensor_type == 52:
+						successful_send = send_microSWIFT_52(payload_data, next_start)
 					# Index up the messages sent value if successful send is true
 					if successful_send == True:
 						messages_sent += 1

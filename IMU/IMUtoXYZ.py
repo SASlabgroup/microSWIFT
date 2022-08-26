@@ -153,6 +153,18 @@ def IMUtoXYZ(imufile,fs):
     magSorted = np.asarray(mag)[sortInd,:].transpose()
     gyoSorted = np.asarray(gyo)[sortInd,:].transpose()
     
+    #--trimming #TODO: not tested live...
+    # print(len(timestampSorted))
+    # skipFirstSecs = 60 #TODO: make input on config, log etc.
+    # skipBool = timestampSorted >= timestampSorted[0] + timedelta(seconds=skipFirstSecs)
+    # skipBool3 = np.tile(skipBool, (3,1))
+    # accSorted = accSorted[skipBool3].reshape((3, -1))
+    # magSorted = magSorted[skipBool3].reshape((3, -1))
+    # gyoSorted = gyoSorted[skipBool3].reshape((3, -1))
+    # timestampSorted = timestampSorted[skipBool]
+    # print(len(timestampSorted))
+    
+    
     # determine which way is up
     logger.info('Finding up')
     accMeans = list()

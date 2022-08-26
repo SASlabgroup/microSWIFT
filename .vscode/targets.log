@@ -6,8 +6,11 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # PARTICULAR PURPOSE.
 
 # This program built for i386-apple-darwin11.3.0
+ 
+make: *** No rule to make target `all'.  Stop.
 
-# Make data base, printed on Sat Aug 20 17:06:02 2022
+
+# Make data base, printed on Thu Aug 25 12:20:51 2022
 
 # Variables
 
@@ -37,9 +40,6 @@ __CFBundleIdentifier = com.microsoft.VSCode
 VSCODE_CWD = /
 # environment
 PATH = /opt/homebrew/anaconda3/bin:/opt/homebrew/anaconda3/condabin:/usr/local/anaconda3/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin
- 
-make: *** No rule to make target `all'.  Stop.
-
 # environment
 ELECTRON_RUN_AS_NODE = 1
 # default
@@ -52,6 +52,7 @@ SSH_AUTH_SOCK = /private/tmp/com.apple.launchd.IPw9BEPpsQ/Listeners
 CONDA_EXE = /opt/homebrew/anaconda3/bin/conda
 # environment
 PWD = /Users/jacob/Programs/microSWIFT
+ 
 # environment
 ORIGINAL_XDG_CURRENT_DESKTOP = undefined
 # environment
@@ -139,7 +140,7 @@ MAKELEVEL := 0
 # environment
 CONDA_PREFIX = /opt/homebrew/anaconda3
 # environment
-VSCODE_PID = 19022
+VSCODE_PID = 56067
 # environment
 _CE_CONDA = 
 # environment
@@ -153,9 +154,9 @@ LANG = C
 
 # Directories
 
-# . (device 16777234, inode 32514995): 21 files, no impossibilities.
+# . (device 16777234, inode 32514995): 22 files, no impossibilities.
 
-# 21 files, no impossibilities in 1 directories.
+# 22 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -227,6 +228,6 @@ GNUmakefile:
 # strcache size: total = 0 / max = 0 / min = 4096 / avg = 0
 # strcache free: total = 0 / max = 0 / min = 4096 / avg = 0
 
-# Finished Make data base on Sat Aug 20 17:06:02 2022
+# Finished Make data base on Thu Aug 25 12:20:51 2022
 
  

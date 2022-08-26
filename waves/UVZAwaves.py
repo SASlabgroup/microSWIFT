@@ -301,9 +301,9 @@ def UVZAwaves(u, v, z, a, fs):
     b1  = np.real(VA) / np.sqrt((UU+VV)*AA) # second normalized directional moment [-]
     a2  = (UU-VV)/(UU+VV)                   # [-]
     b2  = 2*np.real(UV)/(UU+VV)             # [-]
+    check = E / (Eyy + Exx) 
     
     # check = 999 * np.ones(len(E)) #check = E./ (Eyy + Exx);
-    check = E / (Eyy + Exx) 
     
     
     # ---------- Compute Wave Directions ---------------
