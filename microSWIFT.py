@@ -25,8 +25,10 @@ Log:
  	- Jun 2022, @edwinrainville: telemetry queue
 	- Aug 2022, @jacobrdavis: UVZAwaves
 	- Aug 2022, @jacobrdavis: sensor_type_52, salinity placeholder
+	- Aug 2022, @jacobrdavis: modified telemetry queue to check payload sensorType (to support multi-sensortype queues)
 	
 TODO:
+	- telemetryQueue needs some way of knowing which SBD message it has. Possibly using len?
 	- generateHeader function for each script? (i.e. --fun.py---)
 """
 
@@ -329,13 +331,35 @@ if __name__=="__main__":
 					with open(TX_file, mode='rb') as file: # b is important -> binary
 						payload_data = file.read()
 
+					# read in the sensor type from the binary payload file
+					payloadStartIdx = payload_data.index(b':') # find end of header
+					sensor_type0 = ord(payload_data[payloadStartIdx+2:payloadStartIdx+3]) # sensor type is the 2 byte after the header
+					
 					# send either payload type 50, 51, or 52
-					if sensor_type == 50:
+					if sensor_type0 == 50:
 						successful_send = send_microSWIFT_50(payload_data, next_start)
-					elif sensor_type == 51:
+					elif sensor_type0 == 51:
 						successful_send = send_microSWIFT_51(payload_data, next_start)
-					elif sensor_type == 52:
+					elif sensor_type0 == 52:
 						successful_send = send_microSWIFT_52(payload_data, next_start)
+
+
+					# send either payload type 50, 51, or 52
+					# if len(payload_data) >= 1245 and len(payload_data) < 1284: # sensor_type == 50
+					# 	successful_send = send_microSWIFT_50(payload_data, next_start)
+					# elif len(payload_data) >= 249 or sensor_type <= 261: # sensor_type == 51 
+					# 	successful_send = send_microSWIFT_51(payload_data, next_start)
+					# elif len(payload_data) >= 327 or sensor_type <= 339: # sensor_type == 52
+					# 	successful_send = send_microSWIFT_52(payload_data, next_start)
+
+					# send either payload type 50, 51, or 52
+					# if sensor_type == 50:
+					# 	successful_send = send_microSWIFT_50(payload_data, next_start)
+					# elif sensor_type == 51:
+					# 	successful_send = send_microSWIFT_51(payload_data, next_start)
+					# elif sensor_type == 52:
+					# 	successful_send = send_microSWIFT_52(payload_data, next_start)
+
 					# Index up the messages sent value if successful send is true
 					if successful_send == True:
 						messages_sent += 1

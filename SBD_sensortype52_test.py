@@ -349,3 +349,19 @@ ax.set_xlim([0.05,1])
 ax.set_title(f'c={c}')
 ax.legend()
 # fig.savefig(f'float_test_c={c}.png', dpi=200)
+
+
+#%% telemetry queue update for multi-sensor type
+import struct
+TX_file52 = 'TX_sensortype52_test.dat'
+with open(TX_file52, mode='rb') as file: # b is important -> binary
+	payload_data = file.read()
+
+# with open(TX_file, "rb") as binfile:
+#         payload_data2 = bytearray(binfile.read())
+
+payloadStart = payload_data.index(b':')
+sensorType = ord(payload_data[payloadStart+2:payloadStart+3]) # read from start of header
+
+sensorType = ord(payload_data[-326:-325]) # read from end
+# %%

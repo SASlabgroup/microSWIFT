@@ -79,8 +79,8 @@ def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, la
     zMean = round(z_mean,6)
         
     # Log the data that will be sent    
-    logger.info('Hs: {0} Tp: {1} Dp: {2} lat: {3} lon: {4} temp: {5} volt: {6} uMean: {7} vMean: {8} zMean: {9}'.format(
-        Hs, Tp, Dp, lat, lon, temp, volt, uMean, vMean, zMean))
+    logger.info('Hs: {0} Tp: {1} Dp: {2} lat: {3} lon: {4} temp: {5} salinity: {6} volt: {7} uMean: {8} vMean: {9} zMean: {10}'.format(
+        Hs, Tp, Dp, lat, lon, temp, salinity, volt, uMean, vMean, zMean))
 
     if sensor_type == 50:
 
@@ -674,7 +674,7 @@ def send_microSWIFT_52(payload_data, timeout): #TODO: finish working on!
         return successful_send
     
     if payload_size != payload_size_exp:
-        logger.info('Error: unexpected number of bytes in payload data. Expected bytes: 249, bytes received: {}'.format(payload_size))
+        logger.info(f'Error: unexpected number of bytes in payload data. Expected bytes: {payload_size_exp}, bytes received: {payload_size}')
         successful_send = False
         return successful_send
     
