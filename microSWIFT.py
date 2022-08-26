@@ -333,9 +333,7 @@ if __name__=="__main__":
 					logger.info(f'Opened TX')
 
 					# read in the sensor type from the binary payload file
-					payloadStartIdx = payload_data.index(b':') # find end of header
-					logger.info(f'payloadStartIdx = {payloadStartIdx}')
-					
+					payloadStartIdx = 0 # (no header) otherwise it is: = payload_data.index(b':') # find end of header
 					sensor_type0 = ord(payload_data[payloadStartIdx+2:payloadStartIdx+3]) # sensor type is the 2 byte after the header
 					
 					if sensor_type0 not in [50,51,52]:
