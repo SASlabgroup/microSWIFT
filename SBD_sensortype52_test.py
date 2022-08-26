@@ -370,4 +370,10 @@ payloadStart = 0
 sensorType = ord(payload_data[payloadStart+2:payloadStart+3]) # read from start of header
 
 sensorType not in [50,51,52]
+
+#%% read out telemetry queue lines
+telemetryQueue = open('microSWIFT043_telemetryQueue.txt','r')
+len(telemetryQueue.readlines())
+telemetryQueue.close
+
 # %%

@@ -152,6 +152,10 @@ if __name__=="__main__":
 	telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','a')
 	telemetryQueue.close()
 
+	telemetryQueue = open('microSWIFT043_telemetryQueue.txt','r')
+	logger.info(f'Number of messages in queue: {len(telemetryQueue.readlines())}')
+	telemetryQueue.close
+
 	# --------------- Main Loop -------------------------
 	while True:
 
@@ -330,7 +334,6 @@ if __name__=="__main__":
 					
 					with open(TX_file, mode='rb') as file: # b is important -> binary
 						payload_data = file.read()
-					logger.info(f'Opened TX')
 
 					# read in the sensor type from the binary payload file
 					payloadStartIdx = 0 # (no header) otherwise it is: = payload_data.index(b':') 
@@ -352,22 +355,6 @@ if __name__=="__main__":
 						successful_send = send_microSWIFT_52(payload_data, next_start)
 					else:
 						logger.info(f'Specified sensor type ({send_sensor_type}) is invalid or not currently supported')
-
-					# send either payload type 50, 51, or 52
-					# if len(payload_data) >= 1245 and len(payload_data) < 1284: # sensor_type == 50
-					# 	successful_send = send_microSWIFT_50(payload_data, next_start)
-					# elif len(payload_data) >= 249 or sensor_type <= 261: # sensor_type == 51 
-					# 	successful_send = send_microSWIFT_51(payload_data, next_start)
-					# elif len(payload_data) >= 327 or sensor_type <= 339: # sensor_type == 52
-					# 	successful_send = send_microSWIFT_52(payload_data, next_start)
-
-					# send either payload type 50, 51, or 52
-					# if sensor_type == 50:
-					# 	successful_send = send_microSWIFT_50(payload_data, next_start)
-					# elif sensor_type == 51:
-					# 	successful_send = send_microSWIFT_51(payload_data, next_start)
-					# elif sensor_type == 52:
-					# 	successful_send = send_microSWIFT_52(payload_data, next_start)
 
 					# Index up the messages sent value if successful send is true
 					if successful_send == True:
