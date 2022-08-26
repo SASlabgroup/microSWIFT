@@ -365,6 +365,9 @@ sensorType = ord(payload_data[payloadStart+2:payloadStart+3]) # read from start 
 
 sensorType = ord(payload_data[-326:-325]) # read from end
 
+payload_data0 = payload_data[payloadStart:]
+payloadStart = 0
+sensorType = ord(payload_data[payloadStart+2:payloadStart+3]) # read from start of header
 
 sensorType not in [50,51,52]
 # %%
