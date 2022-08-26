@@ -15,7 +15,7 @@ with open(TX_file, mode='rb') as file: # b is important -> binary
 					# logger.info(f'Opened TX')
 print(payload_data)
 # read in the sensor type from the binary payload file
-payloadStartIdx = 0
+payloadStartIdx = 1
 sensor_type0 = ord(payload_data[payloadStartIdx+2:payloadStartIdx+3]) # sensor type is the 2 byte after the header
 				
 print(sensor_type0)
