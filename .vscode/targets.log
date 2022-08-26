@@ -6,11 +6,8 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # PARTICULAR PURPOSE.
 
 # This program built for i386-apple-darwin11.3.0
- 
-make: *** No rule to make target `all'.  Stop.
 
-
-# Make data base, printed on Thu Aug 25 12:20:51 2022
+# Make data base, printed on Fri Aug 26 10:43:43 2022
 
 # Variables
 
@@ -52,7 +49,6 @@ SSH_AUTH_SOCK = /private/tmp/com.apple.launchd.IPw9BEPpsQ/Listeners
 CONDA_EXE = /opt/homebrew/anaconda3/bin/conda
 # environment
 PWD = /Users/jacob/Programs/microSWIFT
- 
 # environment
 ORIGINAL_XDG_CURRENT_DESKTOP = undefined
 # environment
@@ -140,7 +136,7 @@ MAKELEVEL := 0
 # environment
 CONDA_PREFIX = /opt/homebrew/anaconda3
 # environment
-VSCODE_PID = 56067
+VSCODE_PID = 65463
 # environment
 _CE_CONDA = 
 # environment
@@ -228,6 +224,8 @@ GNUmakefile:
 # strcache size: total = 0 / max = 0 / min = 4096 / avg = 0
 # strcache free: total = 0 / max = 0 / min = 4096 / avg = 0
 
-# Finished Make data base on Thu Aug 25 12:20:51 2022
+# Finished Make data base on Fri Aug 26 10:43:43 2022
 
  
+make: *** No rule to make target `all'.  Stop.
+
