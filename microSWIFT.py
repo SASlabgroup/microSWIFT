@@ -151,8 +151,9 @@ if __name__=="__main__":
 	logger.info('Initializing Telemetry Queue')
 	telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','a')
 	telemetryQueue.close()
-
-	telemetryQueue = open('microSWIFT043_telemetryQueue.txt','r')
+	
+	# Report number of messages in current queue:
+	telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','r')
 	logger.info(f'Number of messages in queue: {len(telemetryQueue.readlines())}')
 	telemetryQueue.close
 
