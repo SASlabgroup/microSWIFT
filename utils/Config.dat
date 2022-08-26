@@ -75,7 +75,7 @@ burst_seconds=60
 burst_time=0
 
 #number of minutes between bursts (12=5x6, 15=4x6, 20=3x6, 30=2x6, 60=1x6)
-burst_interval=3
+burst_interval=10
 
 port=6
 numCoef=42
