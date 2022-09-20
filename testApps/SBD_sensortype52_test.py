@@ -377,3 +377,105 @@ len(telemetryQueue.readlines())
 telemetryQueue.close
 
 # %%
+import struct
+import numpy as np
+from datetime import datetime, timedelta
+ 
+def checkTX52(TX_fname):
+
+    with open(TX_fname, mode='rb') as file: # b is important -> binary
+        fileContent = file.read()
+    
+    data = struct.unpack('<sbbheee42eee42b42b42b42b42Bffeeef', fileContent)
+
+    return data
+
+
+TX_fname = './microSWIFT019_TX_12Sep2022_165147UTC.dat'
+
+data52 = checkTX52(TX_fname)
+
+with open(TX_fname, mode='rb') as file: # b is important -> binary
+    fileContent = file.read()
+#%%
+
+TX_fname = './microSWIFT019_TX_12Sep2022_165147UTC.dat'
+
+with open(TX_fname, mode='rb') as file: # b is important -> binary
+    fileContent = file.read()
+
+def _float_from_unsigned16(n):
+    n = int.from_bytes(n, byteorder='little')
+    assert 0 <= n < 2**16
+    sign = n >> 15
+    exp = (n >> 10) & 0b011111
+    fraction = n & (2**10 - 1)
+    if exp == 0:
+        if fraction == 0:
+            return -0.0 if sign else 0.0
+        else:
+            return (-1)**sign * fraction / 2**10 * 2**(-14)  # subnormal
+    elif exp == 0b11111:
+        if fraction == 0:
+            return float('-inf') if sign else float('inf')
+        else:
+            return float('nan')
+    return (-1)**sign * (1 + fraction / 2**10) * 2**(exp - 15)
+
+# (in python 3.7):
+# import struct
+# Hs = struct.unpack('e',fileContent[5:7]) # Hs = 0.004505157470703125
+# Tp = struct.unpack('e',fileContent[7:9]) # Hs = 12.484375
+# Voltage = struct.unpack('e',fileContent[321:323]) # Voltage = 0.0
+
+# (in python 2.7)
+Hs = _float_from_unsigned16(fileContent[5:7]) # = 0.004505157470703125
+Tp = _float_from_unsigned16(fileContent[7:9]) # = 12.484375
+Voltage = _float_from_unsigned16(fileContent[321:323]) # = 0.0
+
+#%%
+data52dict = {
+'payload_size'   : data52[3],
+'Hsig' : data52[4],
+'Tp'   :data52[5],
+'Dp'   :data52[6],
+'E'   : data52[7:7+42],
+'fmin '  : data52[7+42],
+'fmax '  : data52[7+42+1],
+# 'fstep '  : (fmax  - fmin )/(len(E )-1)
+# f   : np.arange(fmin ,fmax +fstep ,fstep )
+'a1'   : data52[7+42+2+0*42:7+42+2+1*42],
+'b1'   : data52[7+42+2+1*42:7+42+2+2*42],
+'a2 '  : data52[7+42+2+2*42:7+42+2+3*42],
+'b2 '  : data52[7+42+2+3*42:7+42+2+4*42],
+'check'   : data52[7+42+2+4*42:7+42+2+5*42],
+'lat '  : data52[261],
+'lon '  : data52[262],
+'temp '  : data52[263],
+'salinity'  : data52[264],
+'volt'   : data52[265],
+'nowEpoch'   : data52[266]
+}
+
+# payload_size_data52 = data52[3]
+# Hsig_data52 = data52[4]
+# Tp_data52 =data52[5]
+# Dp_data52 =data52[6]
+# E_data52 = data52[7:7+42]
+# fmin_data52 = data52[7+42]
+# fmax_data52 = data52[7+42+1]
+# fstep_data52 = (fmax_data52 - fmin_data52)/(len(E_data52)-1)
+# f_data52 = np.arange(fmin_data52,fmax_data52+fstep_data52,fstep_data52)
+# a1_data52 = np.asarray(data52[7+42+2+0*42:7+42+2+1*42])/100
+# b1_data52 = np.asarray(data52[7+42+2+1*42:7+42+2+2*42])/100
+# a2_data52 = np.asarray(data52[7+42+2+2*42:7+42+2+3*42])/100
+# b2_data52 = np.asarray(data52[7+42+2+3*42:7+42+2+4*42])/100
+# check_data52 = np.asarray(data52[7+42+2+4*42:7+42+2+5*42])/10
+# lat_data52 = data52[261]
+# lon_data52 = data52[262]
+# temp_data52 = data52[263]
+# salinity_data52 = data52[264]
+# volt_data52 = data52[265]
+# nowEpoch_data52 = data52[266]
+# datetime_data52 = datetime.fromtimestamp(nowEpoch_data52)  
+# print(datetime_data52)

@@ -24,6 +24,7 @@ import numpy as np
 from logging import getLogger
 from datetime import datetime, timedelta
 from IMU.integrateIMU import integrate_acc
+from IMU.transformIMU import ekfCorrection
 # from IMU.transformIMU import ekfCorrection
 # from scipy import integrate
 
@@ -225,10 +226,40 @@ def IMUtoXYZ(imufile,fs):
     np.isnan(magInterp).sum()
     np.isnan(gyoInterp).sum()
     
+    
     #-- reference frame transformation #TODO: reference frame transformation 
-    # ax_earth, ay_earth, az_earth = ekfCorrection(*accInterp,*gyoInterp,*magInterp)
+    #TODO: comment out below
+
+    # offset_x = 85.65
+    # offset_y = -19.85
+    # offset_z = -61.7
+
+    offset_x = (max(magInterp[0]) + min(magInterp[0])) / 2
+    offset_y = (max(magInterp[1]) + min(magInterp[1])) / 2
+    offset_z = (max(magInterp[2]) + min(magInterp[2])) / 2
+
+    magInterp[0] = magInterp[0] - offset_x
+    magInterp[1] = magInterp[1] - offset_y
+    magInterp[2] = magInterp[2] - offset_z
+    
+    import matplotlib.pyplot as plt
+    fig,ax = plt.subplots(1,1)
+    ax.scatter(magInterp[0],magInterp[1],label = 'x-y')
+    ax.scatter(magInterp[0],magInterp[2],label = 'x-z')
+    ax.scatter(magInterp[1],magInterp[2],label = 'y-z')
+    ax.axhline(y=0 , color='k')
+    ax.axvline(x=0 , color='k')
+    # ax.set_xlim([-60,60])
+    # ax.set_ylim([-60,60])
+    ax.set_aspect('equal')
+
+    ax_earth, ay_earth, az_earth = ekfCorrection(*accInterp,*gyoInterp,*magInterp)
+    
+    accInterp = [ax_earth, ay_earth, az_earth]
+
     # *accEarth = ekfCorrection(*accInterp,*gyoInterp,*magInterp)
     # accEarth = [ax_earth,ay_earth,az_earth]
+    #TODO:  comment out above
 
     #-- integration
     logger.info('Integrating IMU')
@@ -236,7 +267,7 @@ def IMUtoXYZ(imufile,fs):
     filt = lambda *b : RCfilter(*b,fc,fs)
     # X,Y,Z=[integrate_acc(a,masterTimeSec,filt) for a in accEarth][:] # X = [ax,ay,az], Y = ... 
     X,Y,Z=[integrate_acc(a,masterTimeSec,filt) for a in accInterp][:] # X = [ax,ay,az], Y = ... 
-    
+
     # assign outputs to IMU dict
     IMU['ax'],IMU['vx'],IMU['px'] = X # IMU.update({'ax': X[0], 'ay': Y[0], 'az': Z[0]})
     IMU['ay'],IMU['vy'],IMU['py'] = Y
@@ -244,4 +275,4 @@ def IMUtoXYZ(imufile,fs):
     IMU['time'] = masterTime
     
     logger.info('--------------------------------------------')
-    return IMU # X[0], Y[0], Z[0], X[1], Y[1], Z[1], X[2], Y[2], Z[2], masterTime # ax, ay, az, vx, vy, vz, px, py, pz
+    return IMU  # X[0], Y[0], Z[0], X[1], Y[1], Z[1], X[2], Y[2], Z[2], masterTime # ax, ay, az, vx, vy, vz, px, py, pz

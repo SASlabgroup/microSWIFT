@@ -31,8 +31,13 @@ def ekfCorrection(accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z, mag_x, mag_
     # ** the variance of each sensor needs to be further examined
     # ** Variance is assumed from spec sheet
     # ekf = EKF(gyr=gyr_data, acc=acc_data, mag_data=mag_data, frequency=12, var_acc=0.000003, var_gyro=0.04, var_mag=.1, frame='NED')
-    ekf = EKF(gyr=gyr_data, acc=acc_data, frequency=12, var_acc=0.000003, var_gyro=0.04, frame='NED')
-
+    #
+    print(gyr_data)
+    # TODO: check units required  by EFK algorithm
+    # see : https://github.com/adafruit/Adafruit_AHRS/blob/master/examples/ahrs_fusion_ble_nrf51/ahrs_fusion_ble_nrf51.ino
+    
+    ekf = EKF(gyr=gyr_data, acc=acc_data, mag=mag_data, magnetic_ref=60.0, frequency=12, var_acc=0.000003, var_gyro=0.04, frame='NED')
+    # EKF(gyr=gyr_data, acc=acc_data, mag=mag_data, magnetic_ref=60.0)
     # Rotate the acclerations from the computed Quaterions
     r = R.from_quat(ekf.Q)
     accel_rotated = r.apply(acc_data)

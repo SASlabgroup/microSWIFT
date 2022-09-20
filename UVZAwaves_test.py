@@ -12,14 +12,14 @@ from utils.collateIMUandGPS import collateIMUandGPS
 # from waves.cumtrapz import cumtrapz
 
 dataDir  = './waves/testdata/'
-# IMUdataFilename = 'microSWIFT014_IMU_27Oct2021_190006UTC.dat' #'microSWIFT021_IMU_12Jul2021_210000UTC.dat' # 'microSWIFT057_IMU_17Aug2022_000146UTC.dat'  #'microSWIFT043_IMU_16Aug2022_002021UTC.dat'# 'microSWIFT043_IMU_15Aug2022_210005UTC.dat' #'microSWIFT043_IMU_05May2022_200006UTC.dat'#'microSWIFT021_IMU_12Jul2021_210000UTC.dat' #'microSWIFT014_IMU_27Oct2021_190006UTC.dat' 
-# GPSdataFilename = 'microSWIFT014_GPS_27Oct2021_190009UTC.dat' # 'microSWIFT021_GPS_12Jul2021_210000UTC.dat' #'microSWIFT057_GPS_17Aug2022_000151UTC.dat' #'microSWIFT043_GPS_16Aug2022_002022UTC.dat'#'microSWIFT043_GPS_15Aug2022_210006UTC.dat' #'microSWIFT043_GPS_05May2022_200007UTC.dat'#'microSWIFT021_GPS_12Jul2021_210000UTC.dat' #'microSWIFT014_GPS_27Oct2021_190009UTC.dat'
-IMUdataFilename = 'microSWIFT021_IMU_12Jul2021_210000UTC.dat' # 'microSWIFT057_IMU_17Aug2022_000146UTC.dat'  #'microSWIFT043_IMU_16Aug2022_002021UTC.dat'# 'microSWIFT043_IMU_15Aug2022_210005UTC.dat' #'microSWIFT043_IMU_05May2022_200006UTC.dat'#'microSWIFT021_IMU_12Jul2021_210000UTC.dat' #'microSWIFT014_IMU_27Oct2021_190006UTC.dat' 
-GPSdataFilename = 'microSWIFT021_GPS_12Jul2021_210000UTC.dat' #'microSWIFT057_GPS_17Aug2022_000151UTC.dat' #'microSWIFT043_GPS_16Aug2022_002022UTC.dat'#'microSWIFT043_GPS_15Aug2022_210006UTC.dat' #'microSWIFT043_GPS_05May2022_200007UTC.dat'#'microSWIFT021_GPS_12Jul2021_210000UTC.dat' #'microSWIFT014_GPS_27Oct2021_190009UTC.dat'
+IMUdataFilename = 'microSWIFT014_IMU_27Oct2021_190006UTC.dat' #'microSWIFT021_IMU_12Jul2021_210000UTC.dat' # 'microSWIFT057_IMU_17Aug2022_000146UTC.dat'  #'microSWIFT043_IMU_16Aug2022_002021UTC.dat'# 'microSWIFT043_IMU_15Aug2022_210005UTC.dat' #'microSWIFT043_IMU_05May2022_200006UTC.dat'#'microSWIFT021_IMU_12Jul2021_210000UTC.dat' #'microSWIFT014_IMU_27Oct2021_190006UTC.dat' 
+GPSdataFilename = 'microSWIFT014_GPS_27Oct2021_190009UTC.dat' # 'microSWIFT021_GPS_12Jul2021_210000UTC.dat' #'microSWIFT057_GPS_17Aug2022_000151UTC.dat' #'microSWIFT043_GPS_16Aug2022_002022UTC.dat'#'microSWIFT043_GPS_15Aug2022_210006UTC.dat' #'microSWIFT043_GPS_05May2022_200007UTC.dat'#'microSWIFT021_GPS_12Jul2021_210000UTC.dat' #'microSWIFT014_GPS_27Oct2021_190009UTC.dat'
+# IMUdataFilename = 'microSWIFT021_IMU_12Jul2021_210000UTC.dat' # 'microSWIFT057_IMU_17Aug2022_000146UTC.dat'  #'microSWIFT043_IMU_16Aug2022_002021UTC.dat'# 'microSWIFT043_IMU_15Aug2022_210005UTC.dat' #'microSWIFT043_IMU_05May2022_200006UTC.dat'#'microSWIFT021_IMU_12Jul2021_210000UTC.dat' #'microSWIFT014_IMU_27Oct2021_190006UTC.dat' 
+# GPSdataFilename = 'microSWIFT021_GPS_12Jul2021_210000UTC.dat' #'microSWIFT057_GPS_17Aug2022_000151UTC.dat' #'microSWIFT043_GPS_16Aug2022_002022UTC.dat'#'microSWIFT043_GPS_15Aug2022_210006UTC.dat' #'microSWIFT043_GPS_05May2022_200007UTC.dat'#'microSWIFT021_GPS_12Jul2021_210000UTC.dat' #'microSWIFT014_GPS_27Oct2021_190009UTC.dat'
 # testName = 'Offshore Duck 27Oct2021' #'Westport 12Jul2021'
 testName = 'Westport 12Jul2021'
-# CDIPfile = 'CDIP192_Oct2021.csv' # './waves/testdata/CDIP036_Jul2021.csv'
-CDIPfile = 'CDIP036_Jul2021.csv'
+CDIPfile = 'CDIP192_Oct2021.csv' # './waves/testdata/CDIP036_Jul2021.csv'
+# CDIPfile = 'CDIP036_Jul2021.csv'
 fs = 12 #TODO: fix from input or timestamp diff; does NOT work for 48Hz
 #%% possible to use this to gen headers
 # def funfun():
@@ -126,8 +126,8 @@ str_to_list(df_buoy,columns=['freq','energy','a1','b1','a2','b2','check','dir','
 # df_buoy = df_buoy.set_index('Datetime')
 
 meanTime = datetime.fromtimestamp(np.mean([t.timestamp() for t in IMU['time']]))
-# CDIP = df_buoy[df_buoy.index==datetime(2021, 10, 27, 19, 30, 0, 0)]
-CDIP = df_buoy[df_buoy.index==datetime(2021, 7, 12, 21, 0, 0, 0)]
+CDIP = df_buoy[df_buoy.index==datetime(2021, 10, 27, 19, 30, 0, 0)]
+# CDIP = df_buoy[df_buoy.index==datetime(2021, 7, 12, 21, 0, 0, 0)]
 
 #%% import RV Carson data from MATLAB
 # import pandas as pd
