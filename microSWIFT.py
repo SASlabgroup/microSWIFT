@@ -123,23 +123,23 @@ if __name__=="__main__":
 		# gyo = []
 
 		while n <= 10:
-			try:
+			# try:
 				# t = datetime.utcnow()
 				# print(acc)
-				acc[n,:] = fxos.accelerometer
+			acc[n,:] = fxos.accelerometer
 				# acc.append(fxos.accelerometer)
 				# mag.append(fxos.magnetometer)
 				# gyo.append(fxas.gyroscope)
-				n += 1
+			n += 1
 				# accel_x, accel_y, accel_z = fxos.accelerometer
 				# mag_x, mag_y, mag_z = fxos.magnetometer
 				# gyro_x, gyro_y, gyro_z = fxas.gyroscope
 				# sleep(1)
-				print(n)
-			except Exception as e:
-				print('exception')
-				logger.info(e)
-				logger.info('error reading IMU data')
+			print(n)
+			# except Exception as e:
+			# 	print('exception')
+			# 	logger.info(e)
+			# 	logger.info('error reading IMU data')
 		# print(acc)
 
 
