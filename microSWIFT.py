@@ -114,39 +114,63 @@ if __name__=="__main__":
 	acc = []
 	mag = []
 	gyo = []
+
+	orientation = Mahony()
+	num_samples = 10000
+	Q = np.tile([1., 0., 0., 0.], (num_samples, 1)) # Allocate for quaternions
+
+	acc = np.zeros((num_samples,3))
+	mag = np.zeros((num_samples,3))
+	gyo = np.zeros((num_samples,3))
+	
 	# --------------- Main Loop -------------------------
+	n = 1
 	while True:
 		t = datetime.utcnow().strftime('%H:%M:%S.%f')[:-3]
-		n = 0 
-		acc = np.zeros((10,3))
-		mag = np.zeros((10,3))
-		gyo = np.zeros((10,3))
+
+		acc[n,:] = fxos.accelerometer
+		mag[n,:] = fxos.magnetometer
+		gyo[n,:] = fxas.gyroscope #TODO: ':' not needed
+
+		Q[n] = orientation.updateIMU(Q[n-1], gyr=gyo[n,:], acc=acc[n,:])
+
+		print(Q[n])
+		print(f'{t} Q: {Q[n]} acc: {acc[n]} gyo: {gyo[n]}  mag: {mag[n]}')
+
+		sleep(0.3)
+		
+		# n = 0 
+		# acc = np.zeros((10,3))
+		# mag = np.zeros((10,3))
+		# gyo = np.zeros((10,3))
 		# acc = []
 		# mag = []
 		# gyo = []
 
-		while n < 10:
+		# while n < 10:
 
-			acc[n,:] = fxos.accelerometer
-			mag[n,:] = fxos.magnetometer
-			gyo[n,:] = fxas.gyroscope
-				# acc.append(fxos.accelerometer)
-				# mag.append(fxos.magnetometer)
-				# gyo.append(fxas.gyroscope)
-			n += 1
-
-			# except Exception as e:
-			# 	print('exception')
-			# 	logger.info(e)
-			# 	logger.info('error reading IMU data')
-		# print(acc)
-
-		acc_means = np.round(np.mean(acc, axis = 0),3)
-		gyo_means = np.round(np.mean(gyo, axis = 0),3)
-		mag_means = np.round(np.mean(mag, axis = 0),3)
+		# 	acc[n,:] = fxos.accelerometer
+		# 	mag[n,:] = fxos.magnetometer
+		# 	gyo[n,:] = fxas.gyroscope
 
 
-		print(f'{t} acc: {acc_means} gyo: {gyo_means}  mag: {mag_means}')
+		# 		# acc.append(fxos.accelerometer)
+		# 		# mag.append(fxos.magnetometer)
+		# 		# gyo.append(fxas.gyroscope)
+		# 	n += 1
+
+		# 	# except Exception as e:
+		# 	# 	print('exception')
+		# 	# 	logger.info(e)
+		# 	# 	logger.info('error reading IMU data')
+		# # print(acc)
+
+		# acc_means = np.round(np.mean(acc, axis = 0),3)
+		# gyo_means = np.round(np.mean(gyo, axis = 0),3)
+		# mag_means = np.round(np.mean(mag, axis = 0),3)
+
+
+		# print(f'{t} acc: {acc_means} gyo: {gyo_means}  mag: {mag_means}')
 
 
 		# ay = round(sum(acc[1])/n,3)
