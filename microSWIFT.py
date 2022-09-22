@@ -132,7 +132,7 @@ if __name__=="__main__":
 			except Exception as e:
 				logger.info(e)
 				logger.info('error reading IMU data')
-
+		print(acc)
 		ax = round(sum(acc[0])/n,3)
 		ay = round(sum(acc[1])/n,3)
 		az = round(sum(acc[2])/n,3)
