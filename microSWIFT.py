@@ -123,9 +123,7 @@ if __name__=="__main__":
 		# gyo = []
 
 		while n < 10:
-			# try:
-				# t = datetime.utcnow()
-				# print(acc)
+
 			acc[n,:] = fxos.accelerometer
 			mag[n,:] = fxos.magnetometer
 			gyo[n,:] = fxas.gyroscope
@@ -133,19 +131,22 @@ if __name__=="__main__":
 				# mag.append(fxos.magnetometer)
 				# gyo.append(fxas.gyroscope)
 			n += 1
-				# accel_x, accel_y, accel_z = fxos.accelerometer
-				# mag_x, mag_y, mag_z = fxos.magnetometer
-				# gyro_x, gyro_y, gyro_z = fxas.gyroscope
-				# sleep(1)
+
 			# except Exception as e:
 			# 	print('exception')
 			# 	logger.info(e)
 			# 	logger.info('error reading IMU data')
 		# print(acc)
 
-		means = np.mean(acc, axis = 0)
+		acc_means = np.mean(acc, axis = 0)
+		gyo_means = np.mean(acc, axis = 0)
+		mag_means = np.mean(acc, axis = 0)
 
-		print(f'{t} {means:.3f}')
+
+		print(f'{t} ax: {acc_means[0]} ay: {acc_means[1]} az: {acc_means[2]}' \
+			+  	 f' gx: {gyo_means[0]} gy: {gyo_means[1]} gz: {gyo_means[2]}')
+
+
 		# ay = round(sum(acc[1])/n,3)
 		# az = round(sum(acc[2])/n,3)
 
