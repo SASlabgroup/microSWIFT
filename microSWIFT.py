@@ -113,7 +113,7 @@ if __name__=="__main__":
 	gyo = []
 	# --------------- Main Loop -------------------------
 	while True:
-		t = datetime.utcnow().strftime('%H:%M:%S')
+		t = datetime.utcnow().strftime('%H:%M:%S.%f')[:-3]
 		n = 0 
 		acc = np.zeros((10,3))
 		mag = np.zeros((10,3))
