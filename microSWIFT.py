@@ -115,17 +115,18 @@ if __name__=="__main__":
 	while True:
 		t = datetime.utcnow()
 		n = 0 
-		acc = np.empty((3,10))
-		mag = np.empty((3,10))
-		gyo = np.empty((3,10))
-
-		print(acc)
+		acc = np.zeros((10,3))
+		# mag = np.zeros((10,3))
+		# gyo = np.zeros((10,3))
+		# acc = []
+		# mag = []
+		# gyo = []
 
 		while n <= 10:
 			try:
 				# t = datetime.utcnow()
-				print(acc)
-				acc[:,n] = fxos.accelerometer
+				# print(acc)
+				acc[n,:] = fxos.accelerometer
 				# acc.append(fxos.accelerometer)
 				# mag.append(fxos.magnetometer)
 				# gyo.append(fxas.gyroscope)
@@ -133,18 +134,16 @@ if __name__=="__main__":
 				# accel_x, accel_y, accel_z = fxos.accelerometer
 				# mag_x, mag_y, mag_z = fxos.magnetometer
 				# gyro_x, gyro_y, gyro_z = fxas.gyroscope
-				print(n)
 				sleep(1)
 			except Exception as e:
 				logger.info(e)
 				logger.info('error reading IMU data')
 		# print(acc)
 
-		print(acc)
-		# acc = np.array(acc).T
 
+		ax = round(np.sum(acc[:,0])/n,3)
 
-		# ax = round(sum(acc[0])/n,3)
+		print(ax)
 		# ay = round(sum(acc[1])/n,3)
 		# az = round(sum(acc[2])/n,3)
 
