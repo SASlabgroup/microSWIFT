@@ -122,6 +122,7 @@ if __name__=="__main__":
 		while n <= 10:
 			try:
 				# t = datetime.utcnow()
+				print(acc)
 				acc[:,n] = fxos.accelerometer
 				# acc.append(fxos.accelerometer)
 				# mag.append(fxos.magnetometer)
