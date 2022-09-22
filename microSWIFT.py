@@ -135,6 +135,7 @@ if __name__=="__main__":
 				# mag_x, mag_y, mag_z = fxos.magnetometer
 				# gyro_x, gyro_y, gyro_z = fxas.gyroscope
 				# sleep(1)
+				print(n)
 			except Exception as e:
 				logger.info(e)
 				logger.info('error reading IMU data')
