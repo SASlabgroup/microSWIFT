@@ -1,3 +1,15 @@
+""" 
+Modified by J. Davis 2021-09-21 for use with microSWIFT code
+
+TODO: 
+    - adafruit_register.i2c_struct module
+
+
+"""
+
+
+
+
 # SPDX-FileCopyrightText: 2017 Radomir Dopieralski for Adafruit Industries
 #
 # SPDX-License-Identifier: MIT

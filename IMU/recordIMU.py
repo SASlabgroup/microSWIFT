@@ -18,7 +18,8 @@ from time import sleep
 import RPi.GPIO as GPIO
 
 # IMU sensor imports
-import IMU.adafruit_fxos8700_microSWIFT
+import IMU.adafruit_bno055
+# import IMU.adafruit_fxos8700_microSWIFT
 import IMU.adafruit_fxas21002c_microSWIFT
 
 # Configuration imports
@@ -68,6 +69,7 @@ def recordIMU(end_time):
         logger.info('power on IMU')
         GPIO.output(imu_gpio,GPIO.HIGH)
         i2c = busio.I2C(board.SCL, board.SDA)
+        bno = IMU.adafruit_bno055.BNO055(i2c)
         fxos = IMU.adafruit_fxos8700_microSWIFT.FXOS8700(i2c, accel_range=0x00)
         fxas = IMU.adafruit_fxas21002c_microSWIFT.FXAS21002C(i2c, gyro_range=500)
 
@@ -93,6 +95,7 @@ def recordIMU(end_time):
             while datetime.utcnow().minute + datetime.utcnow().second/60 < end_time and isample < imu_samples:
                 # Get values from IMU
                 try:
+                    #TODO:
                     accel_x, accel_y, accel_z = fxos.accelerometer
                     mag_x, mag_y, mag_z = fxos.magnetometer
                     gyro_x, gyro_y, gyro_z = fxas.gyroscope
