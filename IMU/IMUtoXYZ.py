@@ -20,40 +20,45 @@ TODO:
     - remove reassignment of the same variable?
 """
 #--Import Statements
+from array import array
+from typing import List
 import numpy as np
 from logging import getLogger
-from datetime import datetime, timedelta
+from utils.create_log_header import create_log_header
+from datetime import date, datetime, timedelta
+from IMU.readIMU import readIMU
 from IMU.integrateIMU import integrate_acc
-from IMU.transformIMU import ekfCorrection
-# from IMU.transformIMU import ekfCorrection
-# from scipy import integrate
+from IMU.transformIMU import change_up_axis, correct_mag, ekfCorrection
 
 #--helper functions:
 def sec(n_secs):
     """
     Helper function to convert timedelta into second
     
-    Input:
-        - n_secs, float indicating number of seconds
+    Arguments:
+        - n_secs (float), number of seconds
 
-    Output:
-        - s, time delta in seconds
+    Returns:
+        - s (timedelta), time delta in seconds
     """
     s = timedelta(seconds=n_secs)    
     return s
 
 
-def datetimearray2relativetime(datetimeArr):
+def datetimearray2relativetime(datetimeArr, t0 = 'start'):
     """
     Helper function to convert datetime array to relative time in seconds
 
-    Input:
-        - datetimeArr, input array of datetimes
-
-    Output:
-        - relTime, time array (in seconds) relative to the first time in datetimeArr
+    Arguments:
+        - datetimeArr (np.ndarray[datetime]), input array of datetimes
+        - TODO: t0 
+    Returns:
+        - relTime (np.ndarray), time array (in seconds) relative to the first time in datetimeArr
     """
-    t0 = datetimeArr[0]
+
+    if t0 == 'start':
+        t0 = datetimeArr[0]
+
     relTime = [timestep.total_seconds() for timestep in (datetimeArr-t0)]
     return relTime
 
@@ -62,13 +67,13 @@ def RCfilter(b, fc, fs):
     """
     Helper function to perform RC filtering
 
-    Input:
-        - b, array of values to be filtered
-        - fc, cutoff frequency, fc = 1/(2πRC)
-        - fs, sampling frequency 
+    Arguments:
+        - b (np.ndarray), array of values to be filtered
+        - fc (float), cutoff frequency, fc = 1/(2πRC)
+        - fsn(float), sampling frequency 
 
-    Output:
-        - a, array of filtered input values
+    Returns:
+        - a (np.ndarray), array of filtered input values
     """
     RC = (2*np.pi*fc)**(-1)
     alpha = RC / (RC + 1./fs)
@@ -86,11 +91,11 @@ def add_ms_to_IMUtime(timestampSorted):
     the samples in a second are centered in that second, and thus does not bias the samples to 
     either the start of end of the second.
 
-    Input:
-        - timestampSorted, sorted array of rounded IMU timestamps (as datetimes)
+    Arguments:
+        - timestampSorted (np.ndarray[datetime]), sorted array of rounded IMU timestamps
 
-    Output:
-        - timestampSorted_ms, sorted datetime array with added milliseconds
+    Returns
+        - timestampSorted_ms (np.ndarray[datetime]), sorted datetime array with added milliseconds
     """
     timestampSorted_ms = timestampSorted.copy() 
     i = 1
@@ -106,55 +111,53 @@ def add_ms_to_IMUtime(timestampSorted):
             i = 1 # restart i at one so that it can start again on the next second 
     return timestampSorted_ms
     
-
-def IMUtoXYZ(imufile,fs):
-    """ 
+def IMUtoXYZ(imufile: str, fs: float, timeWindow: tuple = None ) -> dict:
+    """
     Main function to collate IMU and GPS records. The IMU fields are cropped to lie within the available 
     GPS record and then the GPS is interpolated up to the IMU rate using the IMU as the master time.
-    
-    Inputs:
-        - imufile, path to file containing IMU data
-        - fs, sampling frequency
-        
-    Outputs:
-        - IMU, dictionary containing acc ['ai'], vel ['vi'], pos ['pi'], and time ['time'] as entries
-    
-    Example:
-        IMU = IMUtoXYZ(imufile,fs)
+
+    Arguments:
+        - imufile (str), path to file containing IMU data
+        - fs (float),  sampling frequency
+
+    Returns:
+        - IMU (dict), dictionary containing acc ['ai'], vel ['vi'], pos ['pi'], and time ['time'] as entries
     """
     #-- Set up module level logger
     logger = getLogger('microSWIFT.'+__name__) 
-    logger.info('---------------IMUtoXYZ.py------------------')
-
+    logger.info(create_log_header(__name__))
     #TODO: handle badvalues
 
-    #--initialization
-    timestamp = []
-    acc = []
-    mag = []
-    gyo = []
-    IMU = {'ax':None,'ay':None,'az':None,'vx':None,'vy':None,'vz':None,'px':None,'py':None,'pz':None,'time':None}
+    # Initialization:
+    IMU = {'ax':None,'ay':None,'az':None,
+           'vx':None,'vy':None,'vz':None,
+           'px':None,'py':None,'pz':None,
+           'time':None}
     
-    #--open imu file and read in acceleration, magnetometer, and gyroscope data
+    # Read in acceleration, magnetometer, and gyroscope data:
     logger.info('Reading and sorting IMU')
-    with open(imufile, 'r') as file: #encoding="utf8", errors='ignore'
-        for line in file:
-            currentLine = line.strip('\n').rstrip('\x00').split(',')
-            if currentLine[0] is not '':
-                timestamp.append(datetime.strptime(currentLine[0],'%Y-%m-%d %H:%M:%S'))
-                acc.append(list(map(float,currentLine[1:4])))  # acc = [ax,ay,az]
-                mag.append(list(map(float,currentLine[4:7])))  # mag = [mx,my,mz]
-                gyo.append(list(map(float,currentLine[7:10]))) # gyo = [gx,gy,gz]
-          
+    timestamp, acc, mag, gyo = readIMU(imufile)
 
-    #--sorting:
+    # Sorting:
     sortInd = np.asarray(timestamp).argsort()
     timestampSorted = np.asarray(timestamp)[sortInd]
     accSorted = np.asarray(acc)[sortInd,:].transpose()
     magSorted = np.asarray(mag)[sortInd,:].transpose()
     gyoSorted = np.asarray(gyo)[sortInd,:].transpose()
     
-    #--trimming #TODO: not tested live...
+    # Correct mag:
+    A_inv = np.array([[ 2.03529978e-02, -7.95883196e-05, -3.98024918e-04],
+                      [-7.95883196e-05,  2.02178972e-02,  1.78961242e-04],
+                      [-3.98024918e-04,  1.78961242e-04,  2.22384399e-02]])
+
+    b = np.array([[-50.91885137],
+                  [-19.06614668],
+                  [-85.08888731]])
+
+    magSorted  = correct_mag(magSorted, A_inv, b)
+
+    
+    # Trimming #TODO: not tested live...
     # print(len(timestampSorted))
     # skipFirstSecs = 60 #TODO: make input on config, log etc.
     # skipBool = timestampSorted >= timestampSorted[0] + timedelta(seconds=skipFirstSecs)
@@ -165,110 +168,113 @@ def IMUtoXYZ(imufile,fs):
     # timestampSorted = timestampSorted[skipBool]
     # print(len(timestampSorted))
     
-    
-    # determine which way is up
+    # Determine which way is up:
     logger.info('Finding up')
     accMeans = list()
     for ai in accSorted:
         accMeans.append(np.mean(ai))
     upIdx = np.argmin(np.abs(np.asarray(accMeans) - 9.81))
     
-    if upIdx == 0: #[x y z] -> [-z y x]
-        transformIdx = [2, 1, 0]
-        signs = [-1, 1, 1]
-    elif upIdx == 1: #[x y z] == [x -z y]
-        transformIdx = [0, 2, 1]
-        signs = [1, -1, 1]
-    elif upIdx == 2: #[x y z] == [x -z y]
-        transformIdx = [0, 1, 2]
-        signs = [1, 1, 1]
-
-    accSorted    = accSorted[transformIdx]
-    accSorted[0] = accSorted[0]*signs[0]
-    accSorted[1] = accSorted[1]*signs[1]
-    accSorted[2] = accSorted[2]*signs[2]
-
-    gyoSorted    = gyoSorted[transformIdx]
-    gyoSorted[0] = gyoSorted[0]*signs[0]
-    gyoSorted[1] = gyoSorted[1]*signs[1]
-    gyoSorted[2] = gyoSorted[2]*signs[2]
-
-    magSorted    = magSorted[transformIdx]
-    magSorted[0] = magSorted[0]*signs[0]
-    magSorted[1] = magSorted[1]*signs[1]
-    magSorted[2] = magSorted[2]*signs[2]
+    # print(accSorted[upIdx])
+    accSorted = change_up_axis(accSorted,upIdx)
+    gyoSorted = change_up_axis(gyoSorted,upIdx)
+    magSorted = change_up_axis(magSorted,upIdx)
+     # print(accSorted[2])
 
     print(f'Coordinate position {upIdx} assigned as up')
     logger.info(f'Coordinate position {upIdx} assigned as up')
 
-    # create a master time array based on the specified sampling frequency and the start and end times.
+    # Create a master time array based on the specified sampling frequency and the start and end times:
     dt = sec(fs**(-1))
     t0 = timestampSorted[0]
     tf = timestampSorted[-1]
     masterTime = np.arange(t0,tf,dt).astype(datetime)
 
-    # add milliseconds to each second of the rounded IMU timestamps:
+    print(masterTime[0])
+    print(masterTime[-1])
+
+    # Add milliseconds to each second of the rounded IMU timestamps:
     timestampSorted_ms = add_ms_to_IMUtime(timestampSorted)
 
-    #--Interpolate IMU onto master clock
+    # Interpolate IMU onto master clock:
     logger.info('Interpolating IMU onto master clock')
-    # convert datetime ranges to a relative number of total seconds
+    
+    # Convert datetime ranges to a relative number of total seconds:
     masterTimeSec = datetimearray2relativetime(masterTime)
     imuTimeSec    = datetimearray2relativetime(timestampSorted_ms)
 
-    #interpolate
+    # Interpolate:
     accInterp = [np.interp(masterTimeSec,imuTimeSec,a) for a in accSorted]
     magInterp = [np.interp(masterTimeSec,imuTimeSec,m) for m in magSorted]
     gyoInterp = [np.interp(masterTimeSec,imuTimeSec,g) for g in gyoSorted]
 
-    #cnt number of NaNs TODO: handle nans; log?
+    if timeWindow is not None:
+        t_win0 = timeWindow[0]
+        t_winf = timeWindow[-1]
+
+        winBool = np.logical_and(masterTime >= t_win0, masterTime <= t_winf)
+        accInterp = accInterp[:,winBool]
+
+
+
+
+
+    # Count number of NaNs TODO: handle nans; log?
     np.isnan(accInterp).sum()
     np.isnan(magInterp).sum()
     np.isnan(gyoInterp).sum()
     
     
-    #-- reference frame transformation #TODO: reference frame transformation 
-    #TODO: comment out below
 
-    # offset_x = 85.65
-    # offset_y = -19.85
-    # offset_z = -61.7
-
-    offset_x = (max(magInterp[0]) + min(magInterp[0])) / 2
-    offset_y = (max(magInterp[1]) + min(magInterp[1])) / 2
-    offset_z = (max(magInterp[2]) + min(magInterp[2])) / 2
-
-    magInterp[0] = magInterp[0] - offset_x
-    magInterp[1] = magInterp[1] - offset_y
-    magInterp[2] = magInterp[2] - offset_z
-    
+    # Reference frame transformation:
     import matplotlib.pyplot as plt
-    fig,ax = plt.subplots(1,1)
-    ax.scatter(magInterp[0],magInterp[1],label = 'x-y')
-    ax.scatter(magInterp[0],magInterp[2],label = 'x-z')
-    ax.scatter(magInterp[1],magInterp[2],label = 'y-z')
-    ax.axhline(y=0 , color='k')
-    ax.axvline(x=0 , color='k')
-    # ax.set_xlim([-60,60])
-    # ax.set_ylim([-60,60])
-    ax.set_aspect('equal')
+    fig1 = plt.figure()
+    ax1 = fig1.add_subplot(111, projection='3d')
+
+    ax1.scatter(magInterp[0], magInterp[1], magInterp[2], s=5, color='r')
+    ax1.set_xlabel('X')
+    ax1.set_ylabel('Y')
+    ax1.set_zlabel('Z')
+
+    # plot unit sphere
+    u = np.linspace(0, 2 * np.pi, 100)
+    v = np.linspace(0, np.pi, 100)
+    x = np.outer(np.cos(u), np.sin(v))
+    y = np.outer(np.sin(u), np.sin(v))
+    z = np.outer(np.ones(np.size(u)), np.cos(v))
+    ax1.plot_wireframe(x, y, z, rstride=10, cstride=10, alpha=0.5)
+    ax1.plot_surface(x, y, z, alpha=0.3, color='b')
+    
+    ax1.set_xlim([-1.2, 1.2])
+    ax1.set_ylim([-1.2, 1.2])
+    ax1.set_zlim([-1.2, 1.2])
+
+    #TODO: del below
+    fig, ax = plt.subplots(1,1)
+    ax.plot(masterTime,accInterp[2] - np.mean(accInterp[2]),alpha=0.5)
+    ax.axvline(t0)
+    ax.axvline(tf)
+
+    #TODO: del above
 
     ax_earth, ay_earth, az_earth = ekfCorrection(*accInterp,*gyoInterp,*magInterp)
     
-    accInterp = [ax_earth, ay_earth, az_earth]
+    # accInterp = [ax_earth, ay_earth, az_earth]  #TODO: uncomment
+
+    ax.plot(masterTime,accInterp[2] - np.mean(accInterp[2]),alpha=0.5)
 
     # *accEarth = ekfCorrection(*accInterp,*gyoInterp,*magInterp)
     # accEarth = [ax_earth,ay_earth,az_earth]
     #TODO:  comment out above
 
-    #-- integration
+    # Integration:
     logger.info('Integrating IMU')
     fc = 0.04
     filt = lambda *b : RCfilter(*b,fc,fs)
     # X,Y,Z=[integrate_acc(a,masterTimeSec,filt) for a in accEarth][:] # X = [ax,ay,az], Y = ... 
     X,Y,Z=[integrate_acc(a,masterTimeSec,filt) for a in accInterp][:] # X = [ax,ay,az], Y = ... 
 
-    # assign outputs to IMU dict
+    # Unpack outputs into IMU dictionary:
     IMU['ax'],IMU['vx'],IMU['px'] = X # IMU.update({'ax': X[0], 'ay': Y[0], 'az': Z[0]})
     IMU['ay'],IMU['vy'],IMU['py'] = Y
     IMU['az'],IMU['vz'],IMU['pz'] = Z

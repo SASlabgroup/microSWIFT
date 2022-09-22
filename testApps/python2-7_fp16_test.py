@@ -1,6 +1,14 @@
 
-from __future__ import division # true division
+# from __future__ import division # true division
 import struct
+
+def signed8_from_hex(hex):
+    """convert hex to signed 8-bit int"""
+    return struct.unpack('<b',hex)[0] # (returned as first index of tuple)
+
+def unsigned8_from_hex(hex):
+    """convert hex to signed 8-bit int"""
+    return struct.unpack('<B',hex)[0] # (returned as first index of tuple)
 
 def usigned16_from_hex(hex):
     """convert hex to unsigned 16-bit int (short)"""
@@ -32,6 +40,8 @@ TX_fname = './testApps/microSWIFT019_TX_12Sep2022_165147UTC.dat'
 with open(TX_fname, mode='rb') as file: 
     fileContent = file.read()
 
+print(float(1) / float(2))
+
 """in python 3.7"""
 # Hs = struct.unpack('e',fileContent[5:7]) # Hs = 0.004505157470703125
 # Tp = struct.unpack('e',fileContent[7:9]) # Hs = 12.484375
@@ -48,6 +58,20 @@ Hs = float_from_unsigned16(u16) # = 0.0045051574707
 # Test Tp and Voltage:
 Tp = float_from_unsigned16(usigned16_from_hex(fileContent[7:9])) # = 12.484375
 Voltage = float_from_unsigned16(usigned16_from_hex(fileContent[321:323])) # = 0.0
+
+a1_1 = signed8_from_hex(fileContent[99:100])
+a1_2 = unsigned8_from_hex(fileContent[100:101])
+
+if a1_2 > 127:
+    a1_2 = a1_2 - 256
+
+if byte > 127:
+    return byte - 256
+
+print('a1[0]: ' + str(a1_1))
+print('a1[1]: ' + str(a1_2))
+
+
 
 print('Hs: ' + str(Hs))
 print('Tp:' + str(Tp))

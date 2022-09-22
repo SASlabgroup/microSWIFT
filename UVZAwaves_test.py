@@ -9,29 +9,40 @@ from waves.UVZAwaves import UVZAwaves
 from waves.GPSwaves import GPSwaves
 from datetime import datetime, timedelta
 from utils.collateIMUandGPS import collateIMUandGPS
+from IMU.calibrateMag import calibrateMag
 # from waves.cumtrapz import cumtrapz
-
+# TODO: organize test files! and make this a proper test function...
 dataDir  = './waves/testdata/'
-IMUdataFilename = 'microSWIFT014_IMU_27Oct2021_190006UTC.dat' #'microSWIFT021_IMU_12Jul2021_210000UTC.dat' # 'microSWIFT057_IMU_17Aug2022_000146UTC.dat'  #'microSWIFT043_IMU_16Aug2022_002021UTC.dat'# 'microSWIFT043_IMU_15Aug2022_210005UTC.dat' #'microSWIFT043_IMU_05May2022_200006UTC.dat'#'microSWIFT021_IMU_12Jul2021_210000UTC.dat' #'microSWIFT014_IMU_27Oct2021_190006UTC.dat' 
-GPSdataFilename = 'microSWIFT014_GPS_27Oct2021_190009UTC.dat' # 'microSWIFT021_GPS_12Jul2021_210000UTC.dat' #'microSWIFT057_GPS_17Aug2022_000151UTC.dat' #'microSWIFT043_GPS_16Aug2022_002022UTC.dat'#'microSWIFT043_GPS_15Aug2022_210006UTC.dat' #'microSWIFT043_GPS_05May2022_200007UTC.dat'#'microSWIFT021_GPS_12Jul2021_210000UTC.dat' #'microSWIFT014_GPS_27Oct2021_190009UTC.dat'
+IMUdataFilename = 'microSWIFT017_IMU_23Aug2022_222010UTC.dat'
+GPSdataFilename = 'microSWIFT017_GPS_23Aug2022_222012UTC.dat'
+# IMUdataFilename = 'microSWIFT017_IMU_23Aug2022_220012UTC.dat'
+# GPSdataFilename = 'microSWIFT017_GPS_23Aug2022_220013UTC.dat'
+# IMUdataFilename =  'microSWIFT057_IMU_17Aug2022_000146UTC.dat'  #'microSWIFT043_IMU_16Aug2022_002021UTC.dat'# 'microSWIFT043_IMU_15Aug2022_210005UTC.dat' #'microSWIFT043_IMU_05May2022_200006UTC.dat'#'microSWIFT021_IMU_12Jul2021_210000UTC.dat' #'microSWIFT014_IMU_27Oct2021_190006UTC.dat' 
+# GPSdataFilename =  'microSWIFT057_GPS_17Aug2022_000151UTC.dat' #'microSWIFT043_GPS_16Aug2022_002022UTC.dat'#'microSWIFT043_GPS_15Aug2022_210006UTC.dat' #'microSWIFT043_GPS_05May2022_200007UTC.dat'#'microSWIFT021_GPS_12Jul2021_210000UTC.dat' #'microSWIFT014_GPS_27Oct2021_190009UTC.dat'
+# IMUdataFilename = 'microSWIFT014_IMU_27Oct2021_190006UTC.dat' #'microSWIFT021_IMU_12Jul2021_210000UTC.dat' # 'microSWIFT057_IMU_17Aug2022_000146UTC.dat'  #'microSWIFT043_IMU_16Aug2022_002021UTC.dat'# 'microSWIFT043_IMU_15Aug2022_210005UTC.dat' #'microSWIFT043_IMU_05May2022_200006UTC.dat'#'microSWIFT021_IMU_12Jul2021_210000UTC.dat' #'microSWIFT014_IMU_27Oct2021_190006UTC.dat' 
+# GPSdataFilename = 'microSWIFT014_GPS_27Oct2021_190009UTC.dat' # 'microSWIFT021_GPS_12Jul2021_210000UTC.dat' #'microSWIFT057_GPS_17Aug2022_000151UTC.dat' #'microSWIFT043_GPS_16Aug2022_002022UTC.dat'#'microSWIFT043_GPS_15Aug2022_210006UTC.dat' #'microSWIFT043_GPS_05May2022_200007UTC.dat'#'microSWIFT021_GPS_12Jul2021_210000UTC.dat' #'microSWIFT014_GPS_27Oct2021_190009UTC.dat'
 # IMUdataFilename = 'microSWIFT021_IMU_12Jul2021_210000UTC.dat' # 'microSWIFT057_IMU_17Aug2022_000146UTC.dat'  #'microSWIFT043_IMU_16Aug2022_002021UTC.dat'# 'microSWIFT043_IMU_15Aug2022_210005UTC.dat' #'microSWIFT043_IMU_05May2022_200006UTC.dat'#'microSWIFT021_IMU_12Jul2021_210000UTC.dat' #'microSWIFT014_IMU_27Oct2021_190006UTC.dat' 
 # GPSdataFilename = 'microSWIFT021_GPS_12Jul2021_210000UTC.dat' #'microSWIFT057_GPS_17Aug2022_000151UTC.dat' #'microSWIFT043_GPS_16Aug2022_002022UTC.dat'#'microSWIFT043_GPS_15Aug2022_210006UTC.dat' #'microSWIFT043_GPS_05May2022_200007UTC.dat'#'microSWIFT021_GPS_12Jul2021_210000UTC.dat' #'microSWIFT014_GPS_27Oct2021_190009UTC.dat'
 # testName = 'Offshore Duck 27Oct2021' #'Westport 12Jul2021'
-testName = 'Westport 12Jul2021'
-CDIPfile = 'CDIP192_Oct2021.csv' # './waves/testdata/CDIP036_Jul2021.csv'
+
+# testName = 'Westport 12Jul2021'
+# CDIPfile = 'CDIP192_Oct2021.csv' # './waves/testdata/CDIP036_Jul2021.csv'
 # CDIPfile = 'CDIP036_Jul2021.csv'
 fs = 12 #TODO: fix from input or timestamp diff; does NOT work for 48Hz
-#%% possible to use this to gen headers
-# def funfun():
-#     print(funfun.__name__)
-#     return 
 
-# funfun()
+#%%
+#%%
+
+magCal, Ainv, b = calibrateMag(mag = [], fromFile = True, imufile = f'{dataDir}{IMUdataFilename}')
+
 #%%
 GPS = GPStoUVZ(f'{dataDir}{GPSdataFilename}')
 # u, v, z, lat, lon, GPStime = GPStoUVZ(f'{dataDir}{GPSdataFilename}')
 #%%
-IMU = IMUtoXYZ(f'{dataDir}{IMUdataFilename}',fs)
+startTime = datetime(2022,8,23,22,20,0)
+endTime = datetime(2022,8,23,22,30,0)
+
+IMU = IMUtoXYZ(f'{dataDir}{IMUdataFilename}', fs, timeWindow = (startTime, endTime)) #(startTime, endTime)
 # ax, ay, az, vx, vy, vz, px, py, pz, IMUtime = IMUtoXYZ(f'{dataDir}{IMUdataFilename}',fs)
 #TODO: be certain the right az is being returned...
 #%%
@@ -40,6 +51,7 @@ ax.plot(IMU['time'],IMU['pz'],alpha=0.5)
 
 fig, ax = plt.subplots(1,1)
 ax.plot(IMU['time'],IMU['az'],alpha=0.5)
+ax.set_xlim([startTime,endTime])
 
 fig, ax = plt.subplots(1,1)
 ax.plot(IMU['time'],IMU['px'],alpha=0.5)
@@ -56,6 +68,16 @@ from scipy import signal
 nperseg = 256*fs # [samples]
 overlap = 0.75
 fw,Ew = signal.welch(IMU['az'], fs= fs, window='hann', nperseg=nperseg, noverlap=np.floor(nperseg*overlap))
+fig, ax = plt.subplots(1,1)
+ax.plot(fw,Ew)
+ax.set_yscale('log')
+ax.set_xscale('log')
+ax.set_xlim([10**(-2),10**(0)])
+ax.set_ylim([10**(-4),10**(2)])
+
+nperseg = 256*fs # [samples]
+overlap = 0.75
+fw,Ew = signal.welch(IMU['pz'], fs= fs, window='hann', nperseg=nperseg, noverlap=np.floor(nperseg*overlap))
 fig, ax = plt.subplots(1,1)
 ax.plot(fw,Ew)
 ax.set_yscale('log')
