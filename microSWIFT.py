@@ -137,6 +137,7 @@ if __name__=="__main__":
 				# sleep(1)
 				print(n)
 			except Exception as e:
+				print('exception')
 				logger.info(e)
 				logger.info('error reading IMU data')
 		# print(acc)
