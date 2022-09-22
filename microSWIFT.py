@@ -119,6 +119,7 @@ if __name__=="__main__":
 		mag = np.empty((3,10))
 		gyo = np.empty((3,10))
 
+		print(acc)
 		while n <= 10:
 			try:
 				# t = datetime.utcnow()
