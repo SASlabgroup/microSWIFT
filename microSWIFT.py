@@ -117,7 +117,8 @@ if __name__=="__main__":
 
 	orientation = Mahony()
 	num_samples = 10000
-	Q = np.tile([1., 0., 0., 0.], (num_samples, 1)) # Allocate for quaternions
+	# Q = np.tile([1., 0., 0., 0.], (num_samples, 1)) # Allocate for quaternions
+	Q = np.tile([0., 0., 0., 0.], (num_samples, 1)) # Allocate for quaternions
 
 	acc = np.zeros((num_samples,3))
 	mag = np.zeros((num_samples,3))
