@@ -115,16 +115,17 @@ if __name__=="__main__":
 	while True:
 		t = datetime.utcnow()
 		n = 0 
-		acc = []
-		mag = []
-		gyo = []
+		acc = np.empty(3,10)
+		mag = np.empty(3,10)
+		gyo = np.empty(3,10)
 
 		while n <= 10:
 			try:
 				# t = datetime.utcnow()
-				acc.append(fxos.accelerometer)
-				mag.append(fxos.magnetometer)
-				gyo.append(fxas.gyroscope)
+				acc[:,n] = fxos.accelerometer
+				# acc.append(fxos.accelerometer)
+				# mag.append(fxos.magnetometer)
+				# gyo.append(fxas.gyroscope)
 				n += 1
 				# accel_x, accel_y, accel_z = fxos.accelerometer
 				# mag_x, mag_y, mag_z = fxos.magnetometer
@@ -132,14 +133,17 @@ if __name__=="__main__":
 			except Exception as e:
 				logger.info(e)
 				logger.info('error reading IMU data')
+		# print(acc)
+
 		print(acc)
+		# acc = np.array(acc).T
 
-		print(np.array(acc).T)
-		ax = round(sum(acc[0])/n,3)
-		ay = round(sum(acc[1])/n,3)
-		az = round(sum(acc[2])/n,3)
 
-		logger.info(f'{t} {ax} {ay} {az}')
+		# ax = round(sum(acc[0])/n,3)
+		# ay = round(sum(acc[1])/n,3)
+		# az = round(sum(acc[2])/n,3)
+
+		# logger.info(f'{t} {ax} {ay} {az}')
 		
 		# # initialize fxos and fxas devices (required after turning off device)
     	
