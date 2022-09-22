@@ -134,7 +134,7 @@ if __name__=="__main__":
 				# accel_x, accel_y, accel_z = fxos.accelerometer
 				# mag_x, mag_y, mag_z = fxos.magnetometer
 				# gyro_x, gyro_y, gyro_z = fxas.gyroscope
-				sleep(1)
+				# sleep(1)
 			except Exception as e:
 				logger.info(e)
 				logger.info('error reading IMU data')
