@@ -45,7 +45,7 @@ import IMU.adafruit_fxos8700_microSWIFT
 import IMU.adafruit_fxas21002c_microSWIFT
 
 # sensor fusion
-import ahrs.filters
+from ahrs.filters import Mahony
 
 # Main body of microSWIFT.py
 if __name__=="__main__":
