@@ -133,6 +133,8 @@ if __name__=="__main__":
 				logger.info(e)
 				logger.info('error reading IMU data')
 		print(acc)
+
+		print(np.array(acc).T)
 		ax = round(sum(acc[0])/n,3)
 		ay = round(sum(acc[1])/n,3)
 		az = round(sum(acc[2])/n,3)
