@@ -139,8 +139,8 @@ if __name__=="__main__":
 		# print(acc)
 
 		acc_means = np.round(np.mean(acc, axis = 0),3)
-		gyo_means = np.round(np.mean(acc, axis = 0),3)
-		mag_means = np.round(np.mean(acc, axis = 0),3)
+		gyo_means = np.round(np.mean(gyo, axis = 0),3)
+		mag_means = np.round(np.mean(mag, axis = 0),3)
 
 
 		print(f'{t} acc: {acc_means} gyo: {gyo_means}')
