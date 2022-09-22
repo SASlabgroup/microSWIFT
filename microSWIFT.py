@@ -143,7 +143,7 @@ if __name__=="__main__":
 		mag_means = np.round(np.mean(mag, axis = 0),3)
 
 
-		print(f'{t} acc: {acc_means} gyo: {gyo_means}')
+		print(f'{t} acc: {acc_means} gyo: {gyo_means}  gyo: {mag_means}')
 
 
 		# ay = round(sum(acc[1])/n,3)
