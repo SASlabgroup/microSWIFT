@@ -120,6 +120,7 @@ if __name__=="__main__":
 		gyo = np.empty((3,10))
 
 		print(acc)
+
 		while n <= 10:
 			try:
 				# t = datetime.utcnow()
@@ -132,7 +133,7 @@ if __name__=="__main__":
 				# accel_x, accel_y, accel_z = fxos.accelerometer
 				# mag_x, mag_y, mag_z = fxos.magnetometer
 				# gyro_x, gyro_y, gyro_z = fxas.gyroscope
-
+				print(n)
 				sleep(1)
 			except Exception as e:
 				logger.info(e)
