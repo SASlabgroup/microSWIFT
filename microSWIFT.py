@@ -107,17 +107,37 @@ if __name__=="__main__":
 	i2c = busio.I2C(board.SCL, board.SDA)
 	fxos = IMU.adafruit_fxos8700_microSWIFT.FXOS8700(i2c, accel_range=0x00)
 	fxas = IMU.adafruit_fxas21002c_microSWIFT.FXAS21002C(i2c, gyro_range=500)
+
+	acc = []
+	mag = []
+	gyo = []
 	# --------------- Main Loop -------------------------
 	while True:
-		try:
-			accel_x, accel_y, accel_z = fxos.accelerometer
-			mag_x, mag_y, mag_z = fxos.magnetometer
-			gyro_x, gyro_y, gyro_z = fxas.gyroscope
-		except Exception as e:
-			logger.info(e)
-			logger.info('error reading IMU data')
+		t = datetime.utcnow()
+		n = 0 
+		acc = []
+		mag = []
+		gyo = []
 
-		logger.info(f'{accel_x} {accel_y} {accel_z}')
+		while n <= 10:
+			try:
+				# t = datetime.utcnow()
+				acc.append(fxos.accelerometer)
+				mag.append(fxos.magnetometer)
+				gyo.append(fxas.gyroscope)
+				n += 1
+				# accel_x, accel_y, accel_z = fxos.accelerometer
+				# mag_x, mag_y, mag_z = fxos.magnetometer
+				# gyro_x, gyro_y, gyro_z = fxas.gyroscope
+			except Exception as e:
+				logger.info(e)
+				logger.info('error reading IMU data')
+
+		ax = round(sum(acc[0])/n,3)
+		ay = round(sum(acc[1])/n,3)
+		az = round(sum(acc[2])/n,3)
+
+		logger.info(f'{t} {ax} {ay} {az}')
 		
 		# # initialize fxos and fxas devices (required after turning off device)
     	
