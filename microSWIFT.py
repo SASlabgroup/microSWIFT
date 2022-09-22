@@ -113,7 +113,7 @@ if __name__=="__main__":
 	gyo = []
 	# --------------- Main Loop -------------------------
 	while True:
-		t = datetime.utcnow()
+		t = datetime.utcnow().strftime('%H:%M:%S')
 		n = 0 
 		acc = np.zeros((10,3))
 		mag = np.zeros((10,3))
@@ -145,7 +145,7 @@ if __name__=="__main__":
 
 		means = np.round(np.mean(acc, axis = 0),3)
 
-		print(means)
+		print(f'{t} {means}')
 		# ay = round(sum(acc[1])/n,3)
 		# az = round(sum(acc[2])/n,3)
 
