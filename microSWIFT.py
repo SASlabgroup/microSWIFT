@@ -115,9 +115,9 @@ if __name__=="__main__":
 	while True:
 		t = datetime.utcnow()
 		n = 0 
-		acc = np.empty(3,10)
-		mag = np.empty(3,10)
-		gyo = np.empty(3,10)
+		acc = np.empty((3,10))
+		mag = np.empty((3,10))
+		gyo = np.empty((3,10))
 
 		while n <= 10:
 			try:
