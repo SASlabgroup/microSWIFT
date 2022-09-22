@@ -143,9 +143,9 @@ if __name__=="__main__":
 			# 	logger.info('error reading IMU data')
 		# print(acc)
 
-		means = np.round(np.mean(acc, axis = 0),3)
+		means = np.mean(acc, axis = 0)
 
-		print(f'{t} {means}')
+		print(f'{t} {means:.3f}')
 		# ay = round(sum(acc[1])/n,3)
 		# az = round(sum(acc[2])/n,3)
 
