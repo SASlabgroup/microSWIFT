@@ -100,14 +100,15 @@ if __name__=="__main__":
 	logger.info('microSWIFT configuration:')
 	logger.info(f'IMU rate: {imuFreq}')
 	
+	logger.info('initializing IMU')
+	logger.info('power on IMU')
+
+	GPIO.output(imu_gpio,GPIO.HIGH)
+	i2c = busio.I2C(board.SCL, board.SDA)
+	fxos = IMU.adafruit_fxos8700_microSWIFT.FXOS8700(i2c, accel_range=0x00)
+	fxas = IMU.adafruit_fxas21002c_microSWIFT.FXAS21002C(i2c, gyro_range=500)
 	# --------------- Main Loop -------------------------
 	while True:
-		logger.info('initializing IMU')
-		logger.info('power on IMU')
-		GPIO.output(imu_gpio,GPIO.HIGH)
-		i2c = busio.I2C(board.SCL, board.SDA)
-		fxos = IMU.adafruit_fxos8700_microSWIFT.FXOS8700(i2c, accel_range=0x00)
-		fxas = IMU.adafruit_fxas21002c_microSWIFT.FXAS21002C(i2c, gyro_range=500)
 		try:
 			accel_x, accel_y, accel_z = fxos.accelerometer
 			mag_x, mag_y, mag_z = fxos.magnetometer
