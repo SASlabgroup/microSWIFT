@@ -76,7 +76,7 @@ class Config:
         # self.config = configparser.SafeConfigParser()
         self.config = configparser.ConfigParser()
 
-        self.config.readfp(stringObj)
+        self.config.parser.read_file(stringObj)
 
         return True
 
