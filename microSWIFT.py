@@ -122,7 +122,7 @@ if __name__=="__main__":
 		# mag = []
 		# gyo = []
 
-		while n <= 10:
+		while n < 10:
 			# try:
 				# t = datetime.utcnow()
 				# print(acc)
