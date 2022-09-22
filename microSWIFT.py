@@ -138,9 +138,9 @@ if __name__=="__main__":
 			# 	logger.info('error reading IMU data')
 		# print(acc)
 
-		acc_means = np.mean(acc, axis = 0)
-		gyo_means = np.mean(acc, axis = 0)
-		mag_means = np.mean(acc, axis = 0)
+		acc_means = np.round(np.mean(acc, axis = 0),3)
+		gyo_means = np.round(np.mean(acc, axis = 0),3)
+		mag_means = np.round(np.mean(acc, axis = 0),3)
 
 
 		print(f'{t} ax: {acc_means[0]} ay: {acc_means[1]} az: {acc_means[2]}' \
