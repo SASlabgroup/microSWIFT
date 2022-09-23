@@ -5,7 +5,9 @@ author: @edwinrainville, @alexdeklerk, @vivianacastillo, @jacobrdavis
 This is pared down version of microSWIFT.py that is used for evaluating IMU AHRS algorithms.
 
 TODO:
-	-
+	- accel bias offsets (float in water?)
+	- gyro offsets
+	- incorporate mag cal script
 """
 
 # Main import Statemennts
@@ -46,6 +48,7 @@ import IMU.adafruit_fxas21002c_microSWIFT
 
 # sensor fusion
 from ahrs.filters import Mahony
+print(np.version.version)
 from scipy.spatial.transform import Rotation as R
 
 # Main body of microSWIFT.py
