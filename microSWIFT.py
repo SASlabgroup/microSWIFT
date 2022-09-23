@@ -139,6 +139,8 @@ if __name__=="__main__":
 			print(Q[n])
 			print(f'{t} Q: {Q[n]} acc: {acc[n]} gyo: {gyo[n]}  mag: {mag[n]}')
 
+		n += 1
+		
 		# sleep(0.3)
 		
 		# n = 0 
@@ -159,7 +161,7 @@ if __name__=="__main__":
 		# 		# acc.append(fxos.accelerometer)
 		# 		# mag.append(fxos.magnetometer)
 		# 		# gyo.append(fxas.gyroscope)
-		# 	n += 1
+			# n += 1
 
 		# 	# except Exception as e:
 		# 	# 	print('exception')
