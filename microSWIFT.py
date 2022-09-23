@@ -1,3 +1,7 @@
+#!/home/pi/microSWIFT/venv/bin/python3
+
+"""#!/usr/bin/env python3"""
+
 ## microSWIFT.py 
 """
 author: @edwinrainville, @alexdeklerk, @vivianacastillo, @jacobrdavis
@@ -17,6 +21,11 @@ import pwd
 # import pkg_resources
 # pkg_resources.require("numpy==1.16.5")
 import numpy as np
+#TODO:
+# Use pip not pip3?
+# sudo apt-get install python-numpy
+# create venv snd bash script which is executed by service file
+# or https://stackoverflow.com/questions/6943208/activate-a-virtualenv-with-a-python-script
 from datetime import datetime, timedelta
 from logging import *
 import sys, os
