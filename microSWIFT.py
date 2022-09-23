@@ -14,8 +14,8 @@ TODO:
 import concurrent.futures
 import datetime
 import pwd
-import pkg_resources
-pkg_resources.require("numpy==1.16.5")
+# import pkg_resources
+# pkg_resources.require("numpy==1.16.5")
 import numpy as np
 from datetime import datetime, timedelta
 from logging import *
