@@ -117,8 +117,8 @@ if __name__=="__main__":
 
 	orientation = Mahony()
 	num_samples = 10000
-	# Q = np.tile([1., 0., 0., 0.], (num_samples, 1)) # Allocate for quaternions
-	Q = np.tile([0., 0., 0., 0.], (num_samples, 1)) # Allocate for quaternions
+	Q = np.tile([1., 0., 0., 0.], (num_samples, 1)) # Allocate for quaternions
+	# Q = np.tile([0., 0., 0., 0.], (num_samples, 1)) # Allocate for quaternions
 
 	acc = np.zeros((num_samples,3))
 	mag = np.zeros((num_samples,3))
@@ -135,10 +135,11 @@ if __name__=="__main__":
 
 		Q[n] = orientation.updateIMU(Q[n-1], gyr=gyo[n,:], acc=acc[n,:])
 
-		print(Q[n])
-		print(f'{t} Q: {Q[n]} acc: {acc[n]} gyo: {gyo[n]}  mag: {mag[n]}')
+		if n % 10 == 0:
+			print(Q[n])
+			print(f'{t} Q: {Q[n]} acc: {acc[n]} gyo: {gyo[n]}  mag: {mag[n]}')
 
-		sleep(0.3)
+		# sleep(0.3)
 		
 		# n = 0 
 		# acc = np.zeros((10,3))
