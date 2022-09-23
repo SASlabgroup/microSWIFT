@@ -18,9 +18,12 @@ TODO:
 import concurrent.futures
 import datetime
 import pwd
+
+import sys
+
 # import pkg_resources
 # pkg_resources.require("numpy==1.16.5")
-import numpy as np
+# import numpy as np
 #TODO:
 # Use pip not pip3?
 # sudo apt-get install python-numpy
