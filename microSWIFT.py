@@ -46,6 +46,7 @@ import IMU.adafruit_fxas21002c_microSWIFT
 
 # sensor fusion
 from ahrs.filters import Mahony
+from scipy.spatial.transform import Rotation as R
 
 # Main body of microSWIFT.py
 if __name__=="__main__":
@@ -134,6 +135,8 @@ if __name__=="__main__":
 		gyo[n,:] = fxas.gyroscope #TODO: ':' not needed
 
 		Q[n] = orientation.updateIMU(Q[n-1], gyr=gyo[n,:], acc=acc[n,:])
+		r = R.from_quat(Q[n])
+		acc_r = r.apply(acc[n])
 
 		if n % 10 == 0:
 			print(Q[n])
