@@ -379,7 +379,7 @@ telemetryQueue.close
 # %%
 import struct
 import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
  
 def checkTX52(TX_fname):
 
@@ -434,7 +434,7 @@ Tp = _float_from_unsigned16(fileContent[7:9]) # = 12.484375
 Voltage = _float_from_unsigned16(fileContent[321:323]) # = 0.0
 
 #%%
-data52dict = {
+data52dictraw = {
 'payload_size'   : data52[3],
 'Hsig' : data52[4],
 'Tp'   :data52[5],
@@ -457,25 +457,69 @@ data52dict = {
 'nowEpoch'   : data52[266]
 }
 
-# payload_size_data52 = data52[3]
-# Hsig_data52 = data52[4]
-# Tp_data52 =data52[5]
-# Dp_data52 =data52[6]
-# E_data52 = data52[7:7+42]
-# fmin_data52 = data52[7+42]
-# fmax_data52 = data52[7+42+1]
-# fstep_data52 = (fmax_data52 - fmin_data52)/(len(E_data52)-1)
-# f_data52 = np.arange(fmin_data52,fmax_data52+fstep_data52,fstep_data52)
-# a1_data52 = np.asarray(data52[7+42+2+0*42:7+42+2+1*42])/100
-# b1_data52 = np.asarray(data52[7+42+2+1*42:7+42+2+2*42])/100
-# a2_data52 = np.asarray(data52[7+42+2+2*42:7+42+2+3*42])/100
-# b2_data52 = np.asarray(data52[7+42+2+3*42:7+42+2+4*42])/100
-# check_data52 = np.asarray(data52[7+42+2+4*42:7+42+2+5*42])/10
-# lat_data52 = data52[261]
-# lon_data52 = data52[262]
-# temp_data52 = data52[263]
-# salinity_data52 = data52[264]
-# volt_data52 = data52[265]
-# nowEpoch_data52 = data52[266]
-# datetime_data52 = datetime.fromtimestamp(nowEpoch_data52)  
-# print(datetime_data52)
+import struct
+import numpy as np
+from datetime import datetime, timedelta, timezone
+
+def checkTX52(TX_fname):
+
+    with open(TX_fname, mode='rb') as file: # b is important -> binary
+        fileContent = file.read()
+    
+    data = struct.unpack('<sbbheee42eee42b42b42b42b42Bffeeef', fileContent)
+
+    return data
+
+
+TX_fname = './microSWIFT019_TX_12Sep2022_165147UTC.dat'
+
+data52 = checkTX52(TX_fname)
+
+payload_size_data52 = data52[3]
+Hsig_data52 = data52[4]
+Tp_data52 =data52[5]
+Dp_data52 =data52[6]
+E_data52 = data52[7:7+42]
+fmin_data52 = data52[7+42]
+fmax_data52 = data52[7+42+1]
+fstep_data52 = (fmax_data52 - fmin_data52)/(len(E_data52)-1)
+f_data52 = np.arange(fmin_data52,fmax_data52+fstep_data52,fstep_data52)
+a1_data52 = np.asarray(data52[7+42+2+0*42:7+42+2+1*42])/100
+b1_data52 = np.asarray(data52[7+42+2+1*42:7+42+2+2*42])/100
+a2_data52 = np.asarray(data52[7+42+2+2*42:7+42+2+3*42])/100
+b2_data52 = np.asarray(data52[7+42+2+3*42:7+42+2+4*42])/100
+check_data52 = np.asarray(data52[7+42+2+4*42:7+42+2+5*42])/10
+lat_data52 = data52[261]
+lon_data52 = data52[262]
+temp_data52 = data52[263]
+salinity_data52 = data52[264]
+volt_data52 = data52[265]
+nowEpoch_data52 = data52[266]
+datetime_data52 = datetime.fromtimestamp(nowEpoch_data52, tz=timezone.utc)  
+
+data52dict = {
+'payload_size' : data52[3],
+'Hsig ': data52[4],
+'Tp' :data52[5],
+'Dp' :data52[6],
+'E' : data52[7:7+42],
+'fmin' : data52[7+42],
+'fmax' : data52[7+42+1],
+# fstep : (fmax - fmin)/(len(E)-1),
+# f : np.arange(fmin,fmax+fstep,fstep),
+'a1' : np.asarray(data52[7+42+2+0*42:7+42+2+1*42])/100,
+'b1' : np.asarray(data52[7+42+2+1*42:7+42+2+2*42])/100,
+'a2' : np.asarray(data52[7+42+2+2*42:7+42+2+3*42])/100,
+'b2' : np.asarray(data52[7+42+2+3*42:7+42+2+4*42])/100,
+'check' : np.asarray(data52[7+42+2+4*42:7+42+2+5*42])/10,
+'lat' : data52[261],
+'lon' : data52[262],
+'temp' : data52[263],
+'salinity' : data52[264],
+'volt' : data52[265],
+'nowEpoch' : data52[266],
+}
+
+
+
+# %%
