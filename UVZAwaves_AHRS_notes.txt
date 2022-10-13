@@ -1,0 +1,16 @@
+Useful links:
+
+
+Mag cal code:
+https://thepoorengineer.com/en/calibrating-the-magnetometer/
+
+
+AHRS pkg and Mahoney Filter:
+https://ahrs.readthedocs.io/en/latest/installation.html
+https://ahrs.readthedocs.io/en/latest/filters/mahony.html
+
+Adafruit sensor fusion guide:
+https://learn.adafruit.com/how-to-fuse-motion-sensor-data-into-ahrs-orientation-euler-quaternions/sensor-fusion-algorithms
+
+MATLAB sensor fusion guide:
+https://www.mathworks.com/help/supportpkg/arduino/ref/estimate-orientation-ahrs.html
