@@ -26,9 +26,10 @@ Log:
 	- Aug 2022, @jacobrdavis: UVZAwaves
 	- Aug 2022, @jacobrdavis: sensor_type_52, salinity placeholder
 	- Aug 2022, @jacobrdavis: modified telemetry queue to check payload sensorType (to support multi-sensortype queues)
+	- Oct 2022, @jacobrdavis: GPS waves as primary estimate
+
 	
 TODO:
-	- telemetryQueue needs some way of knowing which SBD message it has. Possibly using len?
 	- generateHeader function for each script? (i.e. --fun.py---)
 """
 
