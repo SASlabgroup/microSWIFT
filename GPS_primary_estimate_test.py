@@ -28,7 +28,8 @@ fs = 12 #TODO: fix from input or timestamp diff; does NOT work for 48Hz
 
 # funfun()
 #%%
-GPS = GPStoUVZ(f'{dataDir}{GPSdataFilename}')
+# GPS = GPStoUVZ(f'{dataDir}{GPSdataFilename}')
+u,v,z,lat,lon, time = GPStoUVZ(f'{dataDir}{GPSdataFilename}')
 # u, v, z, lat, lon, GPStime = GPStoUVZ(f'{dataDir}{GPSdataFilename}')
 #%%
 IMU = IMUtoXYZ(f'{dataDir}{IMUdataFilename}',fs)

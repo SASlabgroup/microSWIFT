@@ -87,11 +87,11 @@ def GPStoUVZ(gpsfile):
     
 
     # assign outputs to GPS dict
-    GPS.update({'u':u,'v':v,'z':z,'lat':lat,'lon':lon,'time':time})
+    # GPS.update({'u':u,'v':v,'z':z,'lat':lat,'lon':lon,'time':time})
     # GPS.update({'u':uSorted,'v':vSorted,'z':zSorted,'lat':latSorted,'lon':lonSorted,'time':timeSorted})
 
     logger.info('GPGGA lines: {}'.format(len(lat)))
     logger.info('GPVTG lines: {}'.format(len(u)))
     logger.info('------------------------------------------')
 
-    return GPS #u,v,z,lat,lon, time
+    return u, v, z, lat, lon, time #GPS 
