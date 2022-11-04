@@ -2,6 +2,5 @@
 
 write me!
 
-```
-![plot](./doc/images/microSWIFT.png)
-```
+![Alt text](./doc/images/microSWIFT.png)
+
