@@ -1,1 +1,0 @@
-/usr/bin/c++      CMakeFiles/RTIMULibDrive10.dir/RTIMULibDrive10.cpp.o  -o RTIMULibDrive10 -rdynamic ../RTIMULib/libRTIMULib.so.8.0.0 -Wl,-rpath,/home/brodsky/mocca/ops/libs/RTIMULib2/Linux/build/RTIMULib: 
