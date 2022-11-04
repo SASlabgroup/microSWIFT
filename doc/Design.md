@@ -46,3 +46,15 @@ Able to read documentation and add features.
 
 ### Configuration UI
 * Functions to ingest user set configurations for sensor and transmission functionality
+
+
+## Design Diagram 
+This is an example of using the mermaid diagram tool 
+
+```mermaid
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
+```
