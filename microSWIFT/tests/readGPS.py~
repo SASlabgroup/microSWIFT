@@ -1,6 +1,0 @@
-#! /usr/bin/python2.7
-
-readSerial = open('/home/pi/microSWIFT/testmicroWave/gpspipe.log','+r')
-
-line = readSerial.readlines()
-print (line)
