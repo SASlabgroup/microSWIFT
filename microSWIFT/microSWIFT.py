@@ -33,7 +33,6 @@ TODO:
       performs logger.info()
 """
 
-import logging
 import os
 import sys
 
@@ -44,17 +43,19 @@ from datetime import datetime, timedelta
 from GPS.recordGPS import recordGPS
 from GPS.GPStoUVZ import GPStoUVZ
 from IMU.recordIMU import recordIMU
-from IMU.IMUtoXYZ import IMUtoXYZ 
-from time import sleep
-from waves.UVZAwaves import UVZAwaves
-from waves.GPSwaves import GPSwaves
+from IMU.IMUtoXYZ import IMUtoXYZ
 from SBD.sendSBD import createTX
 from SBD.sendSBD import send_microSWIFT_50
 from SBD.sendSBD import send_microSWIFT_51
 from SBD.sendSBD import send_microSWIFT_52
+from time import sleep
 from utils.config3 import Config
 from utils.collateIMUandGPS import collateIMUandGPS
 from utils.fillBadValues import fillBadValues
+from utils.logger import init_logger, log_header
+from waves.GPSwaves import GPSwaves
+from waves.UVZAwaves import UVZAwaves
+
 
 def _get_uvzmean(badValue, pts):
     mean = badValue #set values to 999 initially and fill if valid value
@@ -76,59 +77,51 @@ def _get_last(badValue, pts):
 # Main body of microSWIFT.py
 if __name__=="__main__":
 
+    ###TODO: Update this block when EJ finishes the config integration
     #Define Config file name and load file
-    configFilename = r'/home/pi/microSWIFT/utils/Config.dat'
+    CONFIG_FILENAME = r'/home/pi/microSWIFT/utils/Config.dat'
     config = Config() # Create object and load file
-    ok = config.loadFile( configFilename )
-    if( not ok ):
+    loaded = config.loadFile(CONFIG_FILENAME)
+    if not loaded:
         print("Error loading config file")
         sys.exit(1)
+    ###
 
     # System Parameters
-    dataDir = config.getString('System', 'dataDir')
-    floatID = os.uname()[1]
-    sensor_type = config.getInt('System', 'sensorType')
-    badValue = config.getInt('System', 'badValue')
-    numCoef = config.getInt('System', 'numCoef')
-    port = config.getInt('System', 'port')
-    payload_type = config.getInt('System', 'payloadType')
-    burst_seconds = config.getInt('System', 'burst_seconds')
-    burst_time = config.getInt('System', 'burst_time')
-    burst_int = config.getInt('System', 'burst_interval')
-    
+    DATA_DIR = config.getString('System', 'dataDir')
+    FLOAT_ID = os.uname()[1]
+    SENSOR_TYPE = config.getInt('System', 'sensorType')
+    BAD_VALUE = config.getInt('System', 'badValue')
+    NUM_COEF = config.getInt('System', 'numCoef')
+    PORT = config.getInt('System', 'port')
+    PAYLOAD_TYPE = config.getInt('System', 'payloadType')
+    BURST_SECONDS = config.getInt('System', 'burst_seconds')
+    BURST_TIME = config.getInt('System', 'burst_time')
+    BURST_INT = config.getInt('System', 'burst_interval')
+
     # GPS parameters
-    GPS_fs = config.getInt('GPS', 'gps_frequency') #currently not used, hardcoded at 4 Hz (see init_gps function)
+    GPS_FS = config.getInt('GPS', 'gps_frequency') #TODO: currently not used, hardcoded at 4 Hz (see init_gps function)
     # IMU parameters
-    IMU_fs = config.getFloat('IMU', 'imuFreq') #TODO: NOTE this has been changed to 12 from 12.5 (actual) to obtain proper # of pts in processing
+    IMU_FS = config.getFloat('IMU', 'imuFreq') #TODO: NOTE this has been changed to 12 from 12.5 (actual) to obtain proper # of pts in processing
 
     #Compute number of bursts per hour
-    num_bursts = int(60 / burst_int)
+    NUM_BURSTS = int(60 / BURST_INT)
     
     #Generate lists of burst start and end times based on parameters from Config file
-    start_times = [burst_time + i*burst_int for i in range(num_bursts)]
-    end_times = [start_times[i] + burst_seconds/60 for i in range(num_bursts)]
+    start_times = [BURST_TIME + i*BURST_INT for i in range(NUM_BURSTS)]
+    end_times = [start_times[i] + BURST_SECONDS/60 for i in range(NUM_BURSTS)]
 
-    # Set-up logging based on config file parameters
-    logger = logging.getLogger('microSWIFT')
-    logDir = config.getString('Loggers', 'logDir')
-    LOG_LEVEL = config.getString('Loggers', 'DefaultLogLevel')
-    LOG_FORMAT = ('%(asctime)s, %(name)s - [%(levelname)s] - %(message)s')
-    LOG_FILE = (logDir  + logger.name + '.log')
-    logger.setLevel(LOG_LEVEL)
-    logFileHandler = logging.FileHandler(LOG_FILE)
-    logFileHandler.setLevel(LOG_LEVEL)
-    logFileHandler.setFormatter(logging.Formatter(LOG_FORMAT))
-    logger.addHandler(logFileHandler)
-
+    # Initialize the logger
+    logger = init_logger()
+  
     # Output Booted up time to log
-    logger.info('-----------------------------------------')
+    log_header('', length = 50)
     logger.info('Booted up')
 
     #Output configuration parameters to log file
     logger.info('microSWIFT configuration:')
-    logger.info('float ID: {0}, payload type: {1}, sensor type: {2}, '.format(floatID, payload_type, sensor_type))
-    logger.info('burst seconds: {0}, burst interval: {1}, burst time: {2}'.format(burst_seconds, burst_int, burst_time))
-    # logger.info('gps sample rate: {0}, call interval {1}, call time: {2}'.format(GPS_fs, call_int, call_time)) # Burst Int and burst time have not been defined yet
+    logger.info(f'float ID: {FLOAT_ID}, payload type: {PAYLOAD_TYPE}, sensor type: {SENSOR_TYPE}, ')
+    logger.info(f'burst seconds: {BURST_SECONDS}, burst interval: {BURST_INT}, burst time: {BURST_TIME}')
 
     # Define loop counter
     loop_count = 1
@@ -167,7 +160,7 @@ if __name__=="__main__":
 
                 # Define next start time to enter into the sendSBD function:
                 current_start = datetime.utcnow().replace(minute=start_times[i], second = 0, microsecond=0)
-                next_start = current_start + timedelta(minutes=burst_int)
+                next_start = current_start + timedelta(minutes=BURST_INT)
                 
                 # Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
                 #TODO: uncomment
@@ -209,7 +202,7 @@ if __name__=="__main__":
 
                 # Process raw IMU data
                 logger.info(f'entering IMUtoXYZ.py: {IMUdataFilename}')
-                IMU = IMUtoXYZ(IMUdataFilename, IMU_fs) # ax, vx, px, ay, vy, py, az, vz, pz = IMUtoXYZ(IMUdataFilename,IMU_fs)
+                IMU = IMUtoXYZ(IMUdataFilename, IMU_FS) # ax, vx, px, ay, vy, py, az, vz, pz = IMUtoXYZ(IMUdataFilename,IMU_FS)
                 logger.info('IMUtoXYZ.py executed')
 
                 # Collate IMU and GPS onto a master time based on the IMU time
@@ -218,13 +211,13 @@ if __name__=="__main__":
                 logger.info('collateIMUandGPS.py executed')
 
                 # UVZAwaves estimate; leave out first 120 seconds
-                zeroPts = int(np.round(120*IMU_fs)) 
+                zeroPts = int(np.round(120*IMU_FS)) 
                 logger.info(f'Zeroing out first 120 seconds ({zeroPts} pts)')
-                Hs, Tp, Dp, E, f, a1, b1, a2, b2, check  = UVZAwaves(GPScol['u'][zeroPts:], GPScol['v'][zeroPts:], IMUcol['pz'][zeroPts:], IMUcol['az'][zeroPts:], IMU_fs)
+                Hs, Tp, Dp, E, f, a1, b1, a2, b2, check  = UVZAwaves(GPScol['u'][zeroPts:], GPScol['v'][zeroPts:], IMUcol['pz'][zeroPts:], IMUcol['az'][zeroPts:], IMU_FS)
                 logger.info('UVZAwaves.py executed, primary estimate (voltage==0)')
 
                 # GPSwaves estimate (secondary estimate)
-                Hs_2, Tp_2, Dp_2, E_2, f_2, a1_2, b1_2, a2_2, b2_2, check_2 = GPSwaves(GPS['u'], GPS['v'], GPS['z'], GPS_fs)
+                Hs_2, Tp_2, Dp_2, E_2, f_2, a1_2, b1_2, a2_2, b2_2, check_2 = GPSwaves(GPS['u'], GPS['v'], GPS['z'], GPS_FS)
                 logger.info('GPSwaves.py executed, secondary estimate (voltage==1)')
 
                 # Unpack GPS variables for remaining code; use non-interpolated values
@@ -236,20 +229,20 @@ if __name__=="__main__":
                 u, v, z, lat, lon = GPStoUVZ(GPSdataFilename)
 
                 # Compute Wave Statistics from GPSwaves algorithm
-                Hs, Tp, Dp, E, f, a1, b1, a2, b2, check = GPSwaves(u, v, z, GPS_fs)
+                Hs, Tp, Dp, E, f, a1, b1, a2, b2, check = GPSwaves(u, v, z, GPS_FS)
 
             elif imu_initialized and not gps_initialized:
                 #TODO: Process IMU data
-                logger.info(f'GPS did not initialize but IMU did; would put IMU processing here but it is not yet functional... entering bad values ({badValue})')
-                u,v,z,lat,lon,Hs,Tp,Dp,E,f,a1,b1,a2,b2,check = fillBadValues(badVal=badValue, spectralLen=numCoef)
+                logger.info(f'GPS did not initialize but IMU did; would put IMU processing here but it is not yet functional... entering bad values ({BAD_VALUE})')
+                u,v,z,lat,lon,Hs,Tp,Dp,E,f,a1,b1,a2,b2,check = fillBadValues(badVal=BAD_VALUE, spectralLen=NUM_COEF)
 
             else: # no IMU or GPS, enter bad values
-                logger.info(f'Neither GPS or IMU initialized - entering bad values ({badValue})')
-                u,v,z,lat,lon,Hs,Tp,Dp,E,f,a1,b1,a2,b2,check = fillBadValues(badVal=badValue, spectralLen=numCoef)
+                logger.info(f'Neither GPS or IMU initialized - entering bad values ({BAD_VALUE})')
+                u,v,z,lat,lon,Hs,Tp,Dp,E,f,a1,b1,a2,b2,check = fillBadValues(badVal=BAD_VALUE, spectralLen=NUM_COEF)
 
             # check lengths of spectral quanities:
-            if len(E)!=numCoef or len(f)!=numCoef:
-                logger.info(f'WARNING: the length of E or f does not match the specified number of coefficients, {numCoef}; (len(E)={len(E)}, len(f)={len(f)})')
+            if len(E)!=NUM_COEF or len(f)!=NUM_COEF:
+                logger.info(f'WARNING: the length of E or f does not match the specified number of coefficients, {NUM_COEF}; (len(E)={len(E)}, len(f)={len(f)})')
 
             # Compute mean velocities, elevation, lat and lon
             u_mean = np.nanmean(u)
@@ -257,8 +250,8 @@ if __name__=="__main__":
             z_mean = np.nanmean(z) 
         
             #Get last reported position
-            last_lat = _get_last(badValue, lat)
-            last_lon = _get_last(badValue, lon)
+            last_lat = _get_last(BAD_VALUE, lat)
+            last_lon = _get_last(BAD_VALUE, lon)
 
             # Temperature and Voltage recordings - will be added in later versions
             temp = 0.0
@@ -329,8 +322,8 @@ if __name__=="__main__":
                     
                     if sensor_type0 not in [50,51,52]:
                         logger.info(f'Failed to read sensor type properly; read sensor type as: {sensor_type0}')
-                        logger.info(f'Trying to send as configured sensor type instead ({sensor_type})')
-                        send_sensor_type = sensor_type
+                        logger.info(f'Trying to send as configured sensor type instead ({SENSOR_TYPE})')
+                        send_sensor_type = SENSOR_TYPE
                     else:
                         send_sensor_type = sensor_type0
 
