@@ -5,6 +5,7 @@ Authors: @EJRainville, @AlexdeKlerk, @VivianaCastillo
 Description: This function initializes and records GPS data from the onboard GPS sensor. Within the main microSWIFT.py script this is 
 run as an asynchronous task at the same time as the recordIMU function. 
 
+#TODO: should this just be a class...?
 '''
 
 # Package imports
