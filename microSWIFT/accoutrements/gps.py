@@ -51,8 +51,20 @@ GPIO.setwarnings(False)
 GPIO.setup(gpsGPIO,GPIO.OUT)
 GPIO.output(gpsGPIO,GPIO.HIGH) #set GPS enable pin high to turn on and start acquiring signal
 
+def init(): 
+    """
+    TODO: 
+    """
 
-def recordGPS(end_time):
+def checkout():
+    """
+    TODO:
+    """
+    
+def record(end_time):
+    """
+    TODO:
+    """
     # GPS has not been initialized yet
     gps_initialized = False
 

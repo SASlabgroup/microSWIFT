@@ -57,6 +57,44 @@ timeout = config.getInt('Iridium', 'timeout')
 #arbitrary message counter
 id = 0
 
+def init():
+
+    # Turn on the pin to power on the modem
+    try:
+        GPIO.setup(modemGPIO, GPIO.OUT)
+        GPIO.output(modemGPIO,GPIO.HIGH) #power on GPIO enable pin
+        logger.info('modem powered on')
+        t.sleep(3)
+        logger.info('done')
+    except Exception as e:
+        logger.info('error powering on modem')
+        logger.info(e)
+        
+    #open serial port
+    logger.info('opening serial port with modem at {0} on port {1}...'.format(modemBaud,modemPort))
+    try:
+        ser=serial.Serial(modemPort,modemBaud,timeout=timeout)
+        logger.info('serial port opened successfully')
+    except serial.SerialException as e:
+        logger.info('unable to open serial port: {}'.format(e))
+        return ser, False
+    except Exception as e:
+        logger.info('unable to open serial port')
+        logger.info(e)
+        return ser, False
+
+    logger.info('command = AT')
+    if get_response(ser,'AT'): #send AT command
+        logger.info('command = AT&F')
+        if get_response(ser,'AT&F'): #set default parameters with AT&F command 
+            logger.info('command = AT&K=0')  
+            if get_response(ser,'AT&K=0'): #important, disable flow control
+                logger.info('modem initialized')
+                return ser, True
+    else:
+        return ser, False
+
+
 # Telemetry test functions
 def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, lat, lon,  temp, salinity, volt):
     logger.info('---------------sendSBD.createTX.py------------------')
@@ -250,42 +288,6 @@ def sig_qual(ser, command='AT+CSQ'):
         logger.info('Unexpected response: {}'.format(r))  
         return -1
 
-def initModem():
-
-    # Turn on the pin to power on the modem
-    try:
-        GPIO.setup(modemGPIO, GPIO.OUT)
-        GPIO.output(modemGPIO,GPIO.HIGH) #power on GPIO enable pin
-        logger.info('modem powered on')
-        t.sleep(3)
-        logger.info('done')
-    except Exception as e:
-        logger.info('error powering on modem')
-        logger.info(e)
-        
-    #open serial port
-    logger.info('opening serial port with modem at {0} on port {1}...'.format(modemBaud,modemPort))
-    try:
-        ser=serial.Serial(modemPort,modemBaud,timeout=timeout)
-        logger.info('serial port opened successfully')
-    except serial.SerialException as e:
-        logger.info('unable to open serial port: {}'.format(e))
-        return ser, False
-    except Exception as e:
-        logger.info('unable to open serial port')
-        logger.info(e)
-        return ser, False
-
-    logger.info('command = AT')
-    if get_response(ser,'AT'): #send AT command
-        logger.info('command = AT&F')
-        if get_response(ser,'AT&F'): #set default parameters with AT&F command 
-            logger.info('command = AT&K=0')  
-            if get_response(ser,'AT&K=0'): #important, disable flow control
-                logger.info('modem initialized')
-                return ser, True
-    else:
-        return ser, False
 
 
 

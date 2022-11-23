@@ -53,8 +53,20 @@ GPIO.setup(imu_gpio,GPIO.OUT)
 #turn IMU on for script recognizes i2c address
 GPIO.output(imu_gpio,GPIO.HIGH)
 
+def init():
+    """
+    TODO: 
+    """
 
-def recordIMU(end_time):
+def checkout():
+    """
+    TODO: 
+    """
+
+def record(end_time):
+    """
+    TODO:
+    """
     # IMU is not Initialzied at first
     imu_initialized = False
 
