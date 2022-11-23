@@ -22,9 +22,9 @@ if not loaded:
 
 LOG_HEADER_LENGTH = 50 #TODO: put this in the config
 
-def init_logger() -> logging.Logger:
+def init() -> logging.Logger:
     """
-    Initialize the logger for printing to the microSWIFT's pi terminal.
+    Initialize the logger for printing to the microSWIFT's log file.
 
     Returns:
         Logger: initialized logger
@@ -46,7 +46,7 @@ def init_logger() -> logging.Logger:
 
     return logger
 
-def log_header(header_name: str, length: int = LOG_HEADER_LENGTH) -> str:
+def header(header_name: str, length: int = LOG_HEADER_LENGTH) -> str:
     """
     Utility to create uniform length log headers with a function name.
 
