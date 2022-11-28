@@ -34,7 +34,6 @@ TODO:
 """
 
 import concurrent.futures
-import datetime
 import os
 import sys
 import time
@@ -44,7 +43,8 @@ import numpy as np
 from accoutrements import imu
 from accoutrements import gps
 from accoutrements import sbd
-from processing import gps_waves, gps_to_uvz
+from datetime import datetime
+from processing import imu_to_xyz, gps_waves, gps_to_uvz, uvza_waves
 from utils import config
 from utils import log
 from utils import utils
@@ -53,7 +53,7 @@ from utils import utils
 ####TODO: Update this block when EJ finishes the config integration ####
 #Define Config file name and load file
 CONFIG_FILENAME = r'/home/pi/microSWIFT/utils/Config.dat'
-config = Config() # Create object and load file
+config = config.Config() # Create object and load file
 loaded = config.loadFile(CONFIG_FILENAME)
 if not loaded:
     print("Error loading config file")
@@ -134,28 +134,28 @@ while True:
 
             # Start time of loop iteration
             logger.info('----------- Iteration {} -----------'.format(loop_count))
-            
+
             end_time = end_times[i]
 
             # Define next start time to enter into the sendSBD function:
             current_start = datetime.utcnow().replace(minute=start_times[i], second = 0, microsecond=0)
             next_start = current_start + datetime.timedelta(minutes=BURST_INT)
-            
+
             # Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
             with concurrent.futures.ThreadPoolExecutor() as executor:
-                recordGPS_future = executor.submit(gps.record(), end_times[i])
-                recordIMU_future = executor.submit(imu.record(), end_times[i])
+                record_gps_future = executor.submit(gps.record(), end_times[i])
+                record_imu_future = executor.submit(imu.record(), end_times[i])
 
                 # get results from Futures
-                GPSdataFilename, gps_initialized = recordGPS_future.result()
-                IMUdataFilename, imu_initialized = recordIMU_future.result()
+                gps_file, gps_initialized = record_gps_future.result()
+                IMUdataFilename, imu_initialized = record_imu_future.result()
 
             #exit out of loop once burst is finished
             recording_complete = True
             
             break
 
-    if recording_complete == True: 
+    if recording_complete is True:
         ## --------------- Data Processing Section ---------------------------------
         # Time processing section
         logger.info('Starting Processing')
@@ -165,21 +165,17 @@ while True:
         # gps_initialized = True
         # imu_initialized = True
         # IMUdataFilename = '/home/pi/microSWIFT/data/microSWIFT057_IMU_17Aug2022_000146UTC.dat' #'microSWIFT043_IMU_05May2022_200006UTC.dat'#'microSWIFT021_IMU_12Jul2021_210000UTC.dat' #'microSWIFT014_IMU_27Oct2021_190006UTC.dat' 
-        # GPSdataFilename = '/home/pi/microSWIFT/data/microSWIFT057_GPS_17Aug2022_000151UTC.dat'
+        # gps_file = '/home/pi/microSWIFT/data/microSWIFT057_GPS_17Aug2022_000151UTC.dat'
         # #---TODO: delete
             
         if gps_initialized and imu_initialized: #gps_initialized == True and imu_initialized == True:
             logger.info('GPS and IMU initialized')
 
             # Compute u, v and z from raw GPS data
-            logger.info(f'entering GPStoUVZ.py: {GPSdataFilename}')
-            GPS = GPStoUVZ(GPSdataFilename) # u, v, z, lat, lon = GPStoUVZ(GPSdataFilename)
-            logger.info('GPStoUVZ executed')
+            GPS = gps.to_uvz(gps_file) # u, v, z, lat, lon = gps_to_uvz(gps_file)
 
             # Process raw IMU data
-            logger.info(f'entering IMUtoXYZ.py: {IMUdataFilename}')
-            IMU = IMUtoXYZ(IMUdataFilename, IMU_FS) # ax, vx, px, ay, vy, py, az, vz, pz = IMUtoXYZ(IMUdataFilename,IMU_FS)
-            logger.info('IMUtoXYZ.py executed')
+            IMU = imu_to_xyz(IMUdataFilename, IMU_FS) # ax, vx, px, ay, vy, py, az, vz, pz = imu_to_xyz(IMUdataFilename,IMU_FS)
 
             # Collate IMU and GPS onto a master time based on the IMU time
             logger.info('entering collateIMUandGPS.py')
@@ -202,7 +198,7 @@ while True:
         elif gps_initialized and not imu_initialized: 
             
             # Compute u, v and z from raw GPS data
-            u, v, z, lat, lon = GPStoUVZ(GPSdataFilename)
+            u, v, z, lat, lon = gps_to_uvz(gps_file)
 
             # Compute Wave Statistics from GPSwaves algorithm
             Hs, Tp, Dp, E, f, a1, b1, a2, b2, check = GPSwaves(u, v, z, GPS_FS)
