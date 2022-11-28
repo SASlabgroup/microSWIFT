@@ -114,9 +114,10 @@ telemetryQueue.close()
 
 # TODO: add this to checkout.py to make sure the stack is empty before it goes 
 # out. Could be a function in telemetry_stack that gets called by checkout.py
-# telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','r')
-# logger.info(f'Number of messages in queue: {len(telemetryQueue.readlines())}')
-# telemetryQueue.close
+telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','r')
+logger.info(f'Number of messages in queue: {len(telemetryQueue.readlines())}')
+telemetryQueue.close
+###
 
 while True:
     current_min = datetime.utcnow().minute + datetime.utcnow().second/60
