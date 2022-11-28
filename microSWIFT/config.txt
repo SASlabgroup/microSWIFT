@@ -6,7 +6,7 @@ Duty Cycle Length
 The length of time of the total duty cycle. The duty cycle is defined 
 as the total time for both the record and send windows for the 
 microSWIFT. The duty cycle is defined in units of MINUTES. It must be 
-an integer value. 
+an integer value. Default value is 60 minutes.
 
 duty_cycle_length = 60
 
@@ -16,6 +16,7 @@ Data Record Length
 The length of time that the instruments will be recording. This time 
 MUST be shorter than the defined length of the duty cycle. The record
 length is defined in units of MINUTES and it must be an integer value.
+Default value is 50 minutes.
 
 data_record_length = 50
 
@@ -25,7 +26,7 @@ GPS Sampling Frequency
 The sampling frequency of the GPS. This is the rate at which the GPS 
 will sample during the record window. The gps sampling frequency is
 defined in units of HZ (samples/second). This value can range from 
-1 to 4 Hz. This value must also be an integer.
+1 to 4 Hz. This value must also be an integer. Default value is 4 Hz.
 
 gps_sampling_frequency = 4
 
@@ -35,6 +36,6 @@ IMU Sampling Frequency
 The sampling frequnecy of the IMU. This is the rate at which the IMU 
 will sample during the record window. The imu sampling frequency is 
 defined in units of HZ (samples/second). This value can range from
-1 to 30 Hz. This value must also be an integer.
+1 to 30 Hz. This value must also be an integer. Default value is 12 Hz.
 
 imu_sampling_frequency = 12

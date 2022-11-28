@@ -1,25 +1,28 @@
-########################################################################
-# This class handles configuration files in the so-called
-# "INI" style format.
-#
-# File can contain [Section]'s and initializing "templates",
-# which are defined by a leading "$"
-########################################################################
+"""
+Definition of the configuration class for the microSWIFT. The
+configuration will read in a few variables from the 
+"""
 
-import os.path
-import configparser
-from io import StringIO
-
-'''
-# Class def start
-'''
 class Config:
+    """
+    Class object for configuration of the microSWIFT. 
+    """
+    def __init__(self, config_file):
+        """
+        Initialize the configuration of the microSWIFT with all
+        settings. The settings include values that really should not
+        be changed and are hardcoded into the class and parameters that
+        can be regularly changed from the config.txt file. 
 
-    ########################################################################
-    # Constructor
-    ########################################################################
-    def __init__(self):
-        # Does nothing
+        Parameters
+        ----------
+        config_file : text file that contains simple parameters for
+                      configuration of the microSWIFT that can be
+                      easily changed.
+        """
+
+        # System Parameters
+        # This parameters are universal for all microSWIFTs 
         return
         
     ########################################################################
