@@ -9,7 +9,7 @@ import logging
 import math
 import sys
 
-from config3 import Config
+from config import Config
 
 
 # Define Config file name and load file

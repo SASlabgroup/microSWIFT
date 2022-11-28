@@ -1,37 +1,37 @@
-## recordGPS.py - centralized version
-'''
-Authors: @EJRainville, @AlexdeKlerk, @VivianaCastillo
-
+"""
 Description: This function initializes and records GPS data from the onboard GPS sensor. Within the main microSWIFT.py script this is 
 run as an asynchronous task at the same time as the recordIMU function. 
 
+Authors: @EJRainville, @AlexdeKlerk, @VivianaCastillo
+
 #TODO: should this just be a class...?
-'''
+"""
 
-# Package imports
-import serial, sys, os
-from struct import *
-from logging import *
-from datetime import datetime
-import time as t
-import pynmea2
-from time import sleep
+import logging
+import os
+import sys
 
-# Raspberry pi GPIO
 import RPi.GPIO as GPIO
+import pynmea2
+import serial
 
+from datetime import datetime
+from time import sleep
+from ..utils.config import Config
+
+
+# Set up module level logger
+logger = logging.getLogger('microSWIFT.'+__name__)  
+logger.info('---------------recordGPS.py------------------')
+
+############## TODO: fix once EJ integrates config class ###############
 #Define Config file name and load file
-from utils.config3 import Config
 configFilename = r'/home/pi/microSWIFT/utils/Config.dat'
 config = Config() # Create object and load file
 ok = config.loadFile( configFilename )
 if( not ok ):
     print("Error loading config file")
     sys.exit(1)
-
-# Set up module level logger
-logger = getLogger('microSWIFT.'+__name__)  
-logger.info('---------------recordGPS.py------------------')
 
 #GPS parameters 
 dataDir = config.getString('System', 'dataDir')
@@ -45,6 +45,8 @@ burst_seconds = config.getInt('System', 'burst_seconds')
 gps_samples = gps_freq*burst_seconds
 gpsGPIO = config.getInt('GPS', 'gpsGPIO')
 gps_timeout = config.getInt('GPS','timeout')
+########################################################################
+
 
 # setup GPIO and initialize
 GPIO.setmode(GPIO.BCM)
@@ -153,7 +155,7 @@ def record(end_time):
                                         logger.info(e)
                                         logger.info('error parsing nmea sentence')
                                         continue
-                t.sleep(1)
+                sleep(1)
             if gps_initialized == False:
                 logger.info('GPS failed to initialize, timeout')
         except Exception as e:
