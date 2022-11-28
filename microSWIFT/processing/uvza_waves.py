@@ -1,10 +1,10 @@
-def UVZAwaves(u, v, z, a, fs): 
+def uvza_waves(u, v, z, a, fs): 
     """
     Author: @jacobrdavis
 
-    UVZAwaves.py computes a scalar spectrum from an IMU heave estimate 'z' (made outside of this code)
+    uvza_waves.py computes a scalar spectrum from an IMU heave estimate 'z' (made outside of this code)
     and estimates directional moments using GPS velocities 'u' and 'v' and raw IMU vertical acceleration 'a'.
-    NOTE: UVZAwaves is similar to the SWIFT codes version of GPSandIMUwaves, but differs in that the 
+    NOTE: uvza_waves is similar to the SWIFT codes version of GPSandIMUwaves, but differs in that the 
     scalar spectrum is derived from the IMU-based heave estimate, rather than 'u' and 'v'.
 
     Parameters
@@ -44,7 +44,7 @@ def UVZAwaves(u, v, z, a, fs):
 
     # Set up module level logger
     logger = getLogger('microSWIFT.'+__name__) 
-    logger.info('---------------UVZAwaves.py------------------')
+    logger.info('---------------uvza_waves.py------------------')
 
     # Define demean function
     def demean(x):
@@ -383,104 +383,3 @@ def UVZAwaves(u, v, z, a, fs):
     # Return values
     return Hs, Tp, Dp, E, f, a1, b1, a2, b2, check
 
-
-
-
-
-#------------directional alternatives------------#
-
-#-- From GPSandIMUwaves:
-
-    # %% convert to displacement spectra (from velocity and acceleration)
-    # % assumes perfectly circular deepwater orbits
-    # % could be extended to finite depth by calling wavenumber.m 
-    # Exx = ( UU )  ./ ( (2*pi*f).^2 );  %[m^2/Hz]
-    # Eyy = ( VV )  ./ ( (2*pi*f).^2 );  %[m^2/Hz]
-    # Ezz = ( AZAZ )  ./ ( (2*pi*f).^4 ) .* (9.8^2);  %[m^2/Hz]
-
-    # Qxz = imag(UAZ) ./ ( (2*pi*f).^3 ) .* (9.8); %[m^2/Hz], quadspectrum of vertical acc and horizontal velocities
-    # Cxz = real(UAZ) ./ ( (2*pi*f).^3 ) .* (9.8); %[m^2/Hz], cospectrum of vertical acc and horizontal velocities
-
-    # Qyz = imag(VAZ) ./ ( (2*pi*f).^3 ) .* (9.8); %[m^2/Hz], quadspectrum of vertical acc and horizontal velocities
-    # Cyz = real(VAZ) ./ ( (2*pi*f).^3 ) .* (9.8); %[m^2/Hz], cospectrum of vertical acc and horizontal velocities
-
-    # Cxy = real(UV) ./ ( (2*pi*f).^2 );  %[m^2/Hz]
-    #--
-    #TODO: keep below?
-    # Exx = UU / ( (2 * np.pi * f ) ** 2 )
-    # Eyy = VV / ( (2 * np.pi * f ) ** 2 ) 
-    # Ezz = AA / ( (2 * np.pi * f ) ** 4 )
-    # Qxz = np.imag(UA) / ( (2 * np.pi * f) ** 3 ) * (9.8)  # [m^2/Hz], quadspectrum of vertical acc and horizontal velocities
-    # Cxz = np.real(UA) / ( (2 * np.pi * f) ** 3 ) * (9.8)  # [m^2/Hz], cospectrum of vertical acc and horizontal velocities
-    # Qyz = np.imag(VA) / ( (2 * np.pi * f) ** 3 ) * (9.8); # [m^2/Hz], quadspectrum of vertical acc and horizontal velocities
-    # Cyz = np.real(VA) / ( (2 * np.pi * f) ** 3 ) * (9.8); # [m^2/Hz], cospectrum of vertical acc and horizontal velocities
-    # Cxy = np.real(UV) / ( (2 * np.pi * f) ** 2 ) 
-
-    # %% wave spectral moments 
-    # % wave directions from Kuik et al, JPO, 1988 and Herbers et al, JTech, 2012
-    # % NOTE THAT THIS USES COSPECTRA OF AZ AND U OR V, WHICH DIFFS FROM QUADSPECTRA OF Z AND X OR Y
-    # a1 = Cxz / np.sqrt( (Exx+Eyy) * Ezz ) #[], would use Qxz for actual displacements
-    # b1 = Cyz / np.sqrt( (Exx+Eyy) * Ezz )  #[], would use Qyz for actual displacements
-    # a2 = (Exx - Eyy) / (Exx + Eyy)
-    # b2 = 2 * Cxy / (Exx + Eyy)
-
-#################
-    # # Convert to displacement spectra (from velocity and heave)
-    # # Assume perfectly circular deepwater orbits - could be extended to finite depth by 
-    # # calling wavenumber.m - need to change this to wavenumber.py which I have written
-    # Exx = UU / ( (2 * np.pi * f ) ** 2 ) # Energy density, units are m^2/Hz
-    # Eyy = VV / ( (2 * np.pi * f ) ** 2 ) # Energy density, units are m^2/Hz
-    # Ezz = ZZ.copy() # Energy density, units are m^2/Hz
-
-    # # Use orbit shape as check on qualityt, expect <1 since SWIFT wobbles
-    # check = Ezz / (Eyy + Exx)
-
-    # # Quadspectrum and Cospectrum computations
-    # freq_rad = (2 * np.pi * f)
-    # # XZ's
-    # Qxz = np.imag(UZ) / freq_rad # Energy density, units are m^2/Hz, quadspectrum of vertical displacement and horizontal velocities
-    # Cxz = np.real(UZ) / freq_rad # Energy density, units are m^2/Hz, cospectrum of vertical displacement and horizontal velocities
-
-    # # YZ's
-    # Qyz = np.imag(VZ) / freq_rad # Energy density, units are m^2/Hz, quadspectrum of vertical displacement and horizontal velocities
-    # Cyz = np.real(VZ) / freq_rad # Energy density, units are m^2/Hz, cospectrum of vertical displacement and horizontal velocities
-
-    # # XY's
-    # Cxy = np.real(UV) / ( (2 * np.pi * f ) ** 2 )
-
-    # # -------- Wave Specral Moments ------------------- 
-    # # wave directions from Kuik et al, JPO, 1988 and Herbers et al, JTech, 2012
-    # # Note that this uses COSPECTRA OF Z AND U OR V, WHICH DIFFS FROM QUADSPECTRA OF Z AND X OR Y
-    # # note also that normalization is skewed by the bias of Exx + Eyy over Ezz
-    # # (non-unity check factor)
-    # a1 = Cxz / np.sqrt( (Exx + Eyy) * Ezz ) # would use Qxz for actual displacements
-    # b1 = Cyz / np.sqrt( (Exx + Eyy) * Ezz )
-    # a2 = (Exx - Eyy) / ( Exx + Eyy )
-    # b2 = 2 * Cxy / (Exx + Eyy)
-
-#################
-    # %% convert to displacement spectra (from velocity and acceleration)
-    # % assumes perfectly circular deepwater orbits
-    # % could be extended to finite depth by calling wavenumber.m 
-    # Exx = ( UU )  ./ ( (2*pi*f).^2 );  %[m^2/Hz]
-    # Eyy = ( VV )  ./ ( (2*pi*f).^2 );  %[m^2/Hz]
-    # Ezz = ( AZAZ )  ./ ( (2*pi*f).^4 ) .* (9.8^2);  %[m^2/Hz]
-
-    # Qxz = imag(UAZ) ./ ( (2*pi*f).^3 ) .* (9.8); %[m^2/Hz], quadspectrum of vertical acc and horizontal velocities
-    # Cxz = real(UAZ) ./ ( (2*pi*f).^3 ) .* (9.8); %[m^2/Hz], cospectrum of vertical acc and horizontal velocities
-
-    # Qyz = imag(VAZ) ./ ( (2*pi*f).^3 ) .* (9.8); %[m^2/Hz], quadspectrum of vertical acc and horizontal velocities
-    # Cyz = real(VAZ) ./ ( (2*pi*f).^3 ) .* (9.8); %[m^2/Hz], cospectrum of vertical acc and horizontal velocities
-
-    # Cxy = real(UV) ./ ( (2*pi*f).^2 );  %[m^2/Hz]
-
-
-    # %% wave spectral moments 
-    # % wave directions from Kuik et al, JPO, 1988 and Herbers et al, JTech, 2012
-    # % NOTE THAT THIS USES COSPECTRA OF AZ AND U OR V, WHICH DIFFS FROM QUADSPECTRA OF Z AND X OR Y
-    # a1 = Cxz ./ sqrt( (Exx+Eyy) .* Ezz );  %[], would use Qxz for actual displacements
-    # b1 = Cyz ./ sqrt( (Exx+Eyy) .* Ezz );  %[], would use Qyz for actual displacements
-    # a2 = (Exx - Eyy) ./ (Exx + Eyy);
-    # b2 = 2 .* Cxy ./ ( Exx + Eyy );
-
-#################

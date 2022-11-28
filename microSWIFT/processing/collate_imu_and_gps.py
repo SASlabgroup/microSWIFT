@@ -6,7 +6,7 @@ A collection of functions that collate the IMU and GPS records in preparation fo
 Contents:
     - crop_dict(d,cropBool) 
     - datetimearray2relativetime(datetimeArr,t0)
-    - collateIMUandGPS(IMU,GPS) [main]
+    - collate_imu_and_gps(IMU,GPS) [main]
 
 TODO:
     - remove reassignment of the same variable?
@@ -49,7 +49,7 @@ def datetimearray2relativetime(datetimeArr,t0):
     relTime = [timestep.total_seconds() for timestep in (np.asarray(datetimeArr)-t0)]
     return relTime   
 
-def collateIMUandGPS(IMU,GPS):
+def collate_imu_and_gps(IMU,GPS):
     """
     Main function to collate IMU and GPS records. The IMU fields are cropped to lie within the available 
     GPS record and then the GPS is interpolated up to the IMU rate using the IMU as the master time.
@@ -64,7 +64,7 @@ def collateIMUandGPS(IMU,GPS):
     """
     #-- Set up module level logger
     logger = getLogger('microSWIFT.'+__name__) 
-    logger.info('---------------collateIMUandGPS.py------------------')
+    logger.info('---------------collate_imu_and_gps.py------------------')
 
     #-- crop IMU values to lie within the GPS times (since GPS is being interpolated onto IMU time)
     logger.info('Cropping IMU')
