@@ -1,36 +1,37 @@
-## recordGPS.py - centralized version
-'''
-Authors: @EJRainville, @AlexdeKlerk, @VivianaCastillo
-
+"""
 Description: This function initializes and records GPS data from the onboard GPS sensor. Within the main microSWIFT.py script this is 
 run as an asynchronous task at the same time as the recordIMU function. 
 
-'''
+Authors: @EJRainville, @AlexdeKlerk, @VivianaCastillo
 
-# Package imports
-import serial, sys, os
-from struct import *
-from logging import *
-from datetime import datetime
-import time as t
-import pynmea2
-from time import sleep
+#TODO: should this just be a class...?
+"""
 
-# Raspberry pi GPIO
+import logging
+import os
+import sys
+
 import RPi.GPIO as GPIO
+import pynmea2
+import serial
 
+from datetime import datetime
+from time import sleep
+from ..utils.config import Config
+
+
+# Set up module level logger
+logger = logging.getLogger('microSWIFT.'+__name__)  
+logger.info('---------------recordGPS.py------------------')
+
+############## TODO: fix once EJ integrates config class ###############
 #Define Config file name and load file
-from utils.config3 import Config
 configFilename = r'/home/pi/microSWIFT/utils/Config.dat'
 config = Config() # Create object and load file
 ok = config.loadFile( configFilename )
 if( not ok ):
     print("Error loading config file")
     sys.exit(1)
-
-# Set up module level logger
-logger = getLogger('microSWIFT.'+__name__)  
-logger.info('---------------recordGPS.py------------------')
 
 #GPS parameters 
 dataDir = config.getString('System', 'dataDir')
@@ -44,6 +45,8 @@ burst_seconds = config.getInt('System', 'burst_seconds')
 gps_samples = gps_freq*burst_seconds
 gpsGPIO = config.getInt('GPS', 'gpsGPIO')
 gps_timeout = config.getInt('GPS','timeout')
+########################################################################
+
 
 # setup GPIO and initialize
 GPIO.setmode(GPIO.BCM)
@@ -152,7 +155,7 @@ def record(end_time):
                                         logger.info(e)
                                         logger.info('error parsing nmea sentence')
                                         continue
-                t.sleep(1)
+                sleep(1)
             if gps_initialized == False:
                 logger.info('GPS failed to initialize, timeout')
         except Exception as e:
@@ -220,3 +223,95 @@ def record(end_time):
         # Return the GPS filename to be read into the onboard processing
         return GPSdataFilename, gps_initialized
 
+def to_uvz(gpsfile):
+    """
+    This function reads in data from the GPS files and stores the fields
+    in memory for post-processing.
+    TODO: docstr
+    """
+    # Import Statements
+    import numpy as np
+    import pynmea2
+    from datetime import datetime, timedelta
+    from logging import getLogger
+
+    # Set up module level logger
+    logger = getLogger('microSWIFT.'+__name__) 
+    logger.info('---------------GPStoUVZ.py------------------')
+
+    # Define empty lists of variables to append
+    u = []
+    v = []
+    z = []
+    lat = []
+    lon = []
+    time = []
+    ipos=0
+    ivel=0
+    GPS = {'u':None,'v':None,'z':None,'lat':None,'lon':None,'time':None}
+    
+    # Define Constants 
+    badValue=999
+    
+    # current year, month, date for timestamp creation; can also be obtained from utcnow()
+    ymd = gpsfile[-23:-14]
+    # ymd = datetime.utcnow().strftime("%Y-%m-%d")
+
+
+    with open(gpsfile, 'r') as file:
+    
+        for line in file:
+            if "GPGGA" in line:
+                gpgga = pynmea2.parse(line,check=True)   #grab gpgga sentence and parse
+                #check to see if we have lost GPS fix, and if so, continue to loop start. a badValue will remain at this index
+                if gpgga.gps_qual < 1:
+                    z.append(badValue)
+                    lat.append(badValue)
+                    lon.append(badValue)
+                    ipos+=1
+                    continue
+                z.append(gpgga.altitude)
+                lat.append(gpgga.latitude)
+                lon.append(gpgga.longitude)
+                # construct a datetime from the year, month, date, and timestamp
+                dt = f'{ymd} {gpgga.timestamp}'  #.rstrip('0')
+                if '.' not in dt: # if the datetime does not contain a float, append a trailing zero
+                    dt += '.0'
+                time.append(datetime.strptime(dt,'%d%b%Y %H:%M:%S.%f'))
+                ipos+=1
+            elif "GPVTG" in line:
+                gpvtg = pynmea2.parse(line,check=True)   #grab gpvtg sentence
+                u.append( 0.2777 * gpvtg.spd_over_grnd_kmph*np.sin(np.deg2rad(gpvtg.true_track)))#units are m/s
+                v.append( 0.2777 * gpvtg.spd_over_grnd_kmph*np.cos(np.deg2rad(gpvtg.true_track))) #units are m/s
+                ivel+=1
+            else: #if not GPGGA or GPVTG, continue to start of loop
+                continue
+           
+    if ivel < ipos: # if an extra GPGGA line exists, remove the last entry
+        del z[-(ipos-ivel)]
+        del lat[-(ipos-ivel)]
+        del lon[-(ipos-ivel)]
+        del time[-(ipos-ivel)]
+        logger.info(f'{ipos-ivel} GPGGA line(s) removed at end')
+
+    logger.info('GPS file read')
+
+    # TODO: bug here, fix!
+    # sortInd    = np.asarray(time).argsort()
+    # timeSorted = np.asarray(time)[sortInd]
+    # uSorted    = np.asarray(u)[sortInd].transpose()
+    # vSorted    = np.asarray(v)[sortInd].transpose()
+    # zSorted    = np.asarray(z)[sortInd].transpose()
+    # latSorted  = np.asarray(lat)[sortInd].transpose()
+    # lonSorted  = np.asarray(lon)[sortInd].transpose()
+
+
+    # assign outputs to GPS dict
+    GPS.update({'u':u,'v':v,'z':z,'lat':lat,'lon':lon,'time':time})
+    # GPS.update({'u':uSorted,'v':vSorted,'z':zSorted,'lat':latSorted,'lon':lonSorted,'time':timeSorted})
+
+    logger.info('GPGGA lines: {}'.format(len(lat)))
+    logger.info('GPVTG lines: {}'.format(len(u)))
+    logger.info('------------------------------------------')
+
+    return GPS #u,v,z,lat,lon, time

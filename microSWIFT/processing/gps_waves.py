@@ -1,8 +1,8 @@
-def GPSwaves(u, v, z, fs): 
+def gps_waves(u, v, z, fs): 
     """
     Author: @edwinrainville
 
-    GPSwaves processing
+    gps_waves processing
 
     Parameters
     -----
@@ -34,7 +34,7 @@ def GPSwaves(u, v, z, fs):
 
     # Set up module level logger
     logger = getLogger('microSWIFT.'+__name__) 
-    logger.info('---------------GPSwaves.py------------------')
+    logger.info('---------------gps_waves.py------------------')
 
     # Define demean function
     def demean(x):
