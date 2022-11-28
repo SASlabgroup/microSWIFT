@@ -145,8 +145,8 @@ while True:
 
             # Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
             with concurrent.futures.ThreadPoolExecutor() as executor:
-                record_gps_future = executor.submit(gps.record(), end_times[i])
-                record_imu_future = executor.submit(imu.record(), end_times[i])
+                record_gps_future = executor.submit(gps.record, end_times[i])
+                record_imu_future = executor.submit(imu.record, end_times[i])
 
                 # get results from Futures
                 gps_file, gps_initialized = record_gps_future.result()
@@ -299,7 +299,6 @@ while True:
         # Append the newest file name to the list
         payload_filenames_LIFO = list(np.flip(payload_filenames_stripped))
         logger.info('Number of Messages to send: {}'.format(len(payload_filenames_LIFO)))
-        ################################################################
 
 
         # Send as many messages from the queue as possible during the send window
@@ -311,7 +310,8 @@ while True:
                 logger.info(f'Opening TX file from payload list: {TX_file}')
                 
                 with open(TX_file, mode='rb') as file: # b is important -> binary
-                    payload_data = file.read()
+                    payload_data = file.read() # TODO: payload_data would be returned by .get_last(), see comment above
+        ################################################################
 
                 # Read in the sensor type from the binary payload file.
                 # This check is neccessary for a stack with multiple
