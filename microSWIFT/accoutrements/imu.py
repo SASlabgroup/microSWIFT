@@ -31,7 +31,7 @@ ok = config.loadFile( configFilename )
 if( not ok ):
     sys.exit(0)
 
-#system parameters 
+#system parameters
 floatID = os.uname()[1]
 dataDir = config.getString('System', 'dataDir')
 burst_interval=config.getInt('System', 'burst_interval')
@@ -53,12 +53,26 @@ GPIO.output(imu_gpio,GPIO.HIGH)
 
 def init():
     """
-    TODO: 
+    Initialize the IMU module and return True if successful.
+    If not successful, print the error to the logger and return False.
     """
+
+    try:
+        # initialize fxos and fxas devices (required after turning off device)
+        logger.info('power on IMU')
+        GPIO.output(imu_gpio,GPIO.HIGH)
+        i2c = busio.I2C(board.SCL, board.SDA)
+        fxos = adafruit_fxos8700.FXOS8700(i2c, accel_range=0x00)
+        fxas = adafruit_fxas21002c.FXAS21002C(i2c, gyro_range=500)
+    except Exception as e:
+        logger.info(e)
+        logger.info('error initializing imu')
+        return False
+    return True
 
 def checkout():
     """
-    TODO: 
+    TODO:
     """
 
 def record(end_time):
@@ -70,32 +84,25 @@ def record(end_time):
 
     # Loop if the imu did not initialize and it is still within a recording block
     while datetime.utcnow().minute + datetime.utcnow().second/60 < end_time and imu_initialized==False:
-        
+
         ## --------------- Initialize IMU -----------------
         logger.info('initializing IMU')
 
         # initialize fxos and fxas devices (required after turning off device)
-        logger.info('power on IMU')
-        GPIO.output(imu_gpio,GPIO.HIGH)
-        i2c = busio.I2C(board.SCL, board.SDA)
-        fxos = adafruit_fxos8700.FXOS8700(i2c, accel_range=0x00)
-        fxas = adafruit_fxas21002c.FXAS21002C(i2c, gyro_range=500)
-
+        imu_initialized = init()
+        
         # Sleep to start recording at same time as GPS
         sleep(5.1)
-        
-        # return initialized values
-        imu_initialized = True
 
         logger.info('IMU initialized')
 
         ## --------------- Record IMU ----------------------
-        #create new file for to record IMU to 
+        #create new file for to record IMU to
         logger.info('---------------recordIMU.py------------------')
         IMUdataFilename = dataDir + floatID + '_IMU_'+'{:%d%b%Y_%H%M%SUTC.dat}'.format(datetime.utcnow())
         logger.info('file name: {}'.format(IMUdataFilename))
         logger.info('starting IMU burst at {}'.format(datetime.now()))
-            
+
         # Open the new IMU data file for logging
         with open(IMUdataFilename, 'w',newline='\n') as imu_out:
             logger.info('open file for writing: {}'.format(IMUdataFilename))
@@ -116,19 +123,19 @@ def record(end_time):
                 # Write data and timestamp to file
                 imu_out.write('%s,%f,%f,%f,%f,%f,%f,%f,%f,%f\n' %(timestamp,accel_x,accel_y,accel_z,mag_x,mag_y,mag_z,gyro_x,gyro_y,gyro_z))
                 imu_out.flush()
-                
+
                 # Index up number of samples
                 isample = isample + 1
 
-                # hard coded sleep to control recording rate. NOT ideal but works for now    
+                # hard coded sleep to control recording rate. NOT ideal but works for now
                 sleep(0.065)
-            
+
             # End of IMU sampling
             logger.info('end burst')
-            logger.info('IMU samples {}'.format(isample)) 
+            logger.info('IMU samples {}'.format(isample))
             logger.info('IMU ending burst at: {}'.format(datetime.now()))
 
-            # Turn IMU Off   
+            # Turn IMU Off
             GPIO.output(imu_gpio,GPIO.LOW)
             logger.info('power down IMU')
 
@@ -140,7 +147,7 @@ def sec(n_secs):
     """
     #TODO: fix docstr
     Helper function to convert timedelta into second
-    
+
     Input:
         - n_secs, float indicating number of seconds
 
@@ -174,7 +181,7 @@ def RCfilter(b, fc, fs):
     Input:
         - b, array of values to be filtered
         - fc, cutoff frequency, fc = 1/(2πRC)
-        - fs, sampling frequency 
+        - fs, sampling frequency
 
     Output:
         - a, array of filtered input values
@@ -193,7 +200,7 @@ def add_ms_to_time(timestamp_sorted):
     Helper function to add milliseconds to rounded IMU timestamps. This method interprets
     a sampling frequency based on the number of samples present in a given clock second, and
     then adds an array of millisecond increments to the datetimes in that second. This assumes
-    the samples in a second are centered in that second, and thus does not bias the samples to 
+    the samples in a second are centered in that second, and thus does not bias the samples to
     either the start of end of the second.
 
     Input:
@@ -202,10 +209,10 @@ def add_ms_to_time(timestamp_sorted):
     Output:
         - timestampSorted_ms, sorted datetime array with added milliseconds
     """
-    timestampSorted_ms = timestamp_sorted.copy() 
+    timestampSorted_ms = timestamp_sorted.copy()
     i = 1
     for n in np.arange(1, len(timestamp_sorted)):
-        if timestamp_sorted[n] == timestamp_sorted[n-1] and n != len(timestamp_sorted)-1: 
+        if timestamp_sorted[n] == timestamp_sorted[n-1] and n != len(timestamp_sorted)-1:
             i += 1 # count number of occurences in second
         else:
             if n == len(timestamp_sorted)-1: # if in last second, manually increment i & n
@@ -213,28 +220,28 @@ def add_ms_to_time(timestamp_sorted):
             dt0 = sec(float(i)**(-1)) # interpret current timestep size based on number of samples reported in this second  #
             secSteps = np.arange(0,i)*dt0 # create array of time increments from zero
             timestampSorted_ms[n-i:n] = timestamp_sorted[n-i:n] + secSteps
-            i = 1 # restart i at one so that it can start again on the next second 
+            i = 1 # restart i at one so that it can start again on the next second
     return timestampSorted_ms
-    
+
 
 def to_xyz(imufile, fs):
     """
     #TODO: fix docstr
-    Main function to collate IMU and GPS records. The IMU fields are cropped to lie within the available 
+    Main function to collate IMU and GPS records. The IMU fields are cropped to lie within the available
     GPS record and then the GPS is interpolated up to the IMU rate using the IMU as the master time.
-    
+
     Inputs:
         - imufile, path to file containing IMU data
         - fs, sampling frequency
-        
+
     Outputs:
         - IMU, dictionary containing acc ['ai'], vel ['vi'], pos ['pi'], and time ['time'] as entries
-    
+
     Example:
         IMU = to_xyz(imufile,fs)
     """
     #-- Set up module level logger
-    logger = logging.getLogger('microSWIFT.'+__name__) 
+    logger = logging.getLogger('microSWIFT.'+__name__)
     logger.info('---------------to_xyz.py------------------')
 
     #TODO: handle badvalues
@@ -245,7 +252,7 @@ def to_xyz(imufile, fs):
     mag = []
     gyo = []
     IMU = {'ax':None,'ay':None,'az':None,'vx':None,'vy':None,'vz':None,'px':None,'py':None,'pz':None,'time':None}
-    
+
     #--open imu file and read in acceleration, magnetometer, and gyroscope data
     logger.info('Reading and sorting IMU')
     with open(imufile, 'r') as file: #encoding="utf8", errors='ignore'
@@ -256,7 +263,7 @@ def to_xyz(imufile, fs):
                 acc.append(list(map(float,currentLine[1:4])))  # acc = [ax,ay,az]
                 mag.append(list(map(float,currentLine[4:7])))  # mag = [mx,my,mz]
                 gyo.append(list(map(float,currentLine[7:10]))) # gyo = [gx,gy,gz]
-          
+
 
     #--sorting:
     sortInd = np.asarray(timestamp).argsort()
@@ -264,7 +271,7 @@ def to_xyz(imufile, fs):
     accSorted = np.asarray(acc)[sortInd,:].transpose()
     magSorted = np.asarray(mag)[sortInd,:].transpose()
     gyoSorted = np.asarray(gyo)[sortInd,:].transpose()
-    
+
     #--trimming #TODO: not tested live...
     # print(len(timestamp_sorted))
     # skipFirstSecs = 60 #TODO: make input on config, log etc.
@@ -275,14 +282,14 @@ def to_xyz(imufile, fs):
     # gyoSorted = gyoSorted[skipBool3].reshape((3, -1))
     # timestamp_sorted = timestamp_sorted[skipBool]
     # print(len(timestamp_sorted))
-    
+
     # determine which way is up
     logger.info('Finding up')
     accMeans = list()
     for ai in accSorted:
         accMeans.append(np.mean(ai))
     upIdx = np.argmin(np.abs(np.asarray(accMeans) - 9.81))
-    
+
     if upIdx == 0: #[x y z] -> [-z y x]
         transformIdx = [2, 1, 0]
         signs = [-1, 1, 1]
@@ -336,7 +343,7 @@ def to_xyz(imufile, fs):
     np.isnan(magInterp).sum()
     np.isnan(gyoInterp).sum()
 
-    #-- reference frame transformation #TODO: reference frame transformation 
+    #-- reference frame transformation #TODO: reference frame transformation
     # ax_earth, ay_earth, az_earth = ekfCorrection(*accInterp,*gyoInterp,*magInterp)
     # *accEarth = ekfCorrection(*accInterp,*gyoInterp,*magInterp)
     # accEarth = [ax_earth,ay_earth,az_earth]
@@ -345,14 +352,14 @@ def to_xyz(imufile, fs):
     logger.info('Integrating IMU')
     fc = 0.04
     filt = lambda *b : RCfilter(*b,fc,fs)
-    # X,Y,Z=[integrate_acc(a,masterTimeSec,filt) for a in accEarth][:] # X = [ax,ay,az], Y = ... 
-    X,Y,Z=[integrate_acc(a,masterTimeSec,filt) for a in accInterp][:] # X = [ax,ay,az], Y = ... 
-    
+    # X,Y,Z=[integrate_acc(a,masterTimeSec,filt) for a in accEarth][:] # X = [ax,ay,az], Y = ...
+    X,Y,Z=[integrate_acc(a,masterTimeSec,filt) for a in accInterp][:] # X = [ax,ay,az], Y = ...
+
     # assign outputs to IMU dict
     IMU['ax'],IMU['vx'],IMU['px'] = X # IMU.update({'ax': X[0], 'ay': Y[0], 'az': Z[0]})
     IMU['ay'],IMU['vy'],IMU['py'] = Y
     IMU['az'],IMU['vz'],IMU['pz'] = Z
     IMU['time'] = masterTime
-    
+
     logger.info('--------------------------------------------')
     return IMU # X[0], Y[0], Z[0], X[1], Y[1], Z[1], X[2], Y[2], Z[2], masterTime # ax, ay, az, vx, vy, vz, px, py, pz
