@@ -21,16 +21,7 @@ Outline:
 9. Send SBD over telemetry
 
 TODO:
-    - update style
-        * MAKE SURE IT IS CONSISTNENT WITH GROUP
-        * what doc string style are we using?
-        * single or double strings?
-        * tabbing of function signatures?
-    - docstrings
     - generateHeader function for each script? (i.e. --fun.py---)
-    - alphabetize imports
-    - log ideas: get_GPS_fs(), create a single function call log() which
-      performs logger.info()
 """
 
 import concurrent.futures
@@ -43,6 +34,7 @@ import numpy as np
 from .accoutrements import imu
 from .accoutrements import gps
 from .accoutrements import sbd
+from .accoutrements import telemetry_stack
 from datetime import datetime
 from .processing.gps_waves import gps_waves
 from .processing.uvza_waves import uvza_waves
@@ -114,14 +106,10 @@ wait_count = 0
 # send window.
 # TODO: change this to telemetry_stack.init()
 logger.info('Initializing Telemetry Queue')
-telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','a')
-telemetryQueue.close()
+#TODO: init queue
+telemetry_stack.init()
+logger.info(f'Number of messages in queue: {telemetry_stack.get_length()}')
 
-# TODO: add this to checkout.py to make sure the stack is empty before it goes 
-# out. Could be a function in telemetry_stack that gets called by checkout.py
-telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','r')
-logger.info(f'Number of messages in queue: {len(telemetryQueue.readlines())}')
-telemetryQueue.close
 ###
 
 while True:
@@ -252,30 +240,35 @@ while True:
 
         # Pack the data from the queue into the payload package
         logger.info('Creating TX file and packing payload data from primary estimate')
-        TX_fname, payload_data = sbd.createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temperature, salinity, voltage)
+        tx_filename, payload_data = sbd.createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temperature, salinity, voltage)
     
         ################################################################
         #### TODO: add this chunk to a telemetry stack (formerly queue) module
         #### called telemetry_stack.py and reduce the following to telemetry_stack.add(),
         
-        # Read in the file names from the telemetry queue
-        telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','r')
-        payload_filenames = telemetryQueue.readlines()
-        telemetryQueue.close()
-        payload_filenames_stripped = []
-        for line in payload_filenames:
-            payload_filenames_stripped.append(line.strip())
+        # # Read in the file names from the telemetry queue
+        # telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','r')
+        # payload_filenames = telemetryQueue.readlines()
+        # telemetryQueue.close()
+        # payload_filenames_stripped = []
+        # for line in payload_filenames:
+        #     payload_filenames_stripped.append(line.strip())
 
-        # Append the primary estimate
-        logger.info(f'Adding TX file {TX_fname} to the telemetry queue')
-        payload_filenames_stripped.append(TX_fname)
+        # # Append the primary estimate
+        # logger.info(f'Adding TX file {tx_filename} to the telemetry queue')
+        # payload_filenames_stripped.append(tx_filename)
         
-        # Write all the filenames to the file including the newest file name
-        telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','w')
-        for line in payload_filenames_stripped:
-            telemetryQueue.write(line)
-            telemetryQueue.write('\n')
-        telemetryQueue.close()
+        # # Write all the filenames to the file including the newest file name
+        # telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','w')
+        # for line in payload_filenames_stripped:
+        #     telemetryQueue.write(line)
+        #     telemetryQueue.write('\n')
+        # telemetryQueue.close()
+
+        # Append the newest file name to the list 
+        payload_filenames = telemetry_stack.push(tx_filename)
+        # payload_filenames = telemetry_stack.get_filenames()
+        # payload_filenames.append(tx_filename)
 
         ################################################################
         #### TODO: add these to a telemetry stack module and reduce
@@ -283,16 +276,15 @@ while True:
         #### after each successful send. Or we can have a method that gets
         #### the whole stack list and just incorporate it as is.
 
-        # Append the newest file name to the list
-        payload_filenames_LIFO = list(np.flip(payload_filenames_stripped))
-        logger.info('Number of Messages to send: {}'.format(len(payload_filenames_LIFO)))
+        # payload_filenames_LIFO = list(np.flip(payload_filenames))
 
+        logger.info('Number of Messages to send: {}'.format(len(payload_filenames)))
 
         # Send as many messages from the queue as possible during the send window
         messages_sent = 0
-        logger.info(payload_filenames_LIFO)
-        for TX_file in payload_filenames_LIFO:
-            # Check if we are still in the send window 
+        for TX_file in list(np.flip(payload_filenames)):
+
+            # Check if we are still in the send window
             if datetime.utcnow() < next_start:
                 logger.info(f'Opening TX file from payload list: {TX_file}')
                 
@@ -325,6 +317,7 @@ while True:
 
                 # Index up the messages sent value if successful send is true
                 if successful_send is True:
+                    del payload_filenames[-1]
                     messages_sent += 1
             else:
                 # Exit the for loop if outside of the end time
@@ -332,8 +325,7 @@ while True:
 
         # Log the send statistics
         logger.info('Messages Sent: {}'.format(int(messages_sent)))
-        #TODO: make this a method of telemetry_stack:
-        messages_remaining = int(len(payload_filenames_stripped)) - messages_sent
+        messages_remaining = int(len(payload_filenames)) - messages_sent
         logger.info('Messages Remaining: {}'.format(messages_remaining))
 
         ################################################################
@@ -343,13 +335,17 @@ while True:
         #### is more clear.
 
         # Remove the sent messages from the queue by writing the remaining lines to the file
-        if messages_sent > 0:
-            del payload_filenames_stripped[-messages_sent:]
-        telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','w')
-        for line in payload_filenames_stripped:
-            telemetryQueue.write(line)
-            telemetryQueue.write('\n')
-        telemetryQueue.close()
+        #TODO: this was moved to be inside the loop for clarity
+        # if messages_sent > 0:
+        #     del payload_filenames_stripped[-messages_sent:]
+
+
+        # telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','w')
+        # for line in payload_filenames_stripped:
+        #     telemetryQueue.write(line)
+        #     telemetryQueue.write('\n')
+        # telemetryQueue.close()
+        telemetry_stack.write(payload_filenames)
         ################################################################
 
         # Increment up the loop counter

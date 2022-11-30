@@ -23,6 +23,7 @@ import RPi.GPIO as GPIO
 import time as t
 import serial
 
+####TODO: Update this block when EJ finishes the config integration ####
 #Define Config file name and load file
 configFilename = r'/home/pi/microSWIFT/utils/Config.dat'
 config = Config() # Create object and load file
@@ -53,6 +54,10 @@ modemPort = config.getString('Iridium', 'port')
 modemBaud = config.getInt('Iridium', 'baud')
 modemGPIO = config.getInt('Iridium', 'modemGPIO')
 timeout = config.getInt('Iridium', 'timeout')
+
+########################################################################
+
+
 
 #arbitrary message counter
 id = 0
