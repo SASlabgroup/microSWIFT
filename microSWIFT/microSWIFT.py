@@ -87,6 +87,9 @@ NUM_BURSTS = int(60 / BURST_INT)
 #Generate lists of burst start and end times based on parameters from Config file
 start_times = [BURST_TIME + i*BURST_INT for i in range(NUM_BURSTS)]
 end_times = [start_times[i] + BURST_SECONDS/60 for i in range(NUM_BURSTS)]
+
+
+WAVE_PROCESSING_TYPE = 'gps_waves'
 ########################################################################
 
 # Initialize the logger to keep track of running tasks. These will print
@@ -176,50 +179,39 @@ while True:
         # Collate IMU and GPS onto a master time based on the IMU time
         # uvza_waves estimate; leave out first 120 seconds
         # gps_waves estimate (secondary estimate)
-        if gps_initialized and imu_initialized:
-            logger.info('GPS and IMU initialized')
 
-            gps_vars = gps.to_uvz(gps_file) # u, v, z, lat, lon = gps_to_uvz(gps_file)
-            imu_vars =imu.to_xyz(imu_file, IMU_FS) # ax, vx, px, ay, vy, py, az, vz, pz = imu_to_xyz(imu_file,IMU_FS)
+        if WAVE_PROCESSING_TYPE == 'gps_waves' and gps_initialized:
+            gps_vars = gps.to_uvz(gps_file)
+            Hs, Tp, Dp, E, f, a1, b1, a2, b2, check \
+                                                    = gps_waves(gps_vars['u'],
+                                                                gps_vars['v'],
+                                                                gps_vars['z'],
+                                                                GPS_FS)
+
+            logger.info('gps_waves.py executed')
+
+        elif WAVE_PROCESSING_TYPE == 'uvza_waves' and gps_initialized \
+                                                        and imu_initialized:
+            gps_vars = gps.to_uvz(gps_file)
+            imu_vars =imu.to_xyz(imu_file, IMU_FS)
             imu_collated, gps_collated = collate_imu_and_gps(imu_vars, gps_vars)
 
             ZERO_POINTS = int(np.round(120*IMU_FS))
-            logger.info(f'Zeroing out first 120 seconds ({ZERO_POINTS} pts)')
             Hs, Tp, Dp, E, f, a1, b1, a2, b2, check  \
                                 = uvza_waves(gps_collated['u'][ZERO_POINTS:],
                                              gps_collated['v'][ZERO_POINTS:],
                                              imu_collated['pz'][ZERO_POINTS:],
                                              imu_collated['az'][ZERO_POINTS:],
                                              IMU_FS)
-            logger.info('uvza_waves.py executed, primary estimate (voltage==0)')
+            logger.info('uvza_waves.py executed.')
 
-            Hs_2, Tp_2, Dp_2, E_2, f_2, a1_2, b1_2, a2_2, b2_2, check_2 \
-                                                    = gps_waves(gps_vars['u'],
-                                                                gps_vars['v'],
-                                                                gps_vars['z'],
-                                                                GPS_FS)
-            logger.info('gps_waves.py executed, secondary estimate (voltage==1)')
-
-            u=gps_vars['u']; v=gps_vars['v']; z=gps_vars['z']; lat=gps_vars['lat']; lon=gps_vars['lon']
-        
-        # TODO: fix this comment:
-        # Compute u, v and z from raw GPS data
-        # Compute Wave Statistics from gps_waves algorithm
-        elif gps_initialized and not imu_initialized: 
-            u, v, z, lat, lon = gps.to_uvz(gps_file)            
-            Hs, Tp, Dp, E, f, a1, b1, a2, b2, check = gps_waves(u, v, z, GPS_FS)
-
-        elif imu_initialized and not gps_initialized:
-            logger.info(('GPS did not initialize but IMU did; would put IMU'
-                         ' processing here but it is not yet functional... '
-                         f' entering bad values ({BAD_VALUE})'))
-            u, v, z, lat, lon, Hs, Tp, Dp, E, f, a1, b1, a2, b2, check \
-                                = utils.fill_bad_values(badVal=BAD_VALUE,
-                                                        spectralLen=NUM_COEF)
-
-        else: # no IMU or GPS, enter bad values
-            logger.info(('Neither GPS or IMU initialized - entering bad values'
-                         f' ({BAD_VALUE})'))
+        else:
+            logger.info(('A wave solution cannot be created; either the'
+                f' specified processing type (={WAVE_PROCESSING_TYPE}) is'
+                f' invalid, or either or both of the sensors failed to'
+                f' initialize (GPS initialized={gps_initialized}, IMU'
+                f' initialized={imu_initialized}). Entering bad values for'
+                f' the wave products (={BAD_VALUE}).'))
             u, v, z, lat, lon, Hs, Tp, Dp, E, f, a1, b1, a2, b2, check \
                                 = utils.fill_bad_values(badVal=BAD_VALUE,
                                                         spectralLen=NUM_COEF)
@@ -229,6 +221,14 @@ while True:
             logger.info(('WARNING: the length of E or f does not match the'
                          f' specified number of coefficients, {NUM_COEF};'
                          f' (len(E)={len(E)}, len(f)={len(f)})'))
+
+        # Extract the remaining variables. This solution is not great 
+        # but can be sorted out later.
+        u=gps_vars['u']
+        v=gps_vars['v']
+        z=gps_vars['z']
+        lat=gps_vars['lat']
+        lon=gps_vars['lon']
 
         # Compute mean velocities, elevation, lat and lon
         u_mean = np.nanmean(u)
@@ -240,11 +240,10 @@ while True:
         last_lon = utils.get_last(BAD_VALUE, lon)
 
         # Temperature and Voltage recordings - will be added in later versions
-        temp = 0.0
+        voltage = 0
+        temperature = 0.0
         salinity = 0.0
-        volt = 0   #NOTE: primary estimate
-        volt_2 = 1 #NOTE: secondary estimate (GPS if IMU and GPS are both initialized)
-
+  
         # End Timing of recording
         logger.info('Processing section took {}'.format(datetime.now() - begin_processing_time))
             
@@ -253,14 +252,8 @@ while True:
 
         # Pack the data from the queue into the payload package
         logger.info('Creating TX file and packing payload data from primary estimate')
-        TX_fname, payload_data = sbd.createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temp, salinity, volt)
+        TX_fname, payload_data = sbd.createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temperature, salinity, voltage)
     
-        try: # gps_waves estimate as secondary estimate
-            logger.info('Creating TX file and packing payload data from secondary estimate')
-            TX_fname_2, payload_data_2 = sbd.createTX(Hs_2, Tp_2, Dp_2, E_2, f_2, a1_2, b1_2, a2_2, b2_2, check_2, u_mean, v_mean, z_mean, last_lat, last_lon, temp, salinity, volt_2)
-        except:
-            logger.info('No secondary estimate exists')
-
         ################################################################
         #### TODO: add this chunk to a telemetry stack (formerly queue) module
         #### called telemetry_stack.py and reduce the following to telemetry_stack.add(),
@@ -273,13 +266,6 @@ while True:
         for line in payload_filenames:
             payload_filenames_stripped.append(line.strip())
 
-        # Append secondary estimate first (LIFO)
-        try:
-            logger.info(f'Adding TX file {TX_fname_2} to the telemetry queue')
-            payload_filenames_stripped.append(TX_fname_2)
-        except:
-            logger.info('No secondary estimate exists to add to queue')
-
         # Append the primary estimate
         logger.info(f'Adding TX file {TX_fname} to the telemetry queue')
         payload_filenames_stripped.append(TX_fname)
@@ -290,6 +276,7 @@ while True:
             telemetryQueue.write(line)
             telemetryQueue.write('\n')
         telemetryQueue.close()
+
         ################################################################
         #### TODO: add these to a telemetry stack module and reduce
         #### to telemetry_stack.get_last() or simlar. This can be called
