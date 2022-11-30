@@ -5,16 +5,14 @@ file, dont use push/pop.
 """
 ####TODO: Update this block when EJ finishes the config integration ####
 # this will probably go in a developer settings/config
-TELEMETRY_STACK_FILE = '/home/pi/microSWIFT/SBD/telemetryQueue.txt'
+TELEMETRY_STACK_FILE = '/home/pi/microSWIFT/SBD/telemetry_stack.txt'
 
 ########################################################################
 
 
 def init():
-    telemetryQueue = open(TELEMETRY_STACK_FILE, 'a')
-    telemetryQueue.close()
-
-
+    telemetry_stack = open(TELEMETRY_STACK_FILE, 'a')
+    telemetry_stack.close()
 
 def push(tx_filename):
     """TODO: 
@@ -49,9 +47,11 @@ def remove_last(): # or pop?
 
 def clear():
     """TODO:"""
-    open(TELEMETRY_STACK_FILE, 'w')
-#     # TODO: add this to checkout.py to make sure the stack is empty before it goes 
-#     # out. Could be a function in telemetry_stack that gets called by checkout.py
+    telemetry_stack = open(TELEMETRY_STACK_FILE, 'w')
+    telemetry_stack.close()
+
+    # TODO: add this to checkout.py to make sure the stack is empty before it goes
+    # out. Could be a function in telemetry_stack that gets called by checkout.py
 
 def strip_filenames(payload_filenames):
     """TODO:"""
@@ -64,7 +64,6 @@ def strip_filenames(payload_filenames):
 
 def get_filenames():
     """ TODO: Read in the file names from the telemetry queue """
-
     with open(TELEMETRY_STACK_FILE, 'r') as telemetry_stack:
         payload_filenames = telemetry_stack.readlines()
 

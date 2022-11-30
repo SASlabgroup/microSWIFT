@@ -87,7 +87,7 @@ WAVE_PROCESSING_TYPE = 'gps_waves'
 # Initialize the logger to keep track of running tasks. These will print
 # directly to the microSWIFT's log file. Then log the configuration.
 logger = log.init()
-log.header('', length = 50)
+logger.info(log.header(''))
 logger.info('Booted up')
 logger.info('microSWIFT configuration:')
 logger.info(f'float ID: {FLOAT_ID}, payload type: {PAYLOAD_TYPE}, sensor type: {SENSOR_TYPE}, ')
@@ -105,8 +105,6 @@ wait_count = 0
 # message name will be stored and it will attempt to send at the next
 # send window.
 # TODO: change this to telemetry_stack.init()
-logger.info('Initializing Telemetry Queue')
-#TODO: init queue
 telemetry_stack.init()
 logger.info(f'Number of messages in queue: {telemetry_stack.get_length()}')
 
@@ -121,12 +119,11 @@ while True:
 
     # If the current time is within any record window (between start 
     # and end time) record the imu and gps data until the end of the
-    # window. 
+    # window.
     for i in np.arange(len(start_times)):
-        if current_min >= start_times[i] and current_min < end_times[i]:
+        if start_times[i] <= current_min < end_times[i]:
 
-            # Start time of loop iteration #TODO: use utility here
-            logger.info('----------- Iteration {} -----------'.format(loop_count))
+            logger.info(log.header(f'Iteration {loop_count}'))
 
             end_time = end_times[i]
 
@@ -148,13 +145,8 @@ while True:
             
             break
 
+    #TODO: comment block
     if recording_complete is True:
-        # TODO: this entire section requires clean up and organization,
-        # including allowing the user to specify which type of processing 
-        # they want to use. We should consider storing the imu and gps 
-        # variables as attributes or properties in a gps class? Or just
-        # omit the dictionary structure (sorry, I did that). It is a lot 
-        # of variables to keep track of and pass around...
 
         # Time processing section
         logger.info('Starting Processing')
@@ -231,58 +223,31 @@ while True:
         voltage = 0
         temperature = 0.0
         salinity = 0.0
-  
+
         # End Timing of recording
         logger.info('Processing section took {}'.format(datetime.now() - begin_processing_time))
-            
-        ## -------------- Telemetry Section ----------------------------------
-        # Create TX file from processData.py output from combined wave products
+
+        #TODO: comment telemetry section
 
         # Pack the data from the queue into the payload package
-        logger.info('Creating TX file and packing payload data from primary estimate')
-        tx_filename, payload_data = sbd.createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, last_lat, last_lon, temperature, salinity, voltage)
+        logger.info('Creating TX file and packing payload data')
+        tx_filename, payload_data \
+                    = sbd.createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check,
+                                   u_mean, v_mean, z_mean, last_lat, last_lon,
+                                   temperature, salinity, voltage)
     
-        ################################################################
-        #### TODO: add this chunk to a telemetry stack (formerly queue) module
-        #### called telemetry_stack.py and reduce the following to telemetry_stack.add(),
-        
-        # # Read in the file names from the telemetry queue
-        # telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','r')
-        # payload_filenames = telemetryQueue.readlines()
-        # telemetryQueue.close()
-        # payload_filenames_stripped = []
-        # for line in payload_filenames:
-        #     payload_filenames_stripped.append(line.strip())
-
-        # # Append the primary estimate
-        # logger.info(f'Adding TX file {tx_filename} to the telemetry queue')
-        # payload_filenames_stripped.append(tx_filename)
-        
-        # # Write all the filenames to the file including the newest file name
-        # telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','w')
-        # for line in payload_filenames_stripped:
-        #     telemetryQueue.write(line)
-        #     telemetryQueue.write('\n')
-        # telemetryQueue.close()
-
-        # Append the newest file name to the list 
+        # Read in the file names from the telemetry queue
+        # Append the primary estimate
+        # Write all the filenames to the file including the newest file name
         payload_filenames = telemetry_stack.push(tx_filename)
-        # payload_filenames = telemetry_stack.get_filenames()
-        # payload_filenames.append(tx_filename)
 
-        ################################################################
-        #### TODO: add these to a telemetry stack module and reduce
-        #### to telemetry_stack.get_last() or simlar. This can be called
-        #### after each successful send. Or we can have a method that gets
-        #### the whole stack list and just incorporate it as is.
-
-        # payload_filenames_LIFO = list(np.flip(payload_filenames))
+        payload_filenames_LIFO = list(np.flip(payload_filenames))
 
         logger.info('Number of Messages to send: {}'.format(len(payload_filenames)))
 
         # Send as many messages from the queue as possible during the send window
         messages_sent = 0
-        for TX_file in list(np.flip(payload_filenames)):
+        for TX_file in payload_filenames_LIFO:
 
             # Check if we are still in the send window
             if datetime.utcnow() < next_start:
@@ -290,7 +255,6 @@ while True:
                 
                 with open(TX_file, mode='rb') as file: # b is important -> binary
                     payload_data = file.read() # TODO: payload_data would be returned by .get_last(), see comment above
-        ################################################################
 
                 # Read in the sensor type from the binary payload file.
                 # This check is neccessary for a stack with multiple
@@ -324,30 +288,13 @@ while True:
                 break
 
         # Log the send statistics
-        logger.info('Messages Sent: {}'.format(int(messages_sent)))
-        messages_remaining = int(len(payload_filenames)) - messages_sent
-        logger.info('Messages Remaining: {}'.format(messages_remaining))
+        messages_remaining = len(payload_filenames) - messages_sent
+        logger.info((f'Messages Sent: {int(messages_sent)}; '
+                     f'Messages Remaining: {int(messages_remaining)}'))
 
-        ################################################################
-        #### TODO: add these to a telemetry stack module and reduce
-        #### to telemetry_stack.remove() or similar? It might be better 
-        #### to call this method in the loop above such that the order
-        #### is more clear.
-
-        # Remove the sent messages from the queue by writing the remaining lines to the file
-        #TODO: this was moved to be inside the loop for clarity
-        # if messages_sent > 0:
-        #     del payload_filenames_stripped[-messages_sent:]
-
-
-        # telemetryQueue = open('/home/pi/microSWIFT/SBD/telemetryQueue.txt','w')
-        # for line in payload_filenames_stripped:
-        #     telemetryQueue.write(line)
-        #     telemetryQueue.write('\n')
-        # telemetryQueue.close()
         telemetry_stack.write(payload_filenames)
-        ################################################################
 
+        #TODO: Comment next section
         # Increment up the loop counter
         loop_count += 1
         wait_count = 0
