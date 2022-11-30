@@ -137,7 +137,7 @@ while True:
     for i in np.arange(len(start_times)):
         if current_min >= start_times[i] and current_min < end_times[i]:
 
-            # Start time of loop iteration
+            # Start time of loop iteration #TODO: use utility here
             logger.info('----------- Iteration {} -----------'.format(loop_count))
 
             end_time = end_times[i]
