@@ -1,33 +1,29 @@
 """
 The main operational script that runs on the microSWIFT V1 wave buoys.
 
-This script sequences data collection, post-processing, and telemetry of
-the microSWIFTs. Its core task is to schedule these events, ensuring
+This script sequences the microSWIFT data collection, post-processing,
+and telemetering. Its core task is to schedule these events, ensuring
 that the buoy is in the appropriate record or send window based on the
-user-defined settings.
+user-defined settings. The process flow is summarized as follows:
 
-author(s): @edwinrainville, @alexdeklerk, @vivianacastillo, @jacobrdavis
+    1. Record GPS and record IMU concurrently; write to .dat files
+    2. Read the raw data into memory and process it into a wave solution
+    3. Create a payload and pack it into an .sbd message; telemeter the
+       message to the SWIFT server.
 
-Outline:
-1. Load modules
-2. Start main loop
-3. Submit concurrent jobs to record GPS and record IMU separetely
-4. End recording
-5. Read-in GPS data from file
-6. Process GPS data using the current gps_waves algorithm (GPS velocity
-   based algorithm)
-7. Compute mean values of lat, lon and other characteristics
-8. createTX file and pack payload data
-9. Send SBD over telemetry
+Author(s):
+EJ Rainville (UW-APL), Alex de Klerk (UW-APL), Jim Thomson (UW-APL),
+Viviana Castillo (UW-APL), Jacob Davis (UW-APL)
 
-TODO:
-    - generateHeader function for each script? (i.e. --fun.py---)
+microSWIFT is licensed under the GNU General Public License v3.0.
+
 """
 
 import concurrent.futures
 import os
 import sys
 import time
+from datetime import datetime
 
 import numpy as np
 
@@ -35,7 +31,6 @@ from .accoutrements import imu
 from .accoutrements import gps
 from .accoutrements import sbd
 from .accoutrements import telemetry_stack
-from datetime import datetime
 from .processing.gps_waves import gps_waves
 from .processing.uvza_waves import uvza_waves
 from .processing.collate_imu_and_gps import collate_imu_and_gps
@@ -80,46 +75,47 @@ NUM_BURSTS = int(60 / BURST_INT)
 start_times = [BURST_TIME + i*BURST_INT for i in range(NUM_BURSTS)]
 end_times = [start_times[i] + BURST_SECONDS/60 for i in range(NUM_BURSTS)]
 
-
+#TODO: add these to the config
 WAVE_PROCESSING_TYPE = 'gps_waves'
+WAIT_LOG_MESSAGE_INTERVAL = 10
 ########################################################################
 
 # Initialize the logger to keep track of running tasks. These will print
 # directly to the microSWIFT's log file. Then log the configuration.
 logger = log.init()
-logger.info(log.header(''))
-logger.info('Booted up')
-logger.info('microSWIFT configuration:')
-logger.info(f'float ID: {FLOAT_ID}, payload type: {PAYLOAD_TYPE}, sensor type: {SENSOR_TYPE}, ')
-logger.info(f'burst seconds: {BURST_SECONDS}, burst interval: {BURST_INT}, burst time: {BURST_TIME}')
 
-# TODO: 
-# Define loop and wait counters. `loop_count` keeps track of the number
-# of duty cycles and `wait_count` waiting to enter a record window.
+##############TODO: have the config file spit this out? ################
+logger.info(log.header(''))
+logger.info(('Booted up. microSWIFT configuration: \n'
+             f'float ID: {FLOAT_ID}, payload type: {PAYLOAD_TYPE},'
+             f' sensor type: {SENSOR_TYPE}, burst seconds: {BURST_SECONDS},'
+             f' burst interval:  {BURST_INT}, burst time: {BURST_TIME}'))
+########################################################################
+
+
+# Define loop and wait counters: `loop_count` keeps track of the number
+# of duty cycles and `wait_count` iterates the wait log message.
 loop_count = 1
 wait_count = 0
 
 # Initialize the telemetry stack if it does not exist yet. This is a
-# text file that keeps track of the names of messages that have not been
-# sent after a processing window. If messages are not sent, the
-# message name will be stored and it will attempt to send at the next
-# send window.
-# TODO: change this to telemetry_stack.init()
+# text file that keeps track of the SBD message filenames that remain to
+# be sent to the SWIFT server. If messages are not sent during a send
+# window, the message filename will be pushed onto the stack and the
+# script will attempt to send them during the next window. This ensures
+# recent messages will be sent first.
 telemetry_stack.init()
 logger.info(f'Number of messages in queue: {telemetry_stack.get_length()}')
 
-###
 
 while True:
     current_min = datetime.utcnow().minute + datetime.utcnow().second/60
     duty_cycle_start_time = datetime.now()
-
-    # Both IMU and GPS start as unititialized
     recording_complete = False
 
-    # If the current time is within any record window (between start 
+    # If the current time is within any record window (between start
     # and end time) record the imu and gps data until the end of the
-    # window.
+    # window. These tasks are submitted concurrently.
     for i in np.arange(len(start_times)):
         if start_times[i] <= current_min < end_times[i]:
 
@@ -128,10 +124,13 @@ while True:
             end_time = end_times[i]
 
             # Define next start time to enter into the sendSBD function:
-            current_start = datetime.utcnow().replace(minute=start_times[i], second = 0, microsecond=0)
+            current_start = datetime.utcnow().replace(minute=start_times[i],
+                                                      second = 0,
+                                                      microsecond=0)
             next_start = current_start + datetime.timedelta(minutes=BURST_INT)
 
-            # Run recordGPS.py and recordIMU.py concurrently with asynchronous futures
+            # Run record_gps.py and record_imu.py concurrently with
+            # asynchronous futures.
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 record_gps_future = executor.submit(gps.record, end_times[i])
                 record_imu_future = executor.submit(imu.record, end_times[i])
@@ -142,24 +141,19 @@ while True:
 
             #exit out of loop once burst is finished
             recording_complete = True
-            
             break
 
-    #TODO: comment block
+    # Process the data into a wave estimate based on the specified
+    # processing type. Check that the appropriate modules are
+    # initialized, otherwise log a warning and fill the all of the
+    # results with bad values of the expected length.
     if recording_complete is True:
-
-        # Time processing section
         logger.info('Starting Processing')
         begin_processing_time = datetime.now()
-    
-        
-        # TODO: fix this comment:
-        #  Compute u, v and z from raw GPS data
-        # Process raw IMU data
-        # Collate IMU and GPS onto a master time based on the IMU time
-        # uvza_waves estimate; leave out first 120 seconds
-        # gps_waves estimate (secondary estimate)
 
+        # GPS waves processing: convert the raw GPS data to East-West
+        # velocity (u), North-South velocity (v), and elevation (z),
+        # then produce a wave estimate.
         if WAVE_PROCESSING_TYPE == 'gps_waves' and gps_initialized:
             gps_vars = gps.to_uvz(gps_file)
             Hs, Tp, Dp, E, f, a1, b1, a2, b2, check \
@@ -167,9 +161,21 @@ while True:
                                                                 gps_vars['v'],
                                                                 gps_vars['z'],
                                                                 GPS_FS)
-
             logger.info('gps_waves.py executed')
 
+            # TODO: This solution is not great but can be sorted out later:
+            u = gps_vars['u']
+            v = gps_vars['v']
+            z = gps_vars['z']
+            lat = gps_vars['lat']
+            lon = gps_vars['lon']
+
+        # UVZA waves processing: convert the raw GPS data to East-West
+        # velocity (u), North-South velocity (v), and elevation (z);
+        # integrate the raw IMU to xyz displacements in the body or
+        # earth frame; then collate these variables onto the same time
+        # array, zero-out the first two-minutes (to remove filter
+        # ringing), and produce a wave estimate.
         elif WAVE_PROCESSING_TYPE == 'uvza_waves' and gps_initialized \
                                                         and imu_initialized:
             gps_vars = gps.to_uvz(gps_file)
@@ -184,6 +190,13 @@ while True:
                                              imu_collated['az'][ZERO_POINTS:],
                                              IMU_FS)
             logger.info('uvza_waves.py executed.')
+
+            # TODO: This solution is not great but can be sorted out later:
+            u = gps_vars['u']
+            v = gps_vars['v']
+            z = gps_vars['z']
+            lat = gps_vars['lat']
+            lon = gps_vars['lon']
 
         else:
             logger.info(('A wave solution cannot be created; either the'
@@ -202,31 +215,22 @@ while True:
                          f' specified number of coefficients, {NUM_COEF};'
                          f' (len(E)={len(E)}, len(f)={len(f)})'))
 
-        # Extract the remaining variables. This solution is not great 
-        # but can be sorted out later.
-        u=gps_vars['u']
-        v=gps_vars['v']
-        z=gps_vars['z']
-        lat=gps_vars['lat']
-        lon=gps_vars['lon']
-
-        # Compute mean velocities, elevation, lat and lon
+        # Compute the mean of the GPS records. The last reported
+        # position is sent to the server.
         u_mean = np.nanmean(u)
         v_mean = np.nanmean(v)
-        z_mean = np.nanmean(z) 
-    
-        #Get last reported position
+        z_mean = np.nanmean(z)
         last_lat = utils.get_last(BAD_VALUE, lat)
         last_lon = utils.get_last(BAD_VALUE, lon)
 
-        # Temperature and Voltage recordings - will be added in later versions
+        # Populate the voltage, temperature, salinity fields with place-
+        # holders. These modules will be incorporated in the future.
         voltage = 0
         temperature = 0.0
         salinity = 0.0
 
-        # End Timing of recording
-        logger.info('Processing section took {}'.format(datetime.now() - begin_processing_time))
-
+        logger.info(('Processing section took {}'.format(datetime.now()
+                     - begin_processing_time)))
 
 
         # Pack the payload data into a short burst data (SBD) message
@@ -239,7 +243,7 @@ while True:
                     = sbd.createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check,
                                    u_mean, v_mean, z_mean, last_lat, last_lon,
                                    temperature, salinity, voltage)
-    
+
         # Push the newest SBD filenames onto the stack and return the
         # updated list of payload filenames. The list must be flipped
         # to be consistent with the LIFO ordering. Iterate through the
@@ -249,14 +253,14 @@ while True:
         payload_filenames = telemetry_stack.push(tx_filename)
         payload_filenames_LIFO = list(np.flip(payload_filenames))
 
-        logger.info('Number of Messages to send: {}'.format(len(payload_filenames)))
+        logger.info(f'Number of Messages to send: {len(payload_filenames)}')
 
         messages_sent = 0
-        for TX_file in payload_filenames_LIFO:
+        for tx_file in payload_filenames_LIFO:
             if datetime.utcnow() < next_start:
-                logger.info(f'Opening TX file from payload list: {TX_file}')
+                logger.info(f'Opening TX file from payload list: {tx_file}')
 
-                with open(TX_file, mode='rb') as file:
+                with open(tx_file, mode='rb') as file:
                     payload_data = file.read()
 
                 successful_send = sbd.send(payload_data, next_start)
@@ -269,25 +273,26 @@ while True:
                 break
 
         telemetry_stack.write(payload_filenames)
-        
-        # Log the send statistics
+
+
+        # End of the loop; log the send statistics and increment the
+        # counters for the next iteration.
         messages_remaining = len(payload_filenames) - messages_sent
         logger.info((f'Messages Sent: {int(messages_sent)}; '
                      f'Messages Remaining: {int(messages_remaining)}'))
+        logger.info(('microSWIFT.py took {}'.format(datetime.now() 
+                     - begin_processing_time)))
 
-        #TODO: Comment next section
-        # Increment up the loop counter
         loop_count += 1
         wait_count = 0
 
-        # End Timing of entire Script
-        logger.info('microSWIFT.py took {}'.format(datetime.now() - begin_processing_time))
-    
+
+    # The current time is not within the defined record window. Skip
+    # telemetry and sleep until a window is entered. Log this 
+    # information at the specified interval (in seconds).
     else:
         time.sleep(1)
         wait_count += 1
-        # Print waiting to log every 5 iterations
-        if wait_count % 10 == 0:
+        if wait_count % WAIT_LOG_MESSAGE_INTERVAL == 0:
             logger.info('Waiting to enter record window')
         continue
-            
