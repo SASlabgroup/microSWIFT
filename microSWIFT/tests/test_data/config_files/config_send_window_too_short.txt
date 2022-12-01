@@ -18,7 +18,7 @@ MUST be shorter than the defined length of the duty cycle. The record
 length is defined in units of MINUTES and it must be an integer value.
 Default value is 50 minutes.
 
-record_window_length = 50
+record_window_length = 59
 
 -----------------------------
 GPS Sampling Frequency

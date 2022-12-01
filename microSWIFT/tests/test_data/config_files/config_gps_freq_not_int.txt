@@ -28,7 +28,7 @@ will sample during the record window. The gps sampling frequency is
 defined in units of HZ (samples/second). This value can range from 
 1 to 4 Hz. This value must also be an integer. Default value is 4 Hz.
 
-gps_sampling_frequency = 4
+gps_sampling_frequency = 4.5
 
 -----------------------------
 IMU Sampling Frequency
