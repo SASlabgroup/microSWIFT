@@ -234,7 +234,6 @@ while True:
         # entered into a stack (last in, first out) in the order in
         # which they were created such that the most recent messages
         # are sent first.
-
         logger.info('Creating TX file and packing payload data')
         tx_filename, payload_data \
                     = sbd.createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check,
@@ -244,8 +243,9 @@ while True:
         # Push the newest SBD filenames onto the stack and return the
         # updated list of payload filenames. The list must be flipped
         # to be consistent with the LIFO ordering. Iterate through the
-        # stack and send until the current time window is up.
-
+        # stack and send until the current time window is up. Update the
+        # stack each loop (if a send is successful) and re-write the
+        # payload filenames to the stack file.
         payload_filenames = telemetry_stack.push(tx_filename)
         payload_filenames_LIFO = list(np.flip(payload_filenames))
 
@@ -255,37 +255,12 @@ while True:
         for TX_file in payload_filenames_LIFO:
             if datetime.utcnow() < next_start:
                 logger.info(f'Opening TX file from payload list: {TX_file}')
-                
+
                 with open(TX_file, mode='rb') as file:
                     payload_data = file.read()
 
-                #%%
-                # # Read in the sensor type from the binary payload file.
-                # # This check is neccessary for a stack with multiple
-                # # sensor types in it.
-                # PAYLOAD_START_INDEX = 0 # (no header) otherwise it is: = payload_data.index(b':') 
-                # SENSOR_TYPE_FROM_PAYLOAD = ord(payload_data[PAYLOAD_START_INDEX+1:PAYLOAD_START_INDEX+2]) # sensor type is stored 1 byte after the header
-                
-                # if SENSOR_TYPE_FROM_PAYLOAD not in [50,51,52]: #TODO: make this list a constant 
-                #     logger.info(f'Failed to read sensor type properly; read sensor type as: {SENSOR_TYPE_FROM_PAYLOAD}')
-                #     logger.info(f'Trying to send as configured sensor type instead ({SENSOR_TYPE})')
-                #     send_sensor_type = SENSOR_TYPE
-                # else:
-                #     send_sensor_type = SENSOR_TYPE_FROM_PAYLOAD
-
-                # # send either payload type 50, 51, or 52
-                # if send_sensor_type == 50:
-                #     successful_send = sbd.send_microSWIFT_50(payload_data, next_start)
-                # elif send_sensor_type == 51:
-                #     successful_send = sbd.send_microSWIFT_51(payload_data, next_start)
-                # elif send_sensor_type == 52:
-                #     successful_send = sbd.send_microSWIFT_52(payload_data, next_start)
-                # else:
-                #     logger.info(f'Specified sensor type ({send_sensor_type}) is invalid or not currently supported')
-                #%%
                 successful_send = sbd.send(payload_data, next_start)
 
-                # Index up the messages sent value if successful send is true
                 if successful_send is True:
                     del payload_filenames[-1]
                     messages_sent += 1
@@ -293,12 +268,12 @@ while True:
                 # Exit the for loop if outside of the end time
                 break
 
+        telemetry_stack.write(payload_filenames)
+        
         # Log the send statistics
         messages_remaining = len(payload_filenames) - messages_sent
         logger.info((f'Messages Sent: {int(messages_sent)}; '
                      f'Messages Remaining: {int(messages_remaining)}'))
-
-        telemetry_stack.write(payload_filenames)
 
         #TODO: Comment next section
         # Increment up the loop counter
