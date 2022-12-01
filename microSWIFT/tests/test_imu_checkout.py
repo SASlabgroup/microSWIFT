@@ -1,6 +1,4 @@
-"""
-Functions to test the installation, calibration, and validity of the onboard IMU.
-"""
+"""Unit tests for the imu_checkout module"""
 import unittest
 
 from utils import configuration
