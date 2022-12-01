@@ -1,0 +1,8 @@
+name: microSWIFT
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - numpy
+  - python=3.9
+prefix: /Users/edwinrainville/opt/miniconda3/envs/microSWIFT
