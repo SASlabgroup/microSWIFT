@@ -38,4 +38,4 @@ will sample during the record window. The imu sampling frequency is
 defined in units of HZ (samples/second). This value can range from
 1 to 30 Hz. This value must also be an integer. Default value is 12 Hz.
 
-imu_sampling_frequency = 12
+imu_sampling_frequency =
