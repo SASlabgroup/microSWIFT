@@ -163,7 +163,7 @@ while True:
                                                                 GPS_FS)
             logger.info('gps_waves.py executed')
 
-            # TODO: This solution is not great but can be sorted out later:
+            #TODO: This solution is not great but can be sorted out later:
             u = gps_vars['u']
             v = gps_vars['v']
             z = gps_vars['z']
