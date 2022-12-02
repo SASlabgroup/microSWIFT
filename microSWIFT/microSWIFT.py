@@ -123,23 +123,24 @@ while True:
 
             end_time = end_times[i]
 
-            # Define next start time to enter into the sendSBD function:
+            # Define next start time to enter into the send window.
             current_start = datetime.utcnow().replace(minute=start_times[i],
                                                       second = 0,
                                                       microsecond=0)
             next_start = current_start + datetime.timedelta(minutes=BURST_INT)
 
             # Run record_gps.py and record_imu.py concurrently with
-            # asynchronous futures.
+            # asynchronous futures. This is a two-step call that
+            # requires scheduling the tasks then returning the result
+            # from each Future instance. Flip the`recording_complete`
+            # state when the tasks are completed.
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 record_gps_future = executor.submit(gps.record, end_times[i])
                 record_imu_future = executor.submit(imu.record, end_times[i])
 
-                # get results from Futures
                 gps_file, gps_initialized = record_gps_future.result()
                 imu_file, imu_initialized = record_imu_future.result()
 
-            #exit out of loop once burst is finished
             recording_complete = True
             break
 
@@ -174,8 +175,8 @@ while True:
         # velocity (u), North-South velocity (v), and elevation (z);
         # integrate the raw IMU to xyz displacements in the body or
         # earth frame; then collate these variables onto the same time
-        # array, zero-out the first two-minutes (to remove filter
-        # ringing), and produce a wave estimate.
+        # array and produce a wave estimate. The first two-minutes
+        # are zeroed-out to remove filter ringing.
         elif WAVE_PROCESSING_TYPE == 'uvza_waves' and gps_initialized \
                                                         and imu_initialized:
             gps_vars = gps.to_uvz(gps_file)
@@ -215,7 +216,7 @@ while True:
                          f' specified number of coefficients, {NUM_COEF};'
                          f' (len(E)={len(E)}, len(f)={len(f)})'))
 
-        # Compute the mean of the GPS records. The last reported
+        # Compute the mean of the GPS output. The last reported
         # position is sent to the server.
         u_mean = np.nanmean(u)
         v_mean = np.nanmean(v)
@@ -269,7 +270,7 @@ while True:
                     del payload_filenames[-1]
                     messages_sent += 1
             else:
-                # Exit the for loop if outside of the end time
+                # Exit if the send window has expired.
                 break
 
         telemetry_stack.write(payload_filenames)
@@ -288,7 +289,7 @@ while True:
 
 
     # The current time is not within the defined record window. Skip
-    # telemetry and sleep until a window is entered. Log this 
+    # telemetry and sleep until a window is entered. Log this
     # information at the specified interval (in seconds).
     else:
         time.sleep(1)
