@@ -23,10 +23,11 @@ import RPi.GPIO as GPIO
 import time as t
 import serial
 
+####TODO: Update this block when EJ finishes the config integration ####
 #Define Config file name and load file
-configFilename = r'/home/pi/microSWIFT/utils/Config.dat'
+CONFIG_FILENAME = r'/home/pi/microSWIFT/utils/Config.dat'
 config = Config() # Create object and load file
-ok = config.loadFile( configFilename )
+ok = config.loadFile( CONFIG_FILENAME )
 if( not ok ):
     print("Error loading config file")
     sys.exit(1)
@@ -35,34 +36,39 @@ if( not ok ):
 logger = getLogger('microSWIFT.'+__name__)  
 
 # System Parameters
-dataDir = config.getString('System', 'dataDir')
-floatID = os.uname()[1]
-sensor_type = config.getInt('System', 'sensorType')
-badValue = config.getInt('System', 'badValue')
-numCoef = config.getInt('System', 'numCoef')
-port = config.getInt('System', 'port')
-payload_type = config.getInt('System', 'payloadType')
-burst_seconds = config.getInt('System', 'burst_seconds')
-burst_time = config.getInt('System', 'burst_time')
-burst_int = config.getInt('System', 'burst_interval')
-    
-call_duration = burst_int*60-burst_seconds #time between burst end and burst start to make a call
+DATA_DIR = config.getString('System', 'dataDir')
+FLOAT_ID = os.uname()[1]
+SENSOR_TYPE = config.getInt('System', 'sensorType')
+BAD_VALUE = config.getInt('System', 'badValue')
+NUM_COEF = config.getInt('System', 'numCoef')
+PORT = config.getInt('System', 'port')
+PAYLOAD_TYPE = config.getInt('System', 'payloadType')
+BURST_SECONDS = config.getInt('System', 'burst_seconds')
+BURST_TIME = config.getInt('System', 'burst_time')
+BURST_INT = config.getInt('System', 'burst_interval')
+CALL_DURATION = BURST_INT*60-BURST_SECONDS #time between burst end and burst start to make a call
 
 # Iridium parameters
-modemPort = config.getString('Iridium', 'port')
-modemBaud = config.getInt('Iridium', 'baud')
-modemGPIO = config.getInt('Iridium', 'modemGPIO')
-timeout = config.getInt('Iridium', 'timeout')
+MODEM_PORT = config.getString('Iridium', 'port')
+MODEM_BAUD_RATE = config.getInt('Iridium', 'baud')
+MODEM_GPIO = config.getInt('Iridium', 'modemGPIO')
+TIMEOUT = config.getInt('Iridium', 'timeout')
+
+SUPPORTED_PAYLOADS = [50,51,52]
+
+########################################################################
+
+
 
 #arbitrary message counter
 id = 0
 
-def init():
+def init_modem():
 
     # Turn on the pin to power on the modem
     try:
-        GPIO.setup(modemGPIO, GPIO.OUT)
-        GPIO.output(modemGPIO,GPIO.HIGH) #power on GPIO enable pin
+        GPIO.setup(MODEM_GPIO, GPIO.OUT)
+        GPIO.output(MODEM_GPIO,GPIO.HIGH) #power on GPIO enable pin
         logger.info('modem powered on')
         t.sleep(3)
         logger.info('done')
@@ -71,9 +77,9 @@ def init():
         logger.info(e)
         
     #open serial port
-    logger.info('opening serial port with modem at {0} on port {1}...'.format(modemBaud,modemPort))
+    logger.info('opening serial port with modem at {0} on port {1}...'.format(MODEM_BAUD_RATE,MODEM_PORT))
     try:
-        ser=serial.Serial(modemPort,modemBaud,timeout=timeout)
+        ser=serial.Serial(MODEM_PORT,MODEM_BAUD_RATE,timeout=TIMEOUT)
         logger.info('serial port opened successfully')
     except serial.SerialException as e:
         logger.info('unable to open serial port: {}'.format(e))
@@ -94,13 +100,39 @@ def init():
     else:
         return ser, False
 
+def send(payload_data, TIMEOUT):
+    """TODO:"""
+    # Read in the sensor type from the binary payload file.
+    # This check is neccessary for a stack with multiple
+    # sensor types in it.
+    PAYLOAD_START_INDEX = 0 # (no header) otherwise it is: = payload_data.index(b':') 
+    SENSOR_TYPE_FROM_PAYLOAD = ord(payload_data[PAYLOAD_START_INDEX+1:PAYLOAD_START_INDEX+2]) # sensor type is stored 1 byte after the header
+    
+    if SENSOR_TYPE_FROM_PAYLOAD not in SUPPORTED_PAYLOADS: #TODO: make this list a constant 
+        logger.info(f'Failed to read sensor type properly; read sensor type as: {SENSOR_TYPE_FROM_PAYLOAD}')
+        logger.info(f'Trying to send as configured sensor type instead ({SENSOR_TYPE})')
+        send_sensor_type = SENSOR_TYPE
+    else:
+        send_sensor_type = SENSOR_TYPE_FROM_PAYLOAD
+
+    # send either payload type 50, 51, or 52
+    if send_sensor_type == 50:
+        successful_send = send_microSWIFT_50(payload_data, TIMEOUT)
+    elif send_sensor_type == 51:
+        successful_send = send_microSWIFT_51(payload_data, TIMEOUT)
+    elif send_sensor_type == 52:
+        successful_send = send_microSWIFT_52(payload_data, TIMEOUT)
+    else:
+        logger.info(f'Specified sensor type ({send_sensor_type}) is invalid or not currently supported')
+
+    return successful_send
 
 # Telemetry test functions
 def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, lat, lon,  temp, salinity, volt):
     logger.info('---------------sendSBD.createTX.py------------------')
 
-    if payload_type != 7:
-        logger.info('invalid payload type: {}'.format(payload_type))
+    if PAYLOAD_TYPE != 7:
+        logger.info('invalid payload type: {}'.format(PAYLOAD_TYPE))
         logger.info('exiting')
         sys.exit(1)
 
@@ -120,11 +152,11 @@ def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, la
     logger.info('Hs: {0} Tp: {1} Dp: {2} lat: {3} lon: {4} temp: {5} salinity: {6} volt: {7} uMean: {8} vMean: {9} zMean: {10}'.format(
         Hs, Tp, Dp, lat, lon, temp, salinity, volt, uMean, vMean, zMean))
 
-    if sensor_type == 50:
+    if SENSOR_TYPE == 50:
 
         #create formatted struct with all payload data
         payload_size = struct.calcsize('<sbbhfff42f42f42f42f42f42f42ffffffffiiiiii')
-        payload_data = (struct.pack('<sbbhfff', str(payload_type).encode(),sensor_type,port, payload_size,Hs,Tp,Dp) + 
+        payload_data = (struct.pack('<sbbhfff', str(PAYLOAD_TYPE).encode(),SENSOR_TYPE,PORT, payload_size,Hs,Tp,Dp) + 
                         struct.pack('<42f', *E) +
                         struct.pack('<42f', *f) +
                         struct.pack('<42f', *a1) +
@@ -146,7 +178,7 @@ def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, la
                         struct.pack('<i', int(now.minute)) +
                         struct.pack('<i', int(now.second)))
     
-    elif sensor_type == 51:
+    elif SENSOR_TYPE == 51:
         
         #compute fmin fmax and fstep
         fmin = np.min(f)
@@ -154,7 +186,7 @@ def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, la
         fstep = (fmax - fmin)/41
 
         payload_size = struct.calcsize('<sbbhfff42fffffffffffiiiiii')
-        payload_data = (struct.pack('<sbbhfff', str(payload_type).encode(),sensor_type,port, payload_size,Hs,Tp,Dp) + 
+        payload_data = (struct.pack('<sbbhfff', str(PAYLOAD_TYPE).encode(), SENSOR_TYPE, PORT, payload_size,Hs,Tp,Dp) + 
                         struct.pack('<42f', *E) +
                         struct.pack('<f', fmin) +
                         struct.pack('<f', fmax) +
@@ -174,7 +206,7 @@ def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, la
                         struct.pack('<i', int(now.second)))
     
     
-    elif sensor_type == 52:
+    elif SENSOR_TYPE == 52:
 
         # extract frequency range
         fmin = np.min(f)
@@ -197,7 +229,7 @@ def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, la
 
         # create formatted struct with all payload data
         payload_size = struct.calcsize('<sbbheee42eee42b42b42b42b42Bffeeef') 
-        payload_data = (struct.pack('<sbbh', str(payload_type).encode(), sensor_type, port, payload_size) + 
+        payload_data = (struct.pack('<sbbh', str(PAYLOAD_TYPE).encode(), SENSOR_TYPE, PORT, payload_size) + 
                         struct.pack('<eee', Hs,Tp,Dp) +
                         struct.pack('<42e', *E) +
                         struct.pack('<e', fmin) +
@@ -216,7 +248,7 @@ def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, la
                         )
 
     else: 
-        logger.info('invalid sensor type: {}'.format(sensor_type))
+        logger.info('invalid sensor type: {}'.format(SENSOR_TYPE))
         logger.info('exiting')
         sys.exit(1)
 
@@ -440,7 +472,7 @@ def transmit_ascii(ser,msg):
 #Sub-header 1 thru N:
 #    ,<id>,<start-byte>:
 #--------------------------------------------------------------------------------------------
-def send_microSWIFT_50(payload_data, timeout):
+def send_microSWIFT_50(payload_data, TIMEOUT):
     logger.info('---------------sendSBD.send_microSWIFT_50------------------')
     logger.info('sending microSWIFT telemetry (type 50)')
     
@@ -493,14 +525,14 @@ def send_microSWIFT_50(payload_data, timeout):
     ordinal = ['first', 'second', 'third', 'fourth']
 
 
-    while datetime.utcnow() < timeout:  
+    while datetime.utcnow() < TIMEOUT:
     
         #initialize modem
-        ser, modem_initialized = initModem()
+        ser, modem_initialized = init_modem()
 
         if not modem_initialized:
             logger.info('Modem not initialized')
-            GPIO.output(modemGPIO,GPIO.LOW) #power off modem
+            GPIO.output(MODEM_GPIO,GPIO.LOW) #power off modem
             continue
         
         #send packets
@@ -508,7 +540,7 @@ def send_microSWIFT_50(payload_data, timeout):
         
         i=0
         signal=[]
-        while datetime.utcnow() <= timeout:
+        while datetime.utcnow() <= TIMEOUT:
             
             isignal = sig_qual(ser)
             if isignal < 0:
@@ -526,7 +558,7 @@ def send_microSWIFT_50(payload_data, timeout):
                     retry = 0
                     issent  = False
                     while issent == False:
-                        if datetime.utcnow() < timeout:
+                        if datetime.utcnow() < TIMEOUT:
                             logger.info('Sending {} packet. Retry {}'.format(ordinal[i], retry))
                             issent  = transmit_bin(ser,message[i])            
                             retry += 1
@@ -534,7 +566,7 @@ def send_microSWIFT_50(payload_data, timeout):
                             logger.info('Send SBD timeout. Message not sent')
                             #turn off modem
                             logger.info('Powering down modem')    
-                            GPIO.output(modemGPIO,GPIO.LOW)
+                            GPIO.output(MODEM_GPIO,GPIO.LOW)
                             successful_send = False
                             
                             logger.info('-----------------------------------------------------------')
@@ -550,7 +582,7 @@ def send_microSWIFT_50(payload_data, timeout):
                 logger.info('Sent SBD successfully')      
                 #turn off modem
                 logger.info('Powering down modem')    
-                GPIO.output(modemGPIO,GPIO.LOW)
+                GPIO.output(MODEM_GPIO,GPIO.LOW)
                 successful_send = True
                 
                 logger.info('-----------------------------------------------------------')
@@ -561,14 +593,14 @@ def send_microSWIFT_50(payload_data, timeout):
     #turn off modem
     logger.info('Send SBD timeout. Message not sent')
     logger.info('powering down modem')    
-    GPIO.output(modemGPIO,GPIO.LOW)
+    GPIO.output(MODEM_GPIO,GPIO.LOW)
     successful_send = False
 
     logger.info('-----------------------------------------------------------')
     return successful_send
    
 
-def send_microSWIFT_51(payload_data, timeout):
+def send_microSWIFT_51(payload_data, TIMEOUT):
     logger.info('---------------sendSBD.send_microSWIFT_51------------------')
     logger.info('sending microSWIFT telemetry (type 51)')
     
@@ -596,14 +628,14 @@ def send_microSWIFT_51(payload_data, timeout):
     payload_bytes0 = payload_data[index:249] #data bytes for packet
     packet0 = header + sub_header0 + payload_bytes0 
     
-    while datetime.utcnow() < timeout:
+    while datetime.utcnow() < TIMEOUT:
     
         #initialize modem
-        ser, modem_initialized = initModem()
+        ser, modem_initialized = init_modem()
 
         if not modem_initialized:
             logger.info('Modem not initialized')
-            GPIO.output(modemGPIO,GPIO.LOW) #power off modem
+            GPIO.output(MODEM_GPIO,GPIO.LOW) #power off modem
             continue
         
         #send packets
@@ -611,7 +643,7 @@ def send_microSWIFT_51(payload_data, timeout):
         
         i=0
         signal=[]
-        while datetime.utcnow() < timeout:
+        while datetime.utcnow() < TIMEOUT:
             
             isignal = sig_qual(ser)
             if isignal < 0:
@@ -627,7 +659,7 @@ def send_microSWIFT_51(payload_data, timeout):
                 #attempt to transmit packets
                 retry = 0
                 issent  = False
-                while issent == False and datetime.utcnow() < timeout:
+                while issent == False and datetime.utcnow() < TIMEOUT:
                     logger.info('Sending packet. Retry {}'.format(retry))
                     issent  = transmit_bin(ser, packet0)            
                     retry += 1
@@ -641,7 +673,7 @@ def send_microSWIFT_51(payload_data, timeout):
                 logger.info('Sent SBD successfully')      
                 #turn off modem
                 logger.info('Powering down modem')    
-                GPIO.output(modemGPIO,GPIO.LOW)
+                GPIO.output(MODEM_GPIO,GPIO.LOW)
                 successful_send = True
                 
                 logger.info('-----------------------------------------------------------')
@@ -654,14 +686,14 @@ def send_microSWIFT_51(payload_data, timeout):
     #turn off modem
     logger.info('Send SBD timeout. Message not sent')
     logger.info('powering down modem')    
-    GPIO.output(modemGPIO,GPIO.LOW)
+    GPIO.output(MODEM_GPIO,GPIO.LOW)
     successful_send = False
 
     logger.info('-----------------------------------------------------------')
 
     return successful_send
     
-def send_microSWIFT_52(payload_data, timeout): #TODO: finish working on!
+def send_microSWIFT_52(payload_data, TIMEOUT): #TODO: finish working on!
     logger.info('---------------sendSBD.send_microSWIFT_52------------------')
     logger.info('sending microSWIFT telemetry (type 52)')
     
@@ -690,14 +722,14 @@ def send_microSWIFT_52(payload_data, timeout): #TODO: finish working on!
     payload_bytes0 = payload_data[index:payload_size_exp] #data bytes for packet
     packet0 = header + sub_header0 + payload_bytes0 
     
-    while datetime.utcnow() < timeout:
+    while datetime.utcnow() < TIMEOUT:
     
         #initialize modem
-        ser, modem_initialized = initModem()
+        ser, modem_initialized = init_modem()
 
         if not modem_initialized:
             logger.info('Modem not initialized')
-            GPIO.output(modemGPIO,GPIO.LOW) #power off modem
+            GPIO.output(MODEM_GPIO,GPIO.LOW) #power off modem
             continue
         
         #send packets
@@ -705,7 +737,7 @@ def send_microSWIFT_52(payload_data, timeout): #TODO: finish working on!
         
         i=0
         signal=[]
-        while datetime.utcnow() < timeout:
+        while datetime.utcnow() < TIMEOUT:
             
             isignal = sig_qual(ser)
             if isignal < 0:
@@ -721,7 +753,7 @@ def send_microSWIFT_52(payload_data, timeout): #TODO: finish working on!
                 #attempt to transmit packets
                 retry = 0
                 issent  = False
-                while issent == False and datetime.utcnow() < timeout:
+                while issent == False and datetime.utcnow() < TIMEOUT:
                     logger.info('Sending packet. Retry {}'.format(retry))
                     issent  = transmit_bin(ser, packet0)            
                     retry += 1
@@ -735,7 +767,7 @@ def send_microSWIFT_52(payload_data, timeout): #TODO: finish working on!
                 logger.info('Sent SBD successfully')      
                 #turn off modem
                 logger.info('Powering down modem')    
-                GPIO.output(modemGPIO,GPIO.LOW)
+                GPIO.output(MODEM_GPIO,GPIO.LOW)
                 successful_send = True
                 
                 logger.info('-----------------------------------------------------------')
@@ -748,45 +780,44 @@ def send_microSWIFT_52(payload_data, timeout): #TODO: finish working on!
     #turn off modem
     logger.info('Send SBD timeout. Message not sent')
     logger.info('powering down modem')    
-    GPIO.output(modemGPIO,GPIO.LOW)
+    GPIO.output(MODEM_GPIO,GPIO.LOW)
     successful_send = False
 
     logger.info('-----------------------------------------------------------')
 
     return successful_send
 
-def sendSBD(ser, payload_data, next_start):
-    import time
-    from adafruit_rockblock import RockBlock
+# def sendSBD(ser, payload_data, next_start):
+#     import time
+#     from adafruit_rockblock import RockBlock
     
-    # Setup loging 
-    logger = getLogger('microSWIFT.'+__name__) 
-    logger.info('---------------sendSBD------------------')
+#     # Setup loging 
+#     logger = getLogger('microSWIFT.'+__name__) 
+#     logger.info('---------------sendSBD------------------')
 
-    # Setup instance of RockBlock 
-    rockblock = RockBlock(ser)
+#     # Setup instance of RockBlock 
+#     rockblock = RockBlock(ser)
 
-    # Send payload data through the RockBlock
-    rockblock.data_out = payload_data
-    logger.info('Talking to Satellite')
-    retry = 0
-    sent_status_val = 0 # any returned status value less than this means the message sent successfully.
-    status = rockblock.satellite_transfer()
-    now = datetime.utcnow().minute + datetime.utcnow().second/60
-    while status[0] > sent_status_val and now < next_start:
-        t.sleep(10)
-        status = rockblock.satellite_transfer()
-        logger.info('Retry number = {}'.format(retry))
-        logger.info('status = {}'.format(status))
-        now = datetime.utcnow().minute + datetime.utcnow().second/60
-        retry += 1
+#     # Send payload data through the RockBlock
+#     rockblock.data_out = payload_data
+#     logger.info('Talking to Satellite')
+#     retry = 0
+#     sent_status_val = 0 # any returned status value less than this means the message sent successfully.
+#     status = rockblock.satellite_transfer()
+#     now = datetime.utcnow().minute + datetime.utcnow().second/60
+#     while status[0] > sent_status_val and now < next_start:
+#         t.sleep(10)
+#         status = rockblock.satellite_transfer()
+#         logger.info('Retry number = {}'.format(retry))
+#         logger.info('status = {}'.format(status))
+#         now = datetime.utcnow().minute + datetime.utcnow().second/60
+#         retry += 1
     
-    if status[0] == 0:
-        # Final print statement that it sent
-        logger.info('Sent SBD successfully')
+#     if status[0] == 0:
+#         # Final print statement that it sent
+#         logger.info('Sent SBD successfully')
 
-    else:
-        logger.info('Could not send SBD')
+#     else:
+#         logger.info('Could not send SBD')
 
-    logger.info('----------------------------------------')
-    
+#     logger.info('----------------------------------------')
