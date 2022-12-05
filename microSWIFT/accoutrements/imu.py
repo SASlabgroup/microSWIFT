@@ -3,20 +3,27 @@ Initialize and record IMU.
 
 authors: @EJRainville, @AlexdeKlerk, @Viviana Castillo
 """
+try:
+    import busio
+    import board
+    import RPi.GPIO as GPIO
+    from . import adafruit_fxos8700, adafruit_fxas21002c
+except ImportError:
+    from ..mocks import mock_busio as busio
+    from ..mocks import mock_board as board
+    from ..mocks import mock_rpi_gpio as GPIO
+    from ..mocks import mock_adafruit_fxos8700 as adafruit_fxos8700
+    from ..mocks import mock_adafruit_fxas21002c as adafruit_fxas21002c
 
-import busio
-import board
 import logging
 import os
 import sys
-
 import numpy as np
-import RPi.GPIO as GPIO
 
-from . import adafruit_fxos8700, adafruit_fxas21002c
+
+from time import sleep
 from datetime import datetime, timedelta
 from ..processing.integrate_imu import integrate_acc
-from time import sleep
 from ..utils.config import Config
 
 
@@ -90,7 +97,7 @@ def record(end_time):
 
         # initialize fxos and fxas devices (required after turning off device)
         imu_initialized = init()
-        
+
         # Sleep to start recording at same time as GPS
         sleep(5.1)
 
