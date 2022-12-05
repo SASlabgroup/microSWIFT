@@ -32,7 +32,7 @@ def run_tests(run_time):
 
     t_end = time.time() + (60 * run_time)
 
-    print("IMU checkout beginning. Please keep buoy still for ", run_time,
-    " minute(s).")
+    print("IMU checkout beginning. Please keep buoy still for", run_time,
+    "minute(s).")
 
     imu.record(t_end)

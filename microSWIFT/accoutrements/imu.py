@@ -8,12 +8,13 @@ try:
     import board
     import RPi.GPIO as GPIO
     from . import adafruit_fxos8700, adafruit_fxas21002c
-except ImportError:
+except ImportError as e:
     from ..mocks import mock_busio as busio
     from ..mocks import mock_board as board
     from ..mocks import mock_rpi_gpio as GPIO
     from ..mocks import mock_adafruit_fxos8700 as adafruit_fxos8700
     from ..mocks import mock_adafruit_fxas21002c as adafruit_fxas21002c
+    print(e, "Using mock hardware")
 
 import logging
 import os
