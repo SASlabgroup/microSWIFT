@@ -1,6 +1,6 @@
-# <img src= "./doc/images/SWIFTlogo.jpg" height="60" align=left></img> microSWIFTv1
-
 [![Python Package using Conda](https://github.com/SASlabgroup/microSWIFT/actions/workflows/python-package-conda.yml/badge.svg)](https://github.com/SASlabgroup/microSWIFT/actions/workflows/python-package-conda.yml)
+
+# <img src= "./doc/images/SWIFTlogo.jpg" height="60" align=left></img> microSWIFTv1
 
 <img src=./doc/images/microSWIFT.png alt="Artistic rendition of the microSWIFT wave buoy"  width="300"  align=right></img>
 
