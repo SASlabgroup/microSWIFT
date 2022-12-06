@@ -8,8 +8,7 @@ Operational code for the microSWIFT v1 wave buoy developed at the University of 
 
 <img src=./doc/images/microSWIFT.png alt="Artistic rendition of the microSWIFT wave buoy"  width="300"  align=right></img>
 
-The microSWIFT is an expendable version of the [Surface Wave Instrument Float with Tracking](https://apl.uw.edu/project/project.php?id=swift) (SWIFT) platform. 
-microSWIFTs have been used to study breaking waves in nearshore environments ([video](https://www.youtube.com/watch?v=rf76fkpzcrg)), hurricanes (see [NHCI](https://nopphurricane.sofarocean.com/team/thomson)), waves in sea ice, and more. 
+The microSWIFT is an expendable version of the [Surface Wave Instrument Float with Tracking](https://apl.uw.edu/project/project.php?id=swift) (SWIFT) platform. Original development of the microSWIFT buoy (now v1) began in 2020 led by engineers at the Applied Physics Laboratory (APL). It is built on a Raspberry Pi platform and runs operational code written in Python (this repository). This combination of developer-friendly hardware and easy-to-read code has fostered an effective platform for ocean wave observation research and student learning. This version of the microSWIFT continues to be developed and improved, and have been used to study breaking waves in nearshore environments ([video](https://www.youtube.com/watch?v=rf76fkpzcrg)), hurricanes (see [NHCI](https://nopphurricane.sofarocean.com/team/thomson)), waves in sea ice, and more. 
 
 
 Learn more about the microSWIFT wave buoy:
