@@ -8,8 +8,8 @@ Operational code for the microSWIFT v1 wave buoy developed at the University of 
 
 <img src=./doc/images/microSWIFT.png alt="Artistic rendition of the microSWIFT wave buoy"  width="300"  align=right></img>
 
-The microSWIFT is an expendable version of the [Surface Wave Instrument Float with Tracking](https://apl.uw.edu/project/project.php?id=swift) (SWIFT) platform, blah blah... 
-microSWIFTs have been used to study breaking waves in nearshore environments (see [DUNEX](https://uscoastalresearch.org/dunex)), hurricanes (see [NHCI](https://nopphurricane.sofarocean.com/team/thomson)), waves in sea ice, and more. 
+The microSWIFT is an expendable version of the [Surface Wave Instrument Float with Tracking](https://apl.uw.edu/project/project.php?id=swift) (SWIFT) platform. 
+microSWIFTs have been used to study breaking waves in nearshore environments ([video](https://www.youtube.com/watch?v=rf76fkpzcrg)), hurricanes (see [NHCI](https://nopphurricane.sofarocean.com/team/thomson)), waves in sea ice, and more. 
 
 
 Learn more about the microSWIFT wave buoy:
