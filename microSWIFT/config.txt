@@ -6,7 +6,8 @@ Duty Cycle Length
 The length of time of the total duty cycle. The duty cycle is defined 
 as the total time for both the record and send windows for the 
 microSWIFT. The duty cycle is defined in units of MINUTES. It must be 
-an integer value. Default value is 60 minutes.
+an integer value, less than 60 minutes, and a factor of 60.
+Default value is 60 minutes.
 
 duty_cycle_length = 60
 
