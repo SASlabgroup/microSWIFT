@@ -1,12 +1,13 @@
 [![Python Package using Conda](https://github.com/SASlabgroup/microSWIFT/actions/workflows/python-package-conda.yml/badge.svg)](https://github.com/SASlabgroup/microSWIFT/actions/workflows/python-package-conda.yml)
 
-# <img src= "./doc/images/SWIFTlogo.jpg" height="100" align=left></img>microSWIFT v1
-
-<img src=./doc/images/microSWIFT.png alt="Artistic rendition of the microSWIFT wave buoy"  width="300"  align=right></img>
+# <img src= "./doc/images/SWIFTlogo.jpg" height="120" align=left></img>microSWIFT v1
 
 Operational code for the microSWIFT v1 wave buoy developed at the University of Washington Applied Physics Laboratory (UW-APL).
 
 ## About microSWIFT
+
+<img src=./doc/images/microSWIFT.png alt="Artistic rendition of the microSWIFT wave buoy"  width="300"  align=right></img>
+
 The microSWIFT is an expendable version of the SWIFT platform, blah blah... 
 
 Learn more about the microSWIFT wave buoy:
