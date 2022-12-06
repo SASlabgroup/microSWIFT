@@ -1,10 +1,13 @@
-# microSWIFT - Version 1
+# microSWIFTv1
 
 [![Python Package using Conda](https://github.com/SASlabgroup/microSWIFT/actions/workflows/python-package-conda.yml/badge.svg)](https://github.com/SASlabgroup/microSWIFT/actions/workflows/python-package-conda.yml)
 
 <img src=./doc/images/microSWIFT.png alt="Artistic rendition of the microSWIFT wave buoy"  width="300">
 
 Operational code for the microSWIFT v1 wave buoy developed at the University of Washington Applied Physics Laboratory (UW-APL).
+
+How to use
+Examples
 
 Learn more about the microSWIFT wave buoy:
 
@@ -50,18 +53,6 @@ microSWIFT/
     │   ├── test_configuration.py
     │   ├── test_data
     │   │   └── config_files
-    │   │       ├── config_duty_cycle_not_int.txt
-    │   │       ├── config_gps_freq_not_int.txt
-    │   │       ├── config_gps_freq_out_of_range.txt
-    │   │       ├── config_imu_freq_not_int.txt
-    │   │       ├── config_imu_freq_out_of_range.txt
-    │   │       ├── config_no_duty_cycle.txt
-    │   │       ├── config_no_gps_freq.txt
-    │   │       ├── config_no_imu_freq.txt
-    │   │       ├── config_no_record_window.txt
-    │   │       ├── config_record_window_not_int.txt
-    │   │       ├── config_record_window_too_long.txt
-    │   │       └── config_send_window_too_short.txt
     │   ├── test_imu_checkout.py
     │   └── test_microSWIFT.py
     └── utils
