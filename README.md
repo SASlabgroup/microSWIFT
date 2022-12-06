@@ -1,4 +1,4 @@
-# microSWIFTv1
+# [SWIFT logo!] microSWIFTv1
 
 [![Python Package using Conda](https://github.com/SASlabgroup/microSWIFT/actions/workflows/python-package-conda.yml/badge.svg)](https://github.com/SASlabgroup/microSWIFT/actions/workflows/python-package-conda.yml)
 
@@ -6,15 +6,38 @@
 
 Operational code for the microSWIFT v1 wave buoy developed at the University of Washington Applied Physics Laboratory (UW-APL).
 
-How to use
-Examples
-Requirements (e.g. need a raspberry pi microSWIFT...!) +
-Hardware
+## About microSWIFT
+The microSWIFT is an expendable version of the SWIFT platform, blah blah... 
+
 Learn more about the microSWIFT wave buoy:
 
 - https://apl.uw.edu/project/projects/swift/pdfs/microSWIFTspecsheet.pdf (spec sheet)
 
-## Organization of the project
+Publications!
+
+## Requirements
+(e.g. need a raspberry pi microSWIFT...!)
+Hardware
+Python version
+
+## Installation
+How to load onto a raspberry pi
+
+## Usage
+### Configuration
+e.g. config file use
+
+### Data access: 
+microSWIFT wave measurements in the form of spectral and bulk parameters are telemetered to the SWIFT server:
+- http://faculty.washington.edu/jmt3rd/SWIFTdata/DynamicDataLinks.html (web page)
+- https://swiftserver.apl.washington.edu/map/ (map)
+- https://github.com/SASlabgroup/microSWIFTtelemetry (Python-based data access)
+
+Raw data in the form of GPS and IMU time series is stored as `.dat` files in the onboard SD card in the `microSWIFT/data/` directory.
+
+
+
+### Repository Structure
 
 ```
 microSWIFT/
@@ -66,10 +89,6 @@ microSWIFT/
         └── utils.py
 ```
 
-## Data access: 
-microSWIFT wave measurements in the form of spectral and bulk parameters are telemetered to the SWIFT server:
-- http://faculty.washington.edu/jmt3rd/SWIFTdata/DynamicDataLinks.html (web page)
-- https://swiftserver.apl.washington.edu/map/ (map)
-- https://github.com/SASlabgroup/microSWIFTtelemetry (Python-based data access)
+### Contributions
 
-Raw data in the form of GPS and IMU time series is stored as `.dat` files in the onboard SD card in the `microSWIFT/data/` directory.
+### Acknowledgements
