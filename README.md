@@ -1,17 +1,18 @@
-# <img src= "./doc/images/SWIFTlogo.jpg" height="40" align=left></img> microSWIFTv1
-
 [![Python Package using Conda](https://github.com/SASlabgroup/microSWIFT/actions/workflows/python-package-conda.yml/badge.svg)](https://github.com/SASlabgroup/microSWIFT/actions/workflows/python-package-conda.yml)
 
-<img src=./doc/images/microSWIFT.png alt="Artistic rendition of the microSWIFT wave buoy"  width="300"  align=right></img>
+# <img src= "./doc/images/SWIFTlogo.jpg" height="120" align=left></img>microSWIFT v1
 
 Operational code for the microSWIFT v1 wave buoy developed at the University of Washington Applied Physics Laboratory (UW-APL).
 
 ## About microSWIFT
-The microSWIFT is an expendable version of the SWIFT platform, blah blah... 
 
-Learn more about the microSWIFT wave buoy:
+<img src=./doc/images/microSWIFT.png alt="Artistic rendition of the microSWIFT wave buoy"  width="300"  align=right></img>
 
-- https://apl.uw.edu/project/projects/swift/pdfs/microSWIFTspecsheet.pdf (spec sheet)
+The microSWIFT is an expendable version of the [Surface Wave Instrument Float with Tracking](https://apl.uw.edu/project/project.php?id=swift) (SWIFT) platform. Original development of the microSWIFT buoy (now v1) began in 2020, led by engineers at the University of Washington Applied Physics Laboratory (UW-APL). It is built around a Raspberry Pi and runs operational code written in Python (this repository). This combination of developer-friendly hardware and easy-to-read code has fostered the creation of an effective tool for ocean wave research and student learning. This version of the microSWIFT continues to be developed and improved, and has been used to study breaking waves in nearshore environments ([video](https://www.youtube.com/watch?v=rf76fkpzcrg)), hurricanes (see [NHCI](https://nopphurricane.sofarocean.com/team/thomson)), waves in sea ice, and more. 
+
+Specifications for microSWIFT v1 can be found here:
+
+https://apl.uw.edu/project/projects/swift/pdfs/microSWIFTspecsheet.pdf (spec sheet)
 
 Publications!
 
