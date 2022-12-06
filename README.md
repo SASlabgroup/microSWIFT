@@ -8,7 +8,9 @@ Operational code for the microSWIFT v1 wave buoy developed at the University of 
 
 <img src=./doc/images/microSWIFT.png alt="Artistic rendition of the microSWIFT wave buoy"  width="300"  align=right></img>
 
-The microSWIFT is an expendable version of the SWIFT platform, blah blah... 
+The microSWIFT is an expendable version of the [Surface Wave Instrument Float with Tracking](https://apl.uw.edu/project/project.php?id=swift) (SWIFT) platform, blah blah... 
+
+
 
 Learn more about the microSWIFT wave buoy:
 
