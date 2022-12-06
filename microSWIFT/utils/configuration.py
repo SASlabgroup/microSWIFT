@@ -66,13 +66,20 @@ class Config:
         self.DUTY_CYCLE_LENGTH = timedelta(minutes=duty_cycle_length)
         self.RECORD_WINDOW_LENGTH = timedelta(minutes=record_window_length)
         get_record_window_start_time(self)
-        self.GPS_SAMPLING_FREQ = gps_sampling_frequency
-        self.IMU_SAMPLING_FREQ = imu_sampling_frequency     
+        
+        self.IMU_SAMPLING_FREQ = imu_sampling_frequency
        
         # System Parameters
         self.ID = os.uname()[1]
         self.PAYLOAD_TYPE = 7
         self.SENSOR_TYPE = 52
+
+        # GPS Parameters
+        self.GPS_SAMPLING_FREQ = gps_sampling_frequency
+        self.gpsGPIO = 21
+        self.GPS_PORT = '/dev/ttyS0'
+        self.START_BAUD = 9600
+        self.BAUD = 115200
 
         # Data Parameters
         self.WAVE_PROCESSING_TYPE = 'gps_waves'
