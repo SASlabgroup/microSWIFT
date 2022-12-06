@@ -46,7 +46,7 @@ gps_samples = gps_freq*burst_seconds
 gpsGPIO = config.getInt('GPS', 'gpsGPIO')
 gps_timeout = config.getInt('GPS','timeout')
 ########################################################################
-
+# delete all of this and change into a class config.stuff
 
 # setup GPIO and initialize
 GPIO.setmode(GPIO.BCM)
@@ -54,7 +54,7 @@ GPIO.setwarnings(False)
 GPIO.setup(gpsGPIO,GPIO.OUT)
 GPIO.output(gpsGPIO,GPIO.HIGH) #set GPS enable pin high to turn on and start acquiring signal
 
-def init(): 
+def init(end_time): 
     """
     TODO: 
     """
