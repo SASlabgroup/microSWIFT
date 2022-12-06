@@ -76,7 +76,6 @@ while True:
 
         recording_complete = True
         config.START_TIME = config.START_TIME + config.DUTY_CYCLE_LENGTH
-        break
 
     # Process the data into a wave estimate based on the specified
     # processing type. Check that the appropriate modules are
