@@ -15,5 +15,5 @@ microSWIFT wave measurements in the form of spectral and bulk parameters are tel
 
 Raw data in the form of GPS and IMU time series is stored in the onboard SD card in the `microSWIFT/data/` directory.
 
-![Artistic rendition of the microSWIFT wave buoy](./doc/images/microSWIFT.png)
-<img src=./doc/images/microSWIFT.png  width="100">
+<!-- ![Artistic rendition of the microSWIFT wave buoy](./doc/images/microSWIFT.png) -->
+<img src=./doc/images/microSWIFT.png  width="300">
