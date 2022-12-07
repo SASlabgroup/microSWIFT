@@ -30,4 +30,4 @@ jobs:
         pylint --fail-under=1 ./microSWIFT/
     - name: Test with unittest
       run: |
-        python unittest -m discover
+        python -m unittest

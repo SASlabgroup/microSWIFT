@@ -66,7 +66,7 @@ class Config:
         self.DUTY_CYCLES_PER_HOUR = int(60/duty_cycle_length)
         self.DUTY_CYCLE_LENGTH = timedelta(minutes=duty_cycle_length)
         self.RECORD_WINDOW_LENGTH = timedelta(minutes=record_window_length)
-        self.START_TIME = get_start_time(self)
+        self.START_TIME = self.get_start_time()
         self.END_RECORD_TIME = self.START_TIME + self.RECORD_WINDOW_LENGTH
         self.END_DUTY_CYCLE_TIME = self.START_TIME + self.DUTY_CYCLE_LENGTH
 
@@ -150,9 +150,9 @@ class Config:
                                      'integer')
             else:
                 continue
-        
-        return (duty_cycle_length, 
-                record_window_length, 
+
+        return (duty_cycle_length,
+                record_window_length,
                 gps_sampling_frequency,
                 imu_sampling_frequency)
 

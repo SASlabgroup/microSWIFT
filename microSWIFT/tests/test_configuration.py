@@ -19,9 +19,9 @@ class TestConfig(unittest.TestCase):
 
     def test_no_config_file(self):
         """
-        Edge test to check that the __init__ method will raise a 
+        Edge test to check that the __init__ method will raise a
         FileNotFoundError if no configuration file is found.
-        """ 
+        """
         with self.assertRaises(FileNotFoundError):
             config = configuration.Config('./not_a_file.txt')
 

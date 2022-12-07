@@ -11,4 +11,4 @@ class Testimu_checkout(unittest.TestCase):
         """
 
         """
-        1=1
+        
