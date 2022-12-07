@@ -51,6 +51,11 @@ GPIO.setup(imu_gpio,GPIO.OUT)
 #turn IMU on for script recognizes i2c address
 GPIO.output(imu_gpio,GPIO.HIGH)
 
+class IMU:
+    """TODO:"""
+    def __init__(self, config):
+        print('hi')
+
 def init():
     """
     Initialize the IMU module and return True if successful.
