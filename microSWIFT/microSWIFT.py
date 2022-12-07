@@ -40,7 +40,6 @@ def main():
     """
     Control flow for microSWIFT operations.
     """
-
     logger = log.init()
     config = configuration.Config('./config.txt')
     gps = gps_module.GPS(config)
@@ -140,9 +139,9 @@ def processing_window(gps, imu, logger, config):
     if config.WAVE_PROCESSING_TYPE == 'gps_waves' and gps.initialized:
         gps.to_uvz(gps.filename)
         payload = gps_waves(gps.u,
-                                gps.v,
-                                gps.z,
-                                config.GPS_SAMPLING_FREQ)
+                            gps.v,
+                            gps.z,
+                            gps.fs)
         logger.info('gps_waves.py executed')
 
     # UVZA waves processing: convert the raw GPS data to East-West
@@ -154,16 +153,16 @@ def processing_window(gps, imu, logger, config):
     elif config.WAVE_PROCESSING_TYPE == 'uvza_waves' \
                                     and gps.initialized \
                                     and imu.initialized:
-        gps.to_uvz(gps.filename)
-        imu.to_xyz(imu.filename, config.IMU_SAMPLING_FREQ)
+        gps.to_uvz()
+        imu.to_xyz()
         imu_collated, gps_collated = collate_imu_and_gps(imu, gps)
 
-        zero_points = int(np.round(120*config.IMU_SAMPLING_FREQ))
+        zero_points = int(np.round(120*imu.fs))
         payload = uvza_waves(gps_collated['u'][zero_points:],
-                                gps_collated['v'][zero_points:],
-                                imu_collated['pz'][zero_points:],
-                                imu_collated['az'][zero_points:],
-                                config.IMU_SAMPLING_FREQ)
+                             gps_collated['v'][zero_points:],
+                             imu_collated['pz'][zero_points:],
+                             imu_collated['az'][zero_points:],
+                             imu.fs)
         logger.info('uvza_waves.py executed.')
 
     else:
