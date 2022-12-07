@@ -3,18 +3,23 @@ Definition of the configuration class for the microSWIFT. The
 configuration will read in a few variables from the 
 """
 
+from datetime import datetime, timedelta
+import logging
+import os
 import warnings
+
+from . import log
 
 class Config:
     """
-    Class object for configuration of the microSWIFT. 
+    Class object for configuration of the microSWIFT.
     """
     def __init__(self, config_fname: str):
         """
         Initialize the configuration of the microSWIFT with all
         settings. The settings include values that really should not
         be changed and are hardcoded into the class and parameters that
-        can be regularly changed from the config.txt file. 
+        can be regularly changed from the config.txt file.
 
         Parameters
         ----------
@@ -27,11 +32,12 @@ class Config:
         config : class
             A class that contains all the parameters for the microSWIFT
             configuration including user changeable settings and
-            hardcoded settings. 
+            hardcoded settings.
         """
-    
-        (duty_cycle_length, 
-         record_window_length, 
+        logger = logging.getLogger('microSWIFT')
+
+        (duty_cycle_length,
+         record_window_length,
          gps_sampling_frequency,
          imu_sampling_frequency) = self.read_config_file(config_fname)
 
@@ -45,7 +51,7 @@ class Config:
         if (duty_cycle_length - record_window_length) < 5:
             warnings.warn('send and process window SHOULD be longer than 5'
                           ' minutes')
-        
+                         
         if gps_sampling_frequency >=1 and gps_sampling_frequency <= 4:
             pass
         else:
@@ -56,9 +62,40 @@ class Config:
         else:
             raise ValueError('imu_sampling_frequency is out of range')
 
-        # System Parameters
-        
+        # Timing Parameters
+        self.DUTY_CYCLES_PER_HOUR = int(60/duty_cycle_length)
+        self.DUTY_CYCLE_LENGTH = timedelta(minutes=duty_cycle_length)
+        self.RECORD_WINDOW_LENGTH = timedelta(minutes=record_window_length)
+        self.START_TIME = get_start_time(self)
+        self.END_RECORD_TIME = self.START_TIME + self.RECORD_WINDOW_LENGTH
+        self.END_DUTY_CYCLE_TIME = self.START_TIME + self.DUTY_CYCLE_LENGTH
 
+        # System Parameters
+        self.ID = os.uname()[1]
+        self.PAYLOAD_TYPE = 7
+        self.SENSOR_TYPE = 52
+
+        # GPS Parameters
+        self.GPS_SAMPLING_FREQ = gps_sampling_frequency
+        self.gpsGPIO = 21
+        self.GPS_PORT = '/dev/ttyS0'
+        self.START_BAUD = 9600
+        self.BAUD = 115200
+
+        # IMU Parameters
+        self.IMU_SAMPLING_FREQ = imu_sampling_frequency
+
+        # Data Parameters
+        self.WAVE_PROCESSING_TYPE = 'gps_waves'
+        self.BAD_VALUE = 999
+        self.NUM_COEF = 42
+
+        logger.info(log.header(''))
+        logger.info('Booted up. microSWIFT configuration: \n'
+                    f'float ID: {self.ID}, payload type: {self.PAYLOAD_TYPE},'
+                    f' sensor type: {self.SENSOR_TYPE},'
+                    f'duty cycle length: {self.DUTY_CYCLE_LENGTH},'
+                    f'record window length: {self.RECORD_WINDOW_LENGTH}')
 
         return
         
@@ -114,12 +151,30 @@ class Config:
             else:
                 continue
         
-        try:
-            duty_cycle_length
-        except:
-            raise 
-        
         return (duty_cycle_length, 
                 record_window_length, 
                 gps_sampling_frequency,
                 imu_sampling_frequency)
+
+    def get_start_time(self):
+        """
+        Find the start of the current duty cycle as a datetime.
+        """
+        current_hour = datetime.utcnow().replace(minute=0, second=0)
+        for i in range(self.DUTY_CYCLES_PER_HOUR):
+            possible_start_time = current_hour + i*self.DUTY_CYCLE_LENGTH
+            if possible_start_time <= datetime.utcnow() \
+                                    < possible_start_time + self.DUTY_CYCLE_LENGTH:
+                start_time = possible_start_time
+            else:
+                continue
+
+        return start_time
+
+    def update_times(self):
+        """
+        Update timing parameters.
+        """
+        self.START_TIME = self.START_TIME + self.DUTY_CYCLE_LENGTH
+        self.END_RECORD_TIME = self.START_TIME + self.RECORD_WINDOW_LENGTH
+        self.END_DUTY_CYCLE_TIME = self.START_TIME + self.DUTY_CYCLE_LENGTH

@@ -128,7 +128,7 @@ def send(payload_data, TIMEOUT):
     return successful_send
 
 # Telemetry test functions
-def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, lat, lon,  temp, salinity, volt):
+def createTX(payload): # Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, lat, lon,  temp, salinity, volt
     logger.info('---------------sendSBD.createTX.py------------------')
 
     if PAYLOAD_TYPE != 7:
