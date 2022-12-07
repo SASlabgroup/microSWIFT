@@ -3,21 +3,29 @@ Initialize and record IMU.
 
 authors: @EJRainville, @AlexdeKlerk, @Viviana Castillo
 """
+try:
+    import busio
+    import board
+    import RPi.GPIO as GPIO
+    from . import adafruit_fxos8700, adafruit_fxas21002c
+except ImportError as e:
+    from ..mocks import mock_busio as busio
+    from ..mocks import mock_board as board
+    from ..mocks import mock_rpi_gpio as GPIO
+    from ..mocks import mock_adafruit_fxos8700 as adafruit_fxos8700
+    from ..mocks import mock_adafruit_fxas21002c as adafruit_fxas21002c
+    print(e, "Using mock hardware")
 
-import busio
-import board
 import logging
 import os
 import sys
-
 import numpy as np
-import RPi.GPIO as GPIO
 
-from . import adafruit_fxos8700, adafruit_fxas21002c
+
+from time import sleep
 from datetime import datetime, timedelta
 from ..processing.integrate_imu import integrate_acc
-from time import sleep
-from ..utils.config import Config
+from ..utils import configuration
 
 
 # Set up module level logger
@@ -25,31 +33,27 @@ logger = logging.getLogger('microSWIFT.'+__name__)
 
 ############## TODO: fix once EJ integrates config class ###############
 # System and logging parameters
-configFilename = r'/home/pi/microSWIFT/utils/Config.dat'
-config = Config() # Create object and load file
-ok = config.loadFile( configFilename )
-if( not ok ):
-    sys.exit(0)
 
-#system parameters
-floatID = os.uname()[1]
-dataDir = config.getString('System', 'dataDir')
-burst_interval=config.getInt('System', 'burst_interval')
-burst_time=config.getInt('System', 'burst_time')
-burst_seconds=config.getInt('System', 'burst_seconds')
-bad = config.getInt('System', 'badValue')
+try:
+    config = configuration.Config('./microSWIFT/microSWIFT/config.txt')
+    #system parameters
+    """floatID = os.uname()[1]
+    dataDir = config.getString('System', 'dataDir')
+    burst_interval=config.getInt('System', 'burst_interval')
+    burst_time=config.getInt('System', 'burst_time')
+    burst_seconds=config.getInt('System', 'burst_seconds')
+    bad = config.getInt('System', 'badValue')"""
 
-#IMU parameters
-imuFreq=config.getFloat('IMU', 'imuFreq')
-imu_samples = imuFreq*burst_seconds
-imu_gpio=config.getInt('IMU', 'imu_gpio')
-########################################################################
+    dataDir = './'
 
-#initialize IMU GPIO pin as modem on/off control
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(imu_gpio,GPIO.OUT)
-#turn IMU on for script recognizes i2c address
-GPIO.output(imu_gpio,GPIO.HIGH)
+    #IMU parameters TODO: use real ones later
+    imuFreq=config.imu_sampling_frequency
+    imu_samples = imuFreq*60
+    imu_gpio=config.imu_pin_number
+except Exception as e:
+    logger.info(e)
+    logger.info('error reading config')
+    print(e)
 
 class IMU:
     """TODO:"""
@@ -58,12 +62,22 @@ class IMU:
 
 def init():
     """
-    Initialize the IMU module and return True if successful.
-    If not successful, print the error to the logger and return False.
-    """
+    Initialize the IMU module.
 
+    Paramenters:
+    ------------
+    n/a
+
+    Returns:
+    --------
+    Return fxos and fxas objectd if successful.
+    If not successful, print the error to the logger and return False.
+    TODO: I think this actually needs to return some config values
+    """
     try:
         # initialize fxos and fxas devices (required after turning off device)
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(imu_gpio,GPIO.OUT)
         logger.info('power on IMU')
         GPIO.output(imu_gpio,GPIO.HIGH)
         i2c = busio.I2C(board.SCL, board.SDA)
@@ -72,8 +86,9 @@ def init():
     except Exception as e:
         logger.info(e)
         logger.info('error initializing imu')
+        print(e)
         return False
-    return True
+    return fxos, fxas
 
 def checkout():
     """
@@ -86,6 +101,11 @@ def record(end_time):
     """
     # IMU is not Initialzied at first
     imu_initialized = False
+    dataDir = '../'
+    floatID = os.uname()[1]
+    imuFreq=12
+    imu_samples = imuFreq*60
+    imu_gpio=16
 
     # Loop if the imu did not initialize and it is still within a recording block
     while datetime.utcnow().minute + datetime.utcnow().second/60 < end_time and imu_initialized==False:
@@ -94,8 +114,8 @@ def record(end_time):
         logger.info('initializing IMU')
 
         # initialize fxos and fxas devices (required after turning off device)
-        imu_initialized = init()
-        
+        fxos, fxas = init()
+
         # Sleep to start recording at same time as GPS
         sleep(5.1)
 
@@ -263,7 +283,7 @@ def to_xyz(imufile, fs):
     with open(imufile, 'r') as file: #encoding="utf8", errors='ignore'
         for line in file:
             currentLine = line.strip('\n').rstrip('\x00').split(',')
-            if currentLine[0] is not '':
+            if currentLine[0] != '':
                 timestamp.append(datetime.strptime(currentLine[0],'%Y-%m-%d %H:%M:%S'))
                 acc.append(list(map(float,currentLine[1:4])))  # acc = [ax,ay,az]
                 mag.append(list(map(float,currentLine[4:7])))  # mag = [mx,my,mz]
