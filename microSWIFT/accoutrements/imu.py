@@ -34,43 +34,41 @@ logger = logging.getLogger('microSWIFT.'+__name__)
 ############## TODO: fix once EJ integrates config class ###############
 # System and logging parameters
 
+try:
+    config = configuration.Config('./microSWIFT/microSWIFT/config.txt')
+    #system parameters
+    """floatID = os.uname()[1]
+    dataDir = config.getString('System', 'dataDir')
+    burst_interval=config.getInt('System', 'burst_interval')
+    burst_time=config.getInt('System', 'burst_time')
+    burst_seconds=config.getInt('System', 'burst_seconds')
+    bad = config.getInt('System', 'badValue')"""
+
+    dataDir = './'
+
+    #IMU parameters TODO: use real ones later
+    imuFreq=config.imu_sampling_frequency
+    imu_samples = imuFreq*60
+    imu_gpio=config.imu_pin_number
+except Exception as e:
+    logger.info(e)
+    logger.info('error reading config')
+    print(e)
+
 def init():
     """
     Initialize the IMU module.
 
     Paramenters:
     ------------
-    Config object
+    n/a
 
     Returns:
     --------
-    Return True if successful.
+    Return fxos and fxas objectd if successful.
     If not successful, print the error to the logger and return False.
     TODO: I think this actually needs to return some config values
     """
-
-    try:
-        #config = configuration.Config('../config.txt')
-        #system parameters
-        """floatID = os.uname()[1]
-        dataDir = config.getString('System', 'dataDir')
-        burst_interval=config.getInt('System', 'burst_interval')
-        burst_time=config.getInt('System', 'burst_time')
-        burst_seconds=config.getInt('System', 'burst_seconds')
-        bad = config.getInt('System', 'badValue')"""
-
-        dataDir = '../'
-
-        #IMU parameters TODO: use real ones later
-        imuFreq=12
-        imu_samples = imuFreq*60
-        imu_gpio=16
-    except Exception as e:
-        logger.info(e)
-        logger.info('error reading config')
-        print(e)
-        return False
-
     try:
         # initialize fxos and fxas devices (required after turning off device)
         GPIO.setmode(GPIO.BCM)

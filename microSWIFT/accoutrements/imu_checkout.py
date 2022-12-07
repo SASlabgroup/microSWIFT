@@ -10,8 +10,6 @@ def run_tests(run_time):
 
     Parameters:
     -----------
-    config = config object
-
     run_time = time in minutes to run tests. Minumum:1, maximum:60
 
     Returns:
