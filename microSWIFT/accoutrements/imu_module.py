@@ -51,6 +51,11 @@ GPIO.setup(imu_gpio,GPIO.OUT)
 #turn IMU on for script recognizes i2c address
 GPIO.output(imu_gpio,GPIO.HIGH)
 
+class IMU:
+    """TODO:"""
+    def __init__(self, config):
+        print('hi')
+
 def init():
     """
     Initialize the IMU module and return True if successful.
@@ -118,7 +123,7 @@ def record(end_time):
                     logger.info('error reading IMU data')
 
                 # Get current timestamp
-                timestamp='{:%Y-%m-%d %H:%M:%S}'.format(datetime.utcnow())
+                timestamp='{:%Y-%m-%d %H:%M:%S.%f}'.format(datetime.utcnow())
 
                 # Write data and timestamp to file
                 imu_out.write('%s,%f,%f,%f,%f,%f,%f,%f,%f,%f\n' %(timestamp,accel_x,accel_y,accel_z,mag_x,mag_y,mag_z,gyro_x,gyro_y,gyro_z))

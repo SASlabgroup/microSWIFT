@@ -1,56 +1,56 @@
-""" 
+"""
 Catch-all for general utilities.
 """
 
 import numpy as np
 
 
-def fill_bad_values(badVal=999, spectralLen=42):
+def fill_bad_values(config):
     """
     Utility to fill wave parameters with bad values.
 
     Input:
-        - badVal, the bad value to use (default = 999)
-        - spectralLen, length of spectral parameters (default = 42)
+        - config, configuration file
 
     Output:
-        - u,    (1x1)  = badVal
-        - v,    (1x1)
-        - z,    (1x1)
-        - lat,  (1x1)
-        - lon,  (1x1)
-        - Hs,   (1x1)
+        - Hs,   (1x1) = BAD_VALUE
         - Tp,   (1x1)
         - Dp,   (1x1)
-        - E,    (spectralLen x 1) = badVal*ones(spectralLen)
-        - f,    (spectralLen x 1)
-        - a1,   (spectralLen x 1)
-        - b1,   (spectralLen x 1)
-        - a2,   (spectralLen x 1)
-        - b2,   (spectralLen x 1)
-        - check,(spectralLen x 1)
+        - E,    (NUM_COEFF x 1) = BAD_VALUE*ones(NUM_COEFF)
+        - f,    (NUM_COEFF x 1)
+        - a1,   (NUM_COEFF x 1)
+        - b1,   (NUM_COEFF x 1)
+        - a2,   (NUM_COEFF x 1)
+        - b2,   (NUM_COEFF x 1)
+        - check,(NUM_COEFF x 1)
 
     Example:
-        u,v,z,lat,lon,Hs,Tp,Dp,E,f,a1,b1,a2,b2,check = fillBadValues(badVal=999,spectralLen=42)
+        u,v,z,lat,lon,Hs,Tp,Dp,E,f,a1,b1,a2,b2,check = fillBadValues(BAD_VALUE=999, NUM_COEFF=42)
     """
+    Hs    = config.BAD_VALUE
+    Tp    = config.BAD_VALUE
+    Dp    = config.BAD_VALUE
+    E     = config.BAD_VALUE * np.ones(config.NUM_COEFF)
+    f     = config.BAD_VALUE * np.ones(config.NUM_COEFF)
+    a1    = config.BAD_VALUE * np.ones(config.NUM_COEFF)
+    b1    = config.BAD_VALUE * np.ones(config.NUM_COEFF)
+    a2    = config.BAD_VALUE * np.ones(config.NUM_COEFF)
+    b2    = config.BAD_VALUE * np.ones(config.NUM_COEFF)
+    check = config.BAD_VALUE * np.ones(config.NUM_COEFF)
 
-    u     = badVal
-    v     = badVal
-    z     = badVal
-    lat   = [badVal]
-    lon   = [badVal]
-    Hs    = badVal
-    Tp    = badVal
-    Dp    = badVal
-    E     = badVal * np.ones(spectralLen)
-    f     = badVal * np.ones(spectralLen)
-    a1    = badVal * np.ones(spectralLen)
-    b1    = badVal * np.ones(spectralLen)
-    a2    = badVal * np.ones(spectralLen) 
-    b2    = badVal * np.ones(spectralLen)
-    check = badVal * np.ones(spectralLen)
-
-    return u,v,z,lat,lon,Hs,Tp,Dp,E,f,a1,b1,a2,b2,check
+    wave_vars = {
+        'Hs' : Hs,
+        'Tp' : Tp,
+        'Dp' : Dp,
+        'E' : E,
+        'f' : f,
+        'a1' : a1,
+        'b1' : b1,
+        'a2' : a2,
+        'b2' : b2,
+        'check' : check,
+    }
+    return wave_vars
 
 def get_uvzmean(badValue, pts):
     """TODO:"""

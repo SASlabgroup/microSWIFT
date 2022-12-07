@@ -380,6 +380,18 @@ def uvza_waves(u, v, z, a, fs):
     logger.info(f'len(E): {len(E)}; len(f): {len(f)}; len(a1): {len(a1)}; len(b1): {len(b1)}; len(a2): {len(a2)}; len(b2): {len(b2)}')
     logger.info('---------------------------------------------')
 
-    # Return values
-    return Hs, Tp, Dp, E, f, a1, b1, a2, b2, check
+    wave_vars = {
+        'Hs' : Hs,
+        'Tp' : Tp,
+        'Dp' : Dp,
+        'E' : E,
+        'f' : f,
+        'a1' : a1,
+        'b1' : b1,
+        'a2' : a2,
+        'b2' : b2,
+        'check' : check,
+    }
+
+    return wave_vars
 
