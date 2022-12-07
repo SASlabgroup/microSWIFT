@@ -25,8 +25,8 @@ from datetime import datetime
 
 import numpy as np
 
-from .accoutrements import imu
-from .accoutrements import gps
+from .accoutrements import imu_module
+from .accoutrements import gps_module
 from .accoutrements import sbd
 from .accoutrements import telemetry_stack
 from .processing.gps_waves import gps_waves
@@ -46,7 +46,7 @@ config = configuration.Config('./config.txt')
 # script will attempt to send them during the next window. This ensures
 # recent messages will be sent first.
 telemetry_stack.init()
-logger.info(f'Number of messages in stack: {telemetry_stack.get_length()}')
+logger.info('Number of messages in stack: %d', telemetry_stack.get_length())
 
 # `duty_cycle_count` keeps track of the number of duty cycles.
 duty_cycle_count = 1
@@ -57,10 +57,12 @@ while True:
     # If the current time is within any record window (between start
     # and end time) record the imu and gps data until the end of the
     # window. These tasks are submitted concurrently.
-    if config.START_TIME <= datetime.utcnow() \
-                         < config.START_TIME + config.RECORD_WINDOW_LENGTH:
+    if config.START_TIME <= datetime.utcnow() < config.END_RECORD_TIME:
 
         logger.info(log.header(f'Iteration {duty_cycle_count}'))
+
+        gps = gps_module.GPS(config)
+        imu = imu_module.IMU(config)
 
         # Run record_gps.py and record_imu.py concurrently with
         # asynchronous futures. This is a two-step call that
@@ -68,14 +70,17 @@ while True:
         # from each Future instance. Flip the`recording_complete`
         # state when the tasks are completed.
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            record_gps_future = executor.submit(gps.record, config, endtime)
-            record_imu_future = executor.submit(imu.record, config, endtime)
+            record_gps_future = executor.submit(gps.record,
+                                                config.END_RECORD_TIME)
+            record_imu_future = executor.submit(imu.record,
+                                                config.END_RECORD_TIME)
 
-            gps_file, gps_initialized = record_gps_future.result()
-            imu_file, imu_initialized = record_imu_future.result()
+            gps_file = record_gps_future.result()
+            imu_file = record_imu_future.result()
 
         recording_complete = True
-        config.START_TIME = config.START_TIME + config.DUTY_CYCLE_LENGTH
+
+        config.update_times()
 
     # Process the data into a wave estimate based on the specified
     # processing type. Check that the appropriate modules are
@@ -87,21 +92,13 @@ while True:
         # GPS waves processing: convert the raw GPS data to East-West
         # velocity (u), North-South velocity (v), and elevation (z),
         # then produce a wave estimate.
-        if config.WAVE_PROCESSING_TYPE == 'gps_waves' and gps_initialized:
-            gps_vars = gps.to_uvz(gps_file)
-            Hs, Tp, Dp, E, f, a1, b1, a2, b2, check \
-                                        = gps_waves(gps_vars['u'],
-                                                    gps_vars['v'],
-                                                    gps_vars['z'],
-                                                    config.GPS_SAMPLING_FREQ)
+        if config.WAVE_PROCESSING_TYPE == 'gps_waves' and gps.initialized:
+            gps.to_uvz(gps_file)
+            wave_vars = gps_waves(gps.u,
+                                  gps.v,
+                                  gps.z,
+                                  config.GPS_SAMPLING_FREQ)
             logger.info('gps_waves.py executed')
-
-            #TODO: This solution is not great but can be sorted out later:
-            u = gps_vars['u']
-            v = gps_vars['v']
-            z = gps_vars['z']
-            lat = gps_vars['lat']
-            lon = gps_vars['lon']
 
         # UVZA waves processing: convert the raw GPS data to East-West
         # velocity (u), North-South velocity (v), and elevation (z);
@@ -110,53 +107,44 @@ while True:
         # array and produce a wave estimate. The first two-minutes
         # are zeroed-out to remove filter ringing.
         elif config.WAVE_PROCESSING_TYPE == 'uvza_waves' \
-                                        and gps_initialized \
-                                        and imu_initialized:
-            gps_vars = gps.to_uvz(gps_file)
-            imu_vars =imu.to_xyz(imu_file, config.IMU_SAMPLING_FREQ)
-            imu_collated, gps_collated = collate_imu_and_gps(imu_vars, gps_vars)
+                                        and gps.initialized \
+                                        and imu.initialized:
+            gps.to_uvz(gps_file)
+            imu.to_xyz(imu_file, config.IMU_SAMPLING_FREQ)
+            imu_collated, gps_collated = collate_imu_and_gps(imu, gps)
 
             ZERO_POINTS = int(np.round(120*config.IMU_SAMPLING_FREQ))
-            Hs, Tp, Dp, E, f, a1, b1, a2, b2, check  \
-                                = uvza_waves(gps_collated['u'][ZERO_POINTS:],
-                                             gps_collated['v'][ZERO_POINTS:],
-                                             imu_collated['pz'][ZERO_POINTS:],
-                                             imu_collated['az'][ZERO_POINTS:],
-                                             config.IMU_SAMPLING_FREQ)
+            wave_vars = uvza_waves(gps_collated['u'][ZERO_POINTS:],
+                                   gps_collated['v'][ZERO_POINTS:],
+                                   imu_collated['pz'][ZERO_POINTS:],
+                                   imu_collated['az'][ZERO_POINTS:],
+                                   config.IMU_SAMPLING_FREQ)
             logger.info('uvza_waves.py executed.')
 
-            # TODO: This solution is not great but can be sorted out later:
-            u = gps_vars['u']
-            v = gps_vars['v']
-            z = gps_vars['z']
-            lat = gps_vars['lat']
-            lon = gps_vars['lon']
-
         else:
-            logger.info(('A wave solution cannot be created; either the'
-                f' specified processing type (={config.WAVE_PROCESSING_TYPE})'
-                f' is invalid, or either or both of the sensors failed to'
-                f' initialize (GPS initialized={gps_initialized}, IMU'
-                f' initialized={imu_initialized}). Entering bad values for'
-                f' the wave products (={config.BAD_VALUE}).'))
-            u, v, z, lat, lon, Hs, Tp, Dp, E, f, a1, b1, a2, b2, check \
-                        = utils.fill_bad_values(badVal=config.BAD_VALUE,
-                                                spectralLen=config.NUM_COEF)
+            logger.info('A wave solution cannot be created; either the '
+                        'specified processing type (=%s) is invalid, or '
+                        'either or both of the sensors failed to initialize '
+                        '(GPS initialized=%s, IMU initialized=%s). Entering '
+                        'bad values for the wave products (=%d).',
+                        config.WAVE_PROCESSING_TYPE, gps.initialized,
+                        imu.initialized, config.BAD_VALUE)
+
+            wave_vars = utils.fill_bad_values(config)
 
         # check lengths of spectral quanities:
-        if len(E)!=config.NUM_COEF or len(f)!=config.NUM_COEF:
-            logger.info(('WARNING: the length of E or f does not match the'
-                         ' specified number of coefficients, '
-                        f'{config.NUM_COEF};'
-                        f' (len(E)={len(E)}, len(f)={len(f)})'))
+        if len(wave_vars['E'])!=config.NUM_COEF \
+                                      or len(wave_vars['f'])!=config.NUM_COEF:
+            logger.info('WARNING: the length of E or f does not match the '
+                        'specified number of coefficients, %d; (len(E)=%d, '
+                        'len(f)=%d).',
+                        config.NUM_COEF, wave_vars['E'], wave_vars['f'])
 
-        # Compute the mean of the GPS output. The last reported
-        # position is sent to the server.
-        u_mean = np.nanmean(u)
-        v_mean = np.nanmean(v)
-        z_mean = np.nanmean(z)
-        last_lat = utils.get_last(config.BAD_VALUE, lat)
-        last_lon = utils.get_last(config.BAD_VALUE, lon)
+        wave_vars['u_mean'] = np.nanmean(gps.u)
+        wave_vars['v_mean'] = np.nanmean(gps.v)
+        wave_vars['z_mean'] = np.nanmean(gps.z)
+        wave_vars['last_lat'] = utils.get_last(config.BAD_VALUE, gps.lat)
+        wave_vars['last_lon'] = utils.get_last(config.BAD_VALUE, gps.lon)
 
         # Populate the voltage, temperature, salinity fields with place-
         # holders. These modules will be incorporated in the future.
@@ -171,9 +159,7 @@ while True:
         # are sent first.
         logger.info('Creating TX file and packing payload data')
         tx_filename, payload_data \
-                    = sbd.createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check,
-                                   u_mean, v_mean, z_mean, last_lat, last_lon,
-                                   temperature, salinity, voltage)
+                    = sbd.createTX(wave_vars, temperature, salinity, voltage)
 
         # Push the newest SBD filenames onto the stack and return the
         # updated list of payload filenames. The list must be flipped
@@ -184,17 +170,18 @@ while True:
         payload_filenames = telemetry_stack.push(tx_filename)
         payload_filenames_LIFO = list(np.flip(payload_filenames))
 
-        logger.info(f'Number of Messages to send: {len(payload_filenames)}')
+        logger.info('Number of Messages to send: %d', len(payload_filenames))
 
         messages_sent = 0
         for tx_file in payload_filenames_LIFO:
-            if datetime.utcnow() < next_start:
-                logger.info(f'Opening TX file from payload list: {tx_file}')
+            if datetime.utcnow() < config.END_DUTY_CYCLE_TIME:
+                logger.info('Opening TX file from payload list: %s', tx_file)
 
                 with open(tx_file, mode='rb') as file:
                     payload_data = file.read()
 
-                successful_send = sbd.send(payload_data, next_start)
+                successful_send = sbd.send(payload_data,
+                                           config.END_DUTY_CYCLE_TIME)
 
                 if successful_send is True:
                     del payload_filenames[-1]
@@ -209,8 +196,8 @@ while True:
         # End of the loop; log the send statistics and increment the
         # counters for the next iteration.
         messages_remaining = len(payload_filenames) - messages_sent
-        logger.info((f'Messages Sent: {int(messages_sent)}; '
-                     f'Messages Remaining: {int(messages_remaining)}'))
+        logger.info('Messages Sent: %d; Messages Remaining: %d',
+                    int(messages_sent), int(messages_remaining))
 
         # Completed duty cycle
         duty_cycle_count += 1
@@ -219,7 +206,7 @@ while True:
     # telemetry and sleep until a window is entered. Log this
     # information at the specified interval (in seconds).
     else:
-        config.START_TIME = config.START_TIME + config.DUTY_CYCLE_LENGTH
+        config.update_times()
         while datetime.utcnow() < config.START_TIME:
             time.sleep(10)
             logger.info('Waiting to enter record window')

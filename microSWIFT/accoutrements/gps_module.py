@@ -32,6 +32,7 @@ gps_timeout = config.getInt('GPS','timeout')
 ########################################################################
 
 class GPS:
+
     def __init__(self, config):
         """_summary_
 

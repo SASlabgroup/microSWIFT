@@ -1,7 +1,14 @@
+""""
+GPS waves
+"""
+
+import numpy as np
+from numpy import fft
+
+from ..utils import log
+
 def gps_waves(u, v, z, fs): 
     """
-    Author: @edwinrainville
-
     gps_waves processing
 
     Parameters
@@ -20,17 +27,11 @@ def gps_waves(u, v, z, fs):
     E : Energy Spectrum, units are m^2/Hz
     f : frequency bins, Hz
     a1 : first spectral moment 
-    b1 : 
-    a2 : 
-    b2 : 
+    b1 :
+    a2 :
+    b2 :
     
     """
-
-    # Packages
-    import numpy as np
-    # import scipy.signal as signal
-    import numpy.fft as fft
-    from logging import getLogger
 
     # Set up module level logger
     logger = getLogger('microSWIFT.'+__name__) 
@@ -354,8 +355,19 @@ def gps_waves(u, v, z, fs):
     b2 = np.delete(b2, ind_to_delete)
     check = np.delete(check, ind_to_delete)
     f = np.delete(f, ind_to_delete)
-    
-    logger.info('--------------------------------------------')
 
-    # Return values
-    return Hs, Tp, Dp, E, f, a1, b1, a2, b2, check
+    logger.info('--------------------------------------------')
+    wave_vars = {
+        'Hs' : Hs,
+        'Tp' : Tp,
+        'Dp' : Dp,
+        'E' : E,
+        'f' : f,
+        'a1' : a1,
+        'b1' : b1,
+        'a2' : a2,
+        'b2' : b2,
+        'check' : check,
+    }
+
+    return wave_vars
