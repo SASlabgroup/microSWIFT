@@ -1,6 +1,6 @@
 """
 Definition of the configuration class for the microSWIFT. The
-configuration will read in a few variables from the 
+configuration will read in a few variables from the
 """
 
 from datetime import datetime, timedelta
@@ -51,7 +51,7 @@ class Config:
         if (duty_cycle_length - record_window_length) < 5:
             warnings.warn('send and process window SHOULD be longer than 5'
                           ' minutes')
-                         
+
         if gps_sampling_frequency >=1 and gps_sampling_frequency <= 4:
             pass
         else:
@@ -84,6 +84,7 @@ class Config:
 
         # IMU Parameters
         self.IMU_SAMPLING_FREQ = imu_sampling_frequency
+        self.IMU_GPIO = 20
 
         # Data Parameters
         self.WAVE_PROCESSING_TYPE = 'gps_waves'
@@ -98,7 +99,7 @@ class Config:
                     f'record window length: {self.RECORD_WINDOW_LENGTH}')
 
         return
-        
+
     def read_config_file(self, config_fname):
         """
         Read configuration parameters from the configuration file.
@@ -112,7 +113,7 @@ class Config:
         Returns
         -------
 
-        
+
         """
         try:
             config_file = open(config_fname, 'r')
@@ -129,13 +130,13 @@ class Config:
                 except:
                     raise ValueError('duty_cycle_length must be an integer')
 
-            elif 'record_window_length' in vals: 
+            elif 'record_window_length' in vals:
                 try:
                     record_window_length = int(vals[-1])
                 except:
                     raise ValueError('record_window_length must be an integer')
 
-            elif 'gps_sampling_frequency' in vals: 
+            elif 'gps_sampling_frequency' in vals:
                 try:
                     gps_sampling_frequency = int(vals[-1])
                 except:
