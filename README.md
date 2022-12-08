@@ -34,7 +34,7 @@ microSWIFT wave measurements in the form of spectral and bulk parameters are tel
 - https://swiftserver.apl.washington.edu/map/ (map)
 - https://github.com/SASlabgroup/microSWIFTtelemetry (Python-based data access)
 
-Raw data in the form of GPS and IMU time series is stored as `.dat` files in the onboard SD card in the `microSWIFT/data/` directory.
+Raw data in the form of GPS and IMU time series is stored on the onboard SD card in `.dat` format in the `microSWIFT/data/` directory.
 
 
 
@@ -57,11 +57,18 @@ microSWIFT/
     │   ├── __init__.py
     │   ├── adafruit_fxas21002c.py
     │   ├── adafruit_fxos8700.py
-    │   ├── gps.py
-    │   ├── imu.py
+    │   ├── gps_module.py
+    │   ├── imu_module.py
     │   ├── imu_checkout.py
     │   ├── sbd.py
     │   └── telemetry_stack.py
+    ├── mocks
+        ├── __init__.py
+        ├── mock_adafruit_fxas21002c.py
+        ├── mock_adafruit_fxos8700.py
+        ├── mock_board.py
+        ├── mock_busio.py
+        ├── mock_rpi_gpio.py
     ├── checkout.py
     ├── config.txt
     ├── microSWIFT.py

@@ -27,7 +27,7 @@ jobs:
     - name: Lint with pylint
       run: |
         conda install pylint
-        pylint .
+        pylint --fail-under=1 --disable=C0103 ./microSWIFT/
     - name: Test with unittest
       run: |
-        python unittest -m discover
+        python -m unittest

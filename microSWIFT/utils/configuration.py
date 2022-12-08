@@ -62,13 +62,14 @@ class Config:
         else:
             raise ValueError('imu_sampling_frequency is out of range')
 
+        # Timing Parameters
         self.DUTY_CYCLES_PER_HOUR = int(60/duty_cycle_length)
         self.DUTY_CYCLE_LENGTH = timedelta(minutes=duty_cycle_length)
         self.RECORD_WINDOW_LENGTH = timedelta(minutes=record_window_length)
-        get_record_window_start_time(self)
-        
-        self.IMU_SAMPLING_FREQ = imu_sampling_frequency
-       
+        self.START_TIME = self.get_start_time()
+        self.END_RECORD_TIME = self.START_TIME + self.RECORD_WINDOW_LENGTH
+        self.END_DUTY_CYCLE_TIME = self.START_TIME + self.DUTY_CYCLE_LENGTH
+
         # System Parameters
         self.ID = os.uname()[1]
         self.PAYLOAD_TYPE = 7
@@ -80,6 +81,9 @@ class Config:
         self.GPS_PORT = '/dev/ttyS0'
         self.START_BAUD = 9600
         self.BAUD = 115200
+
+        # IMU Parameters
+        self.IMU_SAMPLING_FREQ = imu_sampling_frequency
 
         # Data Parameters
         self.WAVE_PROCESSING_TYPE = 'gps_waves'
@@ -146,29 +150,31 @@ class Config:
                                      'integer')
             else:
                 continue
-        
-        try:
-            duty_cycle_length
-        except:
-            raise 
-        
-        return (duty_cycle_length, 
-                record_window_length, 
+
+        return (duty_cycle_length,
+                record_window_length,
                 gps_sampling_frequency,
                 imu_sampling_frequency)
 
-def get_record_window_start_time(self):
-    """
-    Find the start of the current duty cycle as a datetime.
-    """
-    current_hour = datetime.utcnow().replace(minute=0, second=0)
-    for i in range(self.DUTY_CYCLES_PER_HOUR):
-        possible_start_time = current_hour + i*self.DUTY_CYCLE_LENGTH
-        if possible_start_time <= datetime.utcnow() \
-                                < possible_start_time + self.DUTY_CYCLE_LENGTH:
-            self.START_TIME = possible_start_time
-        else:
-            continue
+    def get_start_time(self):
+        """
+        Find the start of the current duty cycle as a datetime.
+        """
+        current_hour = datetime.utcnow().replace(minute=0, second=0)
+        for i in range(self.DUTY_CYCLES_PER_HOUR):
+            possible_start_time = current_hour + i*self.DUTY_CYCLE_LENGTH
+            if possible_start_time <= datetime.utcnow() \
+                                    < possible_start_time + self.DUTY_CYCLE_LENGTH:
+                start_time = possible_start_time
+            else:
+                continue
 
-    return
+        return start_time
 
+    def update_times(self):
+        """
+        Update timing parameters.
+        """
+        self.START_TIME = self.START_TIME + self.DUTY_CYCLE_LENGTH
+        self.END_RECORD_TIME = self.START_TIME + self.RECORD_WINDOW_LENGTH
+        self.END_DUTY_CYCLE_TIME = self.START_TIME + self.DUTY_CYCLE_LENGTH

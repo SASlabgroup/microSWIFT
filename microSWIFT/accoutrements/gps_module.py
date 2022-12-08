@@ -190,7 +190,6 @@ class GPS:
                             # If the number of position and velocity samples is enough then and the loop
                             if ipos == gps_samples and ivel == gps_samples:
                                 break
-
                         # Output logger information on samples
                         logger.info('Ending GPS burst at {}'.format(datetime.now()))
                         logger.info('number of GPGGA samples = {}'.format(ipos))
