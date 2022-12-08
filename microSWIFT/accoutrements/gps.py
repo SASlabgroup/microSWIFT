@@ -4,7 +4,6 @@ run as an asynchronous task at the same time as the recordIMU function.
 
 Authors: @EJRainville, @AlexdeKlerk, @VivianaCastillo
 
-#TODO: should this just be a class...?
 """
 
 import logging
@@ -21,14 +20,12 @@ from ..utils.config import Config
 
 #GPS parameters 
 dataDir = config.getString('System', 'dataDir')
-floatID = os.uname()[1]
 gps_port = config.getString('GPS', 'port')
 baud = config.getInt('GPS', 'baud')
-startBaud = config.getInt('GPS', 'startBaud')
+start_aud = config.getInt('GPS', 'startBaud')
 gps_timeout = config.getInt('GPS', 'timeout')
 burst_seconds = config.getInt('System', 'burst_seconds')
 gps_samples = gps_freq*burst_seconds
-gps_timeout = config.getInt('GPS','timeout')
 ########################################################################
 
 class GPS:
@@ -56,18 +53,16 @@ class GPS:
             logger.info(e)
         try:
             #set device baud rate to 115200
-            logger.info("setting baud rate to 115200 $PMTK251,115200*1F\r\n")
             ser.write('$PMTK251,115200*1F\r\n'.encode())
             sleep(1)
             #switch ser port to 115200
             ser.baudrate = config.baud
             logger.info("switching to %s on port %s" % (config.baud, config.gps_port))
-            #set output sentence to GPGGA and GPVTG, plus GPRMC once every 4 positions (See GlobalTop PMTK command packet PDF)
-            logger.info('setting NMEA output sentence $PMTK314,0,4,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*2C\r\n')
+            #set output sentence to GPGGA and GPVTG, plus GPRMC once every 4 positions
+            #(See GlobalTop PMTK command packet PDF)
             ser.write('$PMTK314,0,4,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*2C\r\n'.encode())
             sleep(1)
             #set interval to 250ms (4 Hz)
-            logger.info("setting GPS to 4 Hz rate $PMTK220,250*29\r\n")
             ser.write("$PMTK220,{}*29\r\n".format(config.GPS_SAMPLING_FREQ).encode()) #TODO: change sampling freq to milliseconds from HZ
             sleep(1)
         except Exception as e:
@@ -134,28 +129,25 @@ class GPS:
             logger.info(e)
 
 
-    def checkout(self, endtime):
+    def __checkout__(self, end_time):
         """
         TODO:
         """
+        
     
-    def record(end_time):
+    def __record__(end_time):
         """
         TODO:
         """
-        # GPS has not been initialized yet
-        gps_initialized = False
+        # get floatID for file names
+        floatID = os.uname()[1]
 
-        # loop while within the recording block and the gps hasn't initialized yet
-        while datetime.utcnow().minute + datetime.utcnow().second/60 < end_time and gps_initialized==False:
-
-            
-
-        ## ------------- Record GPS ---------------------------
+        # loop while within the recording block
+        while datetime.utcnow().minute + datetime.utcnow().second/60 < end_time:
         # If GPS signal is initialized start recording
         if gps_initialized:
             #create file name
-            GPSdataFilename = dataDir + floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
+            GPSdataFilename = config.dataDir + floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
             logger.info("file name: {}".format(GPSdataFilename))
 
             logger.info('starting GPS burst')
