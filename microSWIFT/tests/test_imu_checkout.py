@@ -1,14 +1,14 @@
 """Unit tests for the imu_checkout module"""
 import unittest
 
-from utils import configuration
+# from microSWIFT.utils import configuration
 
-class Testimu_checkout(unittest.TestCase):
+class TestImuCheckout(unittest.TestCase):
     """
-
+    Test class for IMU checkout.
     """
     def test_smoke(self):
         """
-
+        Smoke test for IMU checkout.
         """
         
