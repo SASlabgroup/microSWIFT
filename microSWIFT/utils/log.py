@@ -15,13 +15,16 @@ def init() -> logging.Logger:
     logger = logging.getLogger('microSWIFT')
 
     # Get log parameters from configuration:
-    LOG_FILE_NAME = '/home/pi/microSWIFT/logs/microSWIFT.log'
+    LOG_FILE_NAME = './microSWIFT/logs/microSWIFT.log'
     LOG_LEVEL = 'INFO'
     LOG_FORMAT = ('%(asctime)s, %(name)s - [%(levelname)s] - %(message)s')
 
     # Set log parameters:
     logger.setLevel(LOG_LEVEL)
-    log_file_handler = logging.FileHandler(LOG_FILE_NAME)
+    try:
+        log_file_handler = logging.FileHandler(LOG_FILE_NAME)
+    except FileNotFoundError as err:
+         print(err, 'please create a ./microSWIFT/logs/ directory.')
     log_file_handler.setLevel(LOG_LEVEL)
     log_file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
     logger.addHandler(log_file_handler)

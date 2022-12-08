@@ -1,6 +1,6 @@
 # microSWIFT-specific
-data/
-logs/
+data/*
+logs/*
 microSWIFT/could_be_useful/
 
 # vscode

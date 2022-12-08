@@ -1,0 +1,3 @@
+# Retain empty microSWIFT directories needed for storage
+data/
+logs/
