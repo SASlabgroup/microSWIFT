@@ -18,6 +18,9 @@ import serial
 
 from ..utils.config import Config
 
+# Set up module level logger
+logger = logging.getLogger('microSWIFT.'+__name__)  
+
 #GPS parameters
 dataDir = config.getString('System', 'dataDir')
 gps_port = config.getString('GPS', 'port')
