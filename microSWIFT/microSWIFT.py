@@ -15,7 +15,7 @@ Author(s):
 EJ Rainville (UW-APL), Alex de Klerk (UW-APL), Jim Thomson (UW-APL),
 Viviana Castillo (UW-APL), Jacob Davis (UW-APL)
 
-microSWIFT is licensed under the GNU General Public License v3.0.
+microSWIFT is licensed under the MIT License.
 
 """
 
