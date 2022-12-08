@@ -73,55 +73,7 @@ class GPS:
         try:
             #loop until timeout dictated by gps_timeout value (seconds) or the gps is initialized
             while datetime.utcnow().minute + datetime.utcnow().second/60 < end_time and gps_initialized==False:
-                ser.flushInput()
-                ser.read_until('\n'.encode())
-                newline=ser.readline().decode('utf-8')
-                if not 'GPGGA' in newline:
-                    newline=ser.readline().decode('utf-8')
-                    if 'GPGGA' in newline:
-                        logger.info('found GPGGA sentence')
-                        logger.info(newline)
-                        gpgga=pynmea2.parse(newline,check=True)
-                        logger.info('GPS quality= {}'.format(gpgga.gps_qual))
-                        #check gps_qual value from GPGGS sentence. 0=invalid,1=GPS fix,2=DGPS fix
-                        if gpgga.gps_qual > 0:
-                            logger.info('GPS fix acquired')
-                            # Set gprmc line to False and enter while loop to read new lines until it gets the correct line
-                            gprmc_line = False
-                            #get date and time from GPRMC sentence - GPRMC reported only once every 8 lines
-                            while gprmc_line==False:
-                                newline=ser.readline().decode('utf-8')
-                                if 'GPRMC' in newline:
-                                    logger.info('found GPRMC sentence')
-                                    # Change value to True so that the while loop exits once a gprmc line is found
-                                    gprmc_line = True
-                                    try:
-                                        gprmc=pynmea2.parse(newline)
-                                        nmea_time=gprmc.timestamp
-                                        nmea_date=gprmc.datestamp
-                                        logger.info("nmea time: {}".format(nmea_time))
-                                        logger.info("nmea date: {}".format(nmea_date))
-                                        
-                                        #set system time
-                                        try:
-                                            logger.info("setting system time from GPS: {0} {1}".format(nmea_date, nmea_time))
-                                            os.system('sudo timedatectl set-timezone UTC')
-                                            os.system('sudo date -s "{0} {1}"'.format(nmea_date, nmea_time))
-                                            os.system('sudo hwclock -w')
-                                            
-                                            # GPS is initialized
-                                            logger.info("GPS initialized")
-                                            gps_initialized = True
-
-                                        except Exception as e:
-                                            logger.info(e)
-                                            logger.info('error setting system time')
-                                            continue	
-                                    except Exception as e:
-                                        logger.info(e)
-                                        logger.info('error parsing nmea sentence')
-                                        continue
-                sleep(1)
+                self.__checkout__()
             if gps_initialized == False:
                 logger.info('GPS failed to initialize, timeout')
         except Exception as e:
@@ -129,11 +81,60 @@ class GPS:
             logger.info(e)
 
 
-    def __checkout__(self, end_time):
+    def __checkout__(self):
         """
         TODO:
         """
-        
+        ser.flushInput()
+        ser.read_until('\n'.encode())
+        newline=ser.readline().decode('utf-8')
+        if not 'GPGGA' in newline:
+            newline=ser.readline().decode('utf-8')
+            if 'GPGGA' in newline:
+                logger.info('found GPGGA sentence')
+                logger.info(newline)
+                gpgga=pynmea2.parse(newline,check=True)
+                logger.info('GPS quality= {}'.format(gpgga.gps_qual))
+                #check gps_qual value from GPGGS sentence. 0=invalid,1=GPS fix,2=DGPS fix
+                if gpgga.gps_qual > 0:
+                    logger.info('GPS fix acquired')
+                    # Set gprmc line to False and enter while loop to read new lines until it gets the correct line
+                    gprmc_line = False
+                    #get date and time from GPRMC sentence - GPRMC reported only once every 8 lines
+                    while gprmc_line==False:
+                        newline=ser.readline().decode('utf-8')
+                        if 'GPRMC' in newline:
+                            logger.info('found GPRMC sentence')
+                            # Change value to True so that the while loop exits once a gprmc line is found
+                            gprmc_line = True
+                            try:
+                                gprmc=pynmea2.parse(newline)
+                                nmea_time=gprmc.timestamp
+                                nmea_date=gprmc.datestamp
+                                logger.info("nmea time: {}".format(nmea_time))
+                                logger.info("nmea date: {}".format(nmea_date))
+                                        
+                                #set system time
+                                try:
+                                    logger.info("setting system time from GPS: {0} {1}".format(nmea_date, nmea_time))
+                                    os.system('sudo timedatectl set-timezone UTC')
+                                    os.system('sudo date -s "{0} {1}"'.format(nmea_date, nmea_time))
+                                    os.system('sudo hwclock -w')
+                                            
+                                    # GPS is initialized
+                                    logger.info("GPS initialized")
+                                    gps_initialized = True
+
+                                except Exception as e:
+                                    logger.info(e)
+                                    logger.info('error setting system time')
+                                    continue    
+                            except Exception as e:
+                                logger.info(e)
+                                logger.info('error parsing nmea sentence')
+                                continue
+        sleep(1)
+
     
     def __record__(end_time):
         """
@@ -204,7 +205,7 @@ class GPS:
             # Return the GPS filename to be read into the onboard processing
             return GPSdataFilename, gps_initialized
 
-    def to_uvz(gpsfile):
+    def to_uvz(self, gpsfile):
         """
         This function reads in data from the GPS files and stores the fields
         in memory for post-processing.
