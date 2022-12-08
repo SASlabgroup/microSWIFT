@@ -8,16 +8,17 @@ Authors: @EJRainville, @AlexdeKlerk, @VivianaCastillo
 
 import logging
 import os
+from datetime import datetime
+from time import sleep
 
+import numpy as np
 import RPi.GPIO as GPIO
 import pynmea2
 import serial
 
-from datetime import datetime
-from time import sleep
 from ..utils.config import Config
 
-#GPS parameters 
+#GPS parameters
 dataDir = config.getString('System', 'dataDir')
 gps_port = config.getString('GPS', 'port')
 baud = config.getInt('GPS', 'baud')
@@ -65,7 +66,8 @@ class GPS:
             ser.write('$PMTK314,0,4,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*2C\r\n'.encode())
             sleep(1)
             #set interval to 250ms (4 Hz)
-            ser.write("$PMTK220,{}*29\r\n".format(config.GPS_SAMPLING_FREQ).encode()) #TODO: change sampling freq to milliseconds from HZ
+            ser.write("$PMTK220,{}*29\r\n".format(config.GPS_SAMPLING_FREQ).encode()) 
+            #TODO: change sampling freq to milliseconds from HZ
             sleep(1)
         except Exception as err:
             logger.info('Failed to set baudrate and sampling frequency')
@@ -116,7 +118,6 @@ class GPS:
                                 nmea_date=gprmc.datestamp
                                 logger.info("nmea time: {}".format(nmea_time))
                                 logger.info("nmea date: {}".format(nmea_date))
-                                        
                                 #set system time
                                 try:
                                     logger.info("setting system time from GPS: {0} {1}".format(nmea_date, nmea_time))
@@ -140,10 +141,10 @@ class GPS:
         sleep(1)
 
     
-    def __record__(end_time):
+    def __record__(self, end_time):
         """
         This is the function that record the gps component on RPi. The function takes in a timestamp.
-        And produces a GPS log file with the  
+        The output creates a GPS log file.
         """
         # get floatID for file names
         floatID = os.uname()[1]
@@ -170,7 +171,7 @@ class GPS:
                     
                             if "GPGGA" in newline:
                                 gpgga = pynmea2.parse(newline,check=True)   #grab gpgga sentence and parse
-                                #check to see if we have lost GPS fix, and if so, continue to loop start. a badValue will remain at this index
+                                #check to see if we have lost GPS fix, and if so, continue to loop start. a bad value will remain at this index
                                 if gpgga.gps_qual < 1:
                                     logger.info('lost GPS fix, sample not recorded. Waiting 10 seconds')
                                     logger.info('lost GPS fix, sample not recorded. Waiting 10 seconds')
@@ -184,8 +185,7 @@ class GPS:
                             # If the number of position and velocity samples is enough then and the loop
                             if ipos == gps_samples and ivel == gps_samples:
                                 break
-                            else:
-                                continue
+
                         # Output logger information on samples
                         logger.info('Ending GPS burst at {}'.format(datetime.now()))
                         logger.info('number of GPGGA samples = {}'.format(ipos))
@@ -200,7 +200,7 @@ class GPS:
                 logger.info('number of GPVTG samples = {}'.format(ivel))
                 return GPSdataFilename
 
-        # If GPS signal is not initialized exit 
+        # If GPS signal is not initialized exit
         else:
             logger.info("GPS not initialized, exiting")
 
@@ -211,19 +211,13 @@ class GPS:
             return GPSdataFilename
 
 
-    def to_uvz(self, gpsfile):
+    def to_uvz(self, gps_file):
         """
         This function reads in data from the GPS files and stores the fields
         in memory for post-processing.
         """
-
-        import numpy as np
-        import pynmea2
-        from datetime import datetime, timedelta
-        from logging import getLogger
-
         # Set up module level logger
-        logger = getLogger('microSWIFT.'+__name__) 
+        logger = logging.getLogger('microSWIFT.'+__name__)
         logger.info('---------------GPStoUVZ.py------------------')
 
         # Define empty lists of variables to append
@@ -238,33 +232,33 @@ class GPS:
         GPS = {'east_west':None,'north_south':None,'up_down':None,'lat':None,'lon':None,'time':None}
         
         # Define Constants 
-        badValue=999
+        bad_value=999
         
         # current year, month, date for timestamp creation; can also be obtained from utcnow()
-        ymd = gpsfile[-23:-14]
+        ymd = gps_file[-23:-14]
         # ymd = datetime.utcnow().strftime("%Y-%m-%d")
 
 
-        with open(gpsfile, 'r') as file:
+        with open(gps_file, 'r') as file:
         
             for line in file:
                 if "GPGGA" in line:
                     gpgga = pynmea2.parse(line,check=True)   #grab gpgga sentence and parse
-                    #check to see if we have lost GPS fix, and if so, continue to loop start. a badValue will remain at this index
+                    #check to see if we have lost GPS fix, and if so, continue to loop start. a bad value will remain at this index
                     if gpgga.gps_qual < 1:
-                        up_down.append(badValue)
-                        lat.append(badValue)
-                        lon.append(badValue)
+                        up_down.append(bad_value)
+                        lat.append(bad_value)
+                        lon.append(bad_value)
                         ipos+=1
                         continue
                     up_down.append(gpgga.altitude)
                     lat.append(gpgga.latitude)
                     lon.append(gpgga.longitude)
                     # construct a datetime from the year, month, date, and timestamp
-                    dt = f'{ymd} {gpgga.timestamp}'  #.rstrip('0')
-                    if '.' not in dt: # if the datetime does not contain a float, append a trailing zero
-                        dt += '.0'
-                    time.append(datetime.strptime(dt,'%d%b%Y %H:%M:%S.%f'))
+                    date_time = f'{ymd} {gpgga.timestamp}'  #.rstrip('0')
+                    if '.' not in date_time: # if the datetime does not contain a float, append a trailing zero
+                        date_time += '.0'
+                    time.append(datetime.strptime(date_time,'%d%b%Y %H:%M:%S.%f'))
                     ipos+=1
                 elif "GPVTG" in line:
                     gpvtg = pynmea2.parse(line,check=True)   #grab gpvtg sentence
