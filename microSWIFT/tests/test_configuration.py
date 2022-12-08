@@ -3,8 +3,9 @@ Test for the Config class for the microSWIFT.
 """
 
 import unittest
+import os
 
-from utils import configuration
+from microSWIFT.utils import configuration
 
 class TestConfig(unittest.TestCase):
     """
@@ -13,9 +14,10 @@ class TestConfig(unittest.TestCase):
     def test_smoke(self):
         """
         Simple smoke test for the Config class to make sure you can
-        make an instance of the class. 
+        make an instance of the class.
         """
-        config = configuration.Config('./microSWIFT/config.txt')
+        print(os.getcwd())
+        configuration.Config('./microSWIFT/config.txt')
 
     def test_no_config_file(self):
         """
@@ -23,7 +25,7 @@ class TestConfig(unittest.TestCase):
         FileNotFoundError if no configuration file is found.
         """
         with self.assertRaises(FileNotFoundError):
-            config = configuration.Config('./not_a_file.txt')
+            configuration.Config('')
 
     def test_duty_cycle_not_found(self):
         """
@@ -31,9 +33,9 @@ class TestConfig(unittest.TestCase):
         input for the duty cycle length.
         """
         with self.assertRaises(ValueError):
-            config = configuration.Config('./microSWIFT/tests/test_data/'
-                                          'config_files/'
-                                          'config_no_duty_cycle.txt')
+            configuration.Config('./microSWIFT/tests/test_data/'
+                                 'config_files/'
+                                 'config_no_duty_cycle.txt')
 
     def test_duty_cycle_not_integer(self):
         """
@@ -41,9 +43,9 @@ class TestConfig(unittest.TestCase):
         for duty cycle length is not an integer.
         """
         with self.assertRaises(ValueError):
-            config = configuration.Config('./microSWIFT/tests/test_data/'
-                                          'config_files/'
-                                          'config_duty_cycle_not_int.txt')
+            configuration.Config('./microSWIFT/tests/test_data/'
+                                 'config_files/'
+                                 'config_duty_cycle_not_int.txt')
 
     def test_record_window_length_not_found(self):
         """
@@ -51,9 +53,9 @@ class TestConfig(unittest.TestCase):
         input for the data record length.
         """
         with self.assertRaises(ValueError):
-            config = configuration.Config('./microSWIFT/tests/test_data/'
-                                          'config_files/'
-                                          'config_no_record_window.txt')
+            configuration.Config('./microSWIFT/tests/test_data/'
+                                 'config_files/'
+                                 'config_no_record_window.txt')
 
     def test_record_window_length_not_integer(self):
         """
@@ -61,30 +63,30 @@ class TestConfig(unittest.TestCase):
         for data record length is not a positive integer.
         """
         with self.assertRaises(ValueError):
-            config = configuration.Config('./microSWIFT/tests/test_data/'
-                                          'config_files/'
-                                          'config_record_window_not_int.txt')
+            configuration.Config('./microSWIFT/tests/test_data/'
+                                 'config_files/'
+                                 'config_record_window_not_int.txt')
 
     def test_record_window_length_too_long(self):
         """
         Edge test to check that a ValueError is raised if the user input
-        for data record length is longer than the duty cycle. 
+        for data record length is longer than the duty cycle.
         """
         with self.assertRaises(ValueError):
-            config = configuration.Config('./microSWIFT/tests/test_data/'
-                                          'config_files/'
-                                          'config_record_window_too_long.txt')
+            configuration.Config('./microSWIFT/tests/test_data/'
+                                 'config_files/'
+                                 'config_record_window_too_long.txt')
 
     def test_send_window_too_short(self):
         """
         Edge test to check that a warning is raised if the user input
         for data record length and the duty cycle leads to a send window
-        less than 5 minutes. 
+        less than 5 minutes.
         """
         with self.assertWarns(Warning):
-            config = configuration.Config('./microSWIFT/tests/test_data/'
-                                          'config_files/'
-                                          'config_send_window_too_short.txt')
+            configuration.Config('./microSWIFT/tests/test_data/'
+                                 'config_files/'
+                                 'config_send_window_too_short.txt')
 
     def test_gps_sampling_freq_not_found(self):
         """
@@ -92,9 +94,9 @@ class TestConfig(unittest.TestCase):
         input for the gps sampling frequency.
         """
         with self.assertRaises(ValueError):
-            config = configuration.Config('./microSWIFT/tests/test_data/'
-                                          'config_files/'
-                                          'config_no_gps_freq.txt')
+            configuration.Config('./microSWIFT/tests/test_data/'
+                                 'config_files/'
+                                 'config_no_gps_freq.txt')
 
     def test_gps_sampling_freq_not_integer(self):
         """
@@ -102,9 +104,9 @@ class TestConfig(unittest.TestCase):
         for gps sampling frequency is not an integer.
         """
         with self.assertRaises(ValueError):
-            config = configuration.Config('./microSWIFT/tests/test_data/'
-                                          'config_files/'
-                                          'config_gps_freq_not_int.txt')
+            configuration.Config('./microSWIFT/tests/test_data/'
+                                 'config_files/'
+                                 'config_gps_freq_not_int.txt')
 
     def test_gps_sampling_freq_out_of_range(self):
         """
@@ -113,9 +115,9 @@ class TestConfig(unittest.TestCase):
         supported by the hardware.
         """
         with self.assertRaises(ValueError):
-            config = configuration.Config('./microSWIFT/tests/test_data/'
-                                          'config_files/'
-                                          'config_gps_freq_out_of_range.txt')
+            configuration.Config('./microSWIFT/tests/test_data/'
+                                 'config_files/'
+                                 'config_gps_freq_out_of_range.txt')
 
     def test_imu_sampling_freq_not_found(self):
         """
@@ -124,9 +126,9 @@ class TestConfig(unittest.TestCase):
         supported by the hardware.
         """
         with self.assertRaises(ValueError):
-            config = configuration.Config('./microSWIFT/tests/test_data/'
-                                          'config_files/'
-                                          'config_no_imu_freq.txt')
+            configuration.Config('./microSWIFT/tests/test_data/'
+                                 'config_files/'
+                                 'config_no_imu_freq.txt')
 
     def test_imu_sampling_freq_not_integer(self):
         """
@@ -134,9 +136,9 @@ class TestConfig(unittest.TestCase):
         for imu sampling frequency is not an integer.
         """
         with self.assertRaises(ValueError):
-            config = configuration.Config('./microSWIFT/tests/test_data/'
-                                          'config_files/'
-                                          'config_imu_freq_not_int.txt')
+            configuration.Config('./microSWIFT/tests/test_data/'
+                                 'config_files/'
+                                 'config_imu_freq_not_int.txt')
 
     def test_imu_sampling_freq_out_of_range(self):
         """
@@ -145,6 +147,6 @@ class TestConfig(unittest.TestCase):
         supported by the hardware.
         """
         with self.assertRaises(ValueError):
-            config = configuration.Config('./microSWIFT/tests/test_data/'
-                                          'config_files/'
-                                          'config_imu_freq_not_int.txt')
+            configuration.Config('./microSWIFT/tests/test_data/'
+                                 'config_files/'
+                                 'config_imu_freq_not_int.txt')
