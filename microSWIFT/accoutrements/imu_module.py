@@ -48,7 +48,7 @@ class IMU:
             # power on IMU module and set up fxas and fxos objects
             logger.info('initializing IMU')
             self.imuFreq = config.IMU_SAMPLING_FREQ
-            self.imu_samples = self.imuFreq*60
+            self.imu_samples = config.IMU_FREQ * config.RECORD_WINDOW_LENGTH.total_seconds()
             self.imu_gpio = config.IMU_GPIO
             self.floatID = os.uname()[1]
             self.dataDir = './microSWIFT/microSWIFT/data/'
