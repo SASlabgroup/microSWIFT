@@ -51,10 +51,30 @@ Able to read documentation and add features.
 ## Design Diagram 
 This is an example of using the mermaid diagram tool 
 
+
+
 ```mermaid
-graph TD;
-    A-->B;
-    A-->C;
-    B-->D;
-    C-->D;
+flowchart TB
+    start([start])--> config & logger
+    user_config[/config.txt/]-->config
+
+    subgraph initialization
+        direction TB
+        logger["init_logger"] & config["init_config"];
+        config-->gps["init GPS"] & imu["init IMU"] & set_time["set current window start and end times"];
+    end
+
+    subgraph record_window
+        direction TB
+        record_gps["record IMU and GPS"]
+        record_imu["record IMU"]
+    end
+
+    initialization-->in_record{"in record window?"};
+    in_record-->record_window
+
 ```
+    subgraph send_window
+        direction TB
+        s
+    end
