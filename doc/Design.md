@@ -110,6 +110,7 @@ flowchart TB
 ```
 ---
 
+Main process flow controlled by `microSWIFT.py`:
 ```mermaid
 flowchart LR
 
@@ -127,4 +128,30 @@ flowchart LR
     
     update_times-->in_record
 
+```
+
+Details of the initialization:
+```mermaid
+flowchart LR
+    user_config[/config.txt/]-->config["init_config"];
+    subgraph initialization
+        direction TB
+        logger["init_logger"]
+        config-->gps["init GPS"] & imu["init IMU"] & set_time["set current window start and end times"];
+    end
+```
+
+Record window:
+```mermaid
+flowchart TB
+    subgraph record_window
+        direction TB
+        gps_on["power on GPS"] --> imu_on["power on IMU"] --> futures
+        subgraph futures["concurrent.futures"]
+            direction TB
+            record_gps["record GPS"]-->gps_data[(gps data)]
+            record_imu["record IMU"]-->imu_data[(imu data)]
+        end
+        futures --> gps_off["power off GPS"] --> imu_off["power off IMU"]
+    end
 ```
