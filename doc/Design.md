@@ -51,16 +51,46 @@ Able to read documentation and add features.
 ## Design Diagram 
 This is an example of using the mermaid diagram tool 
 
+```mermaid
+flowchart TD;
+    start([start])-->logger["init_logger"] & config["init_config"];
+    user_config[/config.txt/]-->config
+    config-->gps["init GPS"] & imu["init IMU"] & set_time["set current window start and end times"];
+    set_time-->in_record{"in record window?"};
 
+    in_record-->|Yes| record_gps["record IMU and GPS"] & record_imu["record IMU"]
+        record_gps & record_imu-->recording_successful{"recording successful?"};
+        recording_successful-->|Yes| process["process data"]
+            process-->pack["pack payload and push to telemetry stack"]
+            pack-->in_send{"in a send window?"}
+            in_send-->|yes| send["send from top of stack"];
+                send-->send_successful{"send successful?"}
+                    send_successful-->|yes| update_stack["update stack"]
+                        update_stack-->all_sent{"all messages sent?"}
+                        all_sent-->|yes| wait
+
+                        all_sent-->|no| in_send
+
+                    send_successful-->|no| in_send
+
+            in_send-->|no| wait
+
+        recording_successful-->|No| wait
+
+    in_record-->|No| wait["wait until the end of the duty cycle"]
+    wait-->update_times["update current window times"]    
+    update_times-->in_record
+
+```
 
 ```mermaid
 flowchart TB
-    start([start])--> config & logger
-    user_config[/config.txt/]-->config
+    start([start])--> initialization
 
     subgraph initialization
         direction TB
-        logger["init_logger"] & config["init_config"];
+        logger["init_logger"]
+        user_config[/config.txt/]-->config["init_config"];
         config-->gps["init GPS"] & imu["init IMU"] & set_time["set current window start and end times"];
     end
 
@@ -71,10 +101,30 @@ flowchart TB
     end
 
     initialization-->in_record{"in record window?"};
-    in_record-->record_window
+    in_record-->|Yes| record_window
+
+    in_record-->|No| wait["wait until the end of the duty cycle"]
+    wait-->update_times["update current window times"]    
+    update_times-->in_record
 
 ```
-    subgraph send_window
-        direction TB
-        s
-    end
+---
+
+```mermaid
+flowchart LR
+
+    start([start])--> initialization
+    initialization --> in_record{"in record window?"};
+    
+    in_record-->|Yes| record_window["enter record window"]
+        record_window-->recording_successful{"recording successful?"};
+        recording_successful-->|Yes| send_window["enter send window"]
+        send_window-->update_times
+        recording_successful-->|No| wait
+
+    in_record-->|No| wait["wait until the end of the duty cycle"]
+        wait-->update_times["update current window times"]
+    
+    update_times-->in_record
+
+```
