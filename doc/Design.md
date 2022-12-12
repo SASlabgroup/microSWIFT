@@ -149,7 +149,7 @@ flowchart LR
         config-->gps["init GPS"] & imu["init IMU"] & set_time["set current window start and end times"];
     end
 
-    classDef blue fill:#a4ccf5,stroke:#000000,stroke-width:1px
+    classDef blue fill:#FFFFFF,stroke:#a4ccf5,stroke-width:3px
     class initialization blue
 
 ```
@@ -168,8 +168,10 @@ flowchart TB
         futures --> gps_off["power off GPS"] --> imu_off["power off IMU"]
     end
 
-    classDef green fill:#d4f5a4,stroke:#000000,stroke-width:1px
-    class record_window,futures green
+    classDef green fill:#FFFFFF,stroke:#d4f5a4,stroke-width:3px
+    classDef grey fill:#FFFFFF,stroke:#a3a0a0, stroke-width:1px
+    class record_window green
+    class futures grey
 
 ```
 
@@ -182,7 +184,7 @@ flowchart LR
 
     end
 
-    classDef yellow fill:#f5f5a4,stroke:#000000,stroke-width:1px
+    classDef yellow fill:#FFFFFF,stroke:#f5f5a4,stroke-width:3px
     class processing_window yellow
 
 ```
@@ -197,7 +199,7 @@ flowchart LR
                 send-->send_successful{"send<br/>successful?"}
                     send_successful-->|yes| update_stack["update stack"]
                         update_stack-->all_sent{"all messages<br/>sent?"}
-                        all_sent-->|yes| exit
+                        all_sent-->|yes| exit([exit])
 
                         all_sent-->|no| in_send
 
@@ -205,7 +207,7 @@ flowchart LR
 
             in_send-->|no| exit
     end
-
-    classDef orange fill:#f5d4a4,stroke:#000000,stroke-width:1px
+    
+    classDef orange fill:#FFFFFF,stroke:#f5d4a4,stroke-width:3px
     class send_window orange
 ```
