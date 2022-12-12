@@ -114,19 +114,28 @@ Main process flow controlled by `microSWIFT.py`:
 ```mermaid
 flowchart LR
     start([start])--> initialization
-    initialization --> in_record{"in record window?"};
+    initialization --> in_record{"in record<br/>window?"};
     
-    in_record-->|Yes| record_window["enter record window"]
-        record_window-->recording_successful{"recording successful?"};
-        recording_successful-->|Yes| processing_window["enter processing window"]
-        processing_window-->send_window["enter send window"]
+    in_record-->|Yes| record_window["record window"]
+        record_window-->recording_successful{"recording<br/>successful?"};
+        recording_successful-->|Yes| processing_window["processing window"]
+        processing_window-->send_window["send window"]
         send_window-->update_times
         recording_successful-->|No| wait
 
-    in_record-->|No| wait["wait until the end of the duty cycle"]
-        wait-->update_times["update current window times"]
+    in_record-->|No| wait["wait until the<br/>end of the duty cycle"]
+        wait-->update_times["update current<br/>window times"]
     
     update_times-->in_record
+
+    classDef blue fill:#a4ccf5,stroke:#000000,stroke-width:1px
+    classDef green fill:#d4f5a4,stroke:#000000,stroke-width:1px
+    classDef yellow fill:#f5f5a4,stroke:#000000,stroke-width:1px
+    classDef orange fill:#f5d4a4,stroke:#000000,stroke-width:1px
+    class initialization blue
+    class record_window green
+    class processing_window yellow
+    class send_window orange
 
 ```
 
@@ -139,6 +148,10 @@ flowchart LR
         logger["init logger"]
         config-->gps["init GPS"] & imu["init IMU"] & set_time["set current window start and end times"];
     end
+
+    classDef blue fill:#a4ccf5,stroke:#000000,stroke-width:1px
+    class initialization blue
+
 ```
 
 Record window:
@@ -154,15 +167,30 @@ flowchart TB
         end
         futures --> gps_off["power off GPS"] --> imu_off["power off IMU"]
     end
+
+    classDef green fill:#d4f5a4,stroke:#000000,stroke-width:1px
+    class record_window,futures green
+
 ```
 
 Processing window:
+```mermaid
+flowchart LR
+    subgraph processing_window
+    direction LR
+    a-->b
 
+    end
+
+    classDef yellow fill:#f5f5a4,stroke:#000000,stroke-width:1px
+    class processing_window yellow
+
+```
 Send window:
 ```mermaid
 flowchart LR
     subgraph send_window
-    direction TB
+    direction LR
     process["process data"]-->pack["pack payload and push to telemetry stack"]
             pack-->in_send{"still in send window?"}
             in_send-->|yes| send["send from top of stack"];
@@ -177,4 +205,7 @@ flowchart LR
 
             in_send-->|no| wait 
     end
+
+    classDef orange fill:#f5d4a4,stroke:#000000,stroke-width:1px
+    class send_window orange
 ```
