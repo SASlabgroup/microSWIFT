@@ -49,7 +49,7 @@ Able to read documentation and add features.
 
 ## Design Diagram
 
-Process flow is controlled by `microSWIFT.py` module. At boot-up, `microSWIFT.py` is executed by `microSWIFT.service`. It then instantiates the `logger`, `Config`, `GPS`, and `IMU` objects and enters the record-process-send loop which runs indefinitely. This is sequencing is summarized in the following flow chart:
+Process flow is controlled by `microSWIFT.py` module. At boot-up, `microSWIFT.py` is executed by `microSWIFT.service`. It then instantiates the `logger`, `Config`, `GPS`, and `IMU` objects and enters the record-process-send loop which runs indefinitely. Each loop is defined as one duty cycle. This is sequencing is summarized in the following flow chart:
 
 ```mermaid
 flowchart LR
@@ -83,10 +83,12 @@ flowchart LR
 
 ### Initialization window
 
+The initialization window is run once per boot. It instantiates  `logger`, `Config`, `GPS`, and `IMU` objects based on the user-defined configuration settings in `config.txt`. It also sets the defining window times, including the start of the duty cyle (= start of the `record window`), the end of the recording window, and the end of the duty cycle (note that the length of `send window` = a full duty cycle - `record window`).
+
 ```mermaid
 flowchart LR
     user_config[/config.txt/]-->config["initialize config"];
-    subgraph initialization
+    subgraph initialization["initialization window"]
         direction TB
         logger["initialize logger"]
         config-->gps["initialize GPS"] & imu["initialize IMU"] & set_time["set current window start and end times"];
