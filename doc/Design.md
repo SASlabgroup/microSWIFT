@@ -111,7 +111,7 @@ flowchart TB
             record_gps["record GPS"]-->gps_data[(gps data)]
             record_imu["record IMU"]-->imu_data[(imu data)]
         end
-        futures --> gps_off["power off GPS"] --> imu_off["power off IMU"] --> exit([exit])
+        futures --> gps_off["power off GPS"] --> imu_off["power off IMU"] --> return([return])
     end
 
     classDef green fill:#d4f5a4,stroke:#000000,stroke-width:1px
@@ -120,7 +120,7 @@ flowchart TB
 
     class gps_on,imu_on,record_gps,record_imu,gps_data,imu_data,gps_off,imu_off green
     class record_window,futures grey
-    class exit, red
+    class return, red
 
 ```
 
@@ -133,7 +133,7 @@ flowchart LR
     type{"processing type"} -->|"gps waves"| gps_good{"gps passes<br/>quality control?"}
         gps_good-->|yes| gps_to_uvz["transform (lat,lon) to (u,v)"]
             gps_to_uvz-->gps_waves[run gps_waves]
-        gps_waves-->exit
+        gps_waves-->return
         gps_good-->|no| fill_bad_values["fill with bad values"]
 
     type{"processing type"} -->|"uvza waves"| gps_and_imu_good{"imu & gps pass<br/>quality control?"}
@@ -141,10 +141,10 @@ flowchart LR
 
         gps_and_imu_good-->|yes| transform_imu_and_gps["transform (lat,lon) to (u,v) <br/> integrate imu to (x,y,z)"]
         transform_imu_and_gps-->uvza_waves["run_uvza_waves"]
-        uvza_waves-->exit
+        uvza_waves-->return
 
 
-    fill_bad_values --> exit([exit])
+    fill_bad_values --> return([return])
     end
 
     classDef yellow fill:#f5f5a4,stroke:#000000,stroke-width:1px
@@ -153,7 +153,7 @@ flowchart LR
     
     class processing_window grey
     class type,gps_good,gps_and_imu_good,gps_to_uvz,gps_waves,fill_bad_values,transform_imu_and_gps,uvza_waves yellow
-    class exit, red
+    class return, red
 
 ```
 
@@ -169,13 +169,13 @@ flowchart LR
                 send-->send_successful{"send<br/>successful?"}
                     send_successful-->|yes| update_stack["update<br/>stack"]
                         update_stack-->all_sent{"all messages<br/>sent?"}
-                        all_sent-->|yes| exit([exit])
+                        all_sent-->|yes| return([return])
 
                         all_sent-->|no| in_send
 
                     send_successful-->|no| in_send
 
-            in_send-->|no| exit
+            in_send-->|no| return
     end
 
     classDef orange fill:#f5d4a4,stroke:#000000,stroke-width:1px
@@ -183,5 +183,5 @@ flowchart LR
     classDef red fill:#f7b2b2, stroke:#a3a0a0, stroke-width:1px
     class send_window grey
     class process,pack,in_send,send,update_stack,all_sent,send_successful orange
-    class exit red
+    class return red
 ```
