@@ -151,9 +151,11 @@ flowchart LR
         config-->gps["initialize GPS"] & imu["initialize IMU"] & set_time["set current window start and end times"];
     end
 
-    classDef blue fill:#FFFFFF,stroke:#a4ccf5,stroke-width:3px
-    class initialization blue
+    classDef grey fill:#FFFFFF,stroke:#a3a0a0, stroke-width:1px
+    classDef blue fill:#a4ccf5,stroke:#000000,stroke-width:1px
 
+    class initialization,user_config grey
+    class logger,config,gps,imu,set_time blue
 ```
 
 Record window:
@@ -167,13 +169,16 @@ flowchart TB
             record_gps["record GPS"]-->gps_data[(gps data)]
             record_imu["record IMU"]-->imu_data[(imu data)]
         end
-        futures --> gps_off["power off GPS"] --> imu_off["power off IMU"]
+        futures --> gps_off["power off GPS"] --> imu_off["power off IMU"] --> exit([exit])
     end
 
-    classDef green fill:#FFFFFF,stroke:#d4f5a4,stroke-width:3px
+    classDef green fill:#d4f5a4,stroke:#000000,stroke-width:1px
     classDef grey fill:#FFFFFF,stroke:#a3a0a0, stroke-width:1px
-    class record_window green
-    class futures grey
+    classDef red fill:#f7b2b2, stroke:#a3a0a0, stroke-width:1px
+
+    class gps_on,imu_on,record_gps,record_imu,gps_data,imu_data,gps_off,imu_off green
+    class record_window,futures grey
+    class exit, red
 
 ```
 
@@ -181,13 +186,31 @@ Processing window:
 ```mermaid
 flowchart LR
     subgraph processing_window["processing window"]
-    direction LR
-    a-->b
+    direction TB
+    type{"processing type"} -->|"gps waves"| gps_good{"gps passes<br/>quality control?"}
+        gps_good-->|yes| gps_to_uvz["transform (lat,lon) to (u,v)"]
+            gps_to_uvz-->gps_waves[run gps_waves]
+        gps_waves-->exit
+        gps_good-->|no| fill_bad_values["fill with bad values"]
 
+    type{"processing type"} -->|"uvza waves"| gps_and_imu_good{"imu & gps pass<br/>quality control?"}
+        gps_and_imu_good-->|no| fill_bad_values["fill with bad values"]
+
+        gps_and_imu_good-->|yes| transform_imu_and_gps["transform (lat,lon) to (u,v) <br/> integrate imu to (x,y,z)"]
+        transform_imu_and_gps-->uvza_waves["run_uvza_waves"]
+        uvza_waves-->exit
+
+
+    fill_bad_values --> exit
     end
 
-    classDef yellow fill:#FFFFFF,stroke:#f5f5a4,stroke-width:3px
-    class processing_window yellow
+    classDef yellow fill:#f5f5a4,stroke:#000000,stroke-width:1px
+    classDef grey fill:#FFFFFF,stroke:#a3a0a0, stroke-width:1px
+    classDef red fill:#f7b2b2, stroke:#a3a0a0, stroke-width:1px
+    
+    class processing_window grey
+    class type,gps_good,gps_and_imu_good,gps_to_uvz,gps_waves,fill_bad_values,transform_imu_and_gps,uvza_waves yellow
+    class exit, red
 
 ```
 Send window:
@@ -210,6 +233,10 @@ flowchart LR
             in_send-->|no| exit
     end
 
-    classDef orange fill:#FFFFFF,stroke:#f5d4a4,stroke-width:3px
-    class send_window orange
+    classDef orange fill:#f5d4a4,stroke:#000000,stroke-width:1px
+    classDef grey fill:#FFFFFF,stroke:#a3a0a0, stroke-width:1px
+    classDef red fill:#f7b2b2, stroke:#a3a0a0, stroke-width:1px
+    class send_window grey
+    class process,pack,in_send,send,update_stack,all_sent,send_successful orange
+    class exit red
 ```
