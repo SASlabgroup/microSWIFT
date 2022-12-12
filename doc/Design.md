@@ -191,19 +191,19 @@ Send window:
 flowchart LR
     subgraph send_window
     direction LR
-    process["process data"]-->pack["pack payload and push to telemetry stack"]
-            pack-->in_send{"still in send window?"}
-            in_send-->|yes| send["send from top of stack"];
-                send-->send_successful{"send successful?"}
+    process["process data"]-->pack["pack payload and<br/>push to telemetry stack"]
+            pack-->in_send{"still in<br/>send window?"}
+            in_send-->|yes| send["send from<br/>top of stack"];
+                send-->send_successful{"send<br/>successful?"}
                     send_successful-->|yes| update_stack["update stack"]
-                        update_stack-->all_sent{"all messages sent?"}
-                        all_sent-->|yes| wait
+                        update_stack-->all_sent{"all messages<br/>sent?"}
+                        all_sent-->|yes| exit
 
                         all_sent-->|no| in_send
 
                     send_successful-->|no| in_send
 
-            in_send-->|no| wait 
+            in_send-->|no| exit
     end
 
     classDef orange fill:#f5d4a4,stroke:#000000,stroke-width:1px
