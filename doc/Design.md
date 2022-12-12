@@ -103,6 +103,8 @@ flowchart LR
 
 ### Record window
 
+A record window is entered when the current time is between the start and end record window times, as determined by `Config`. Its main task is to power on the GPS and IMU, record them concurrently using `concurrent.futures`, and then power them down. The `record()` method of both `GPS` and `IMU` writes data to `.dat` files stored onboard.
+
 ```mermaid
 flowchart TB
     subgraph record_window["record window"]
@@ -127,6 +129,8 @@ flowchart TB
 ```
 
 ### Processing window
+
+The processing window reads the previously recorded `.dat` files from the `GPS` and `IMU`  into memory, transforms the data into the appropriate coordinates, and produces a wave estimate based on the configured wave processing type. If the required data streams do not pass quality control, the payload is filled with bad values to be sent along with any remaining available data.
 
 ```mermaid
 flowchart LR
@@ -161,23 +165,24 @@ flowchart LR
 
 ### Send window
 
+In the send window, the payload is packed into a binary short burst data (`.sbd`) file and pushed onto a stack of messages to be sent. Until the duty cycle is up, or if the stack empties, messages are repeatedly read from the top of the stack and sent to the server. If a message fails to send, the loop continues to try to send it until the time expires.
+
 ```mermaid
 flowchart LR
     subgraph send_window["send window"]
     direction LR
-    process["process data"]-->pack["pack payload<br/>and push to<br/>telemetry stack"]
-            pack-->in_send{"still in<br/>send window?"}
-            in_send-->|yes| send["send from<br/>top of stack"];
-                send-->send_successful{"send<br/>successful?"}
-                    send_successful-->|yes| update_stack["update<br/>stack"]
-                        update_stack-->all_sent{"all messages<br/>sent?"}
-                        all_sent-->|yes| return([return])
+        pack["pack payload<br/>and push to<br/>telemetry stack"]-->in_send{"still in<br/>send window?"};
+        in_send-->|yes| send["send from<br/>top of stack"];
+            send-->send_successful{"send<br/>successful?"}
+                send_successful-->|yes| update_stack["update<br/>stack"]
+                    update_stack-->all_sent{"all messages<br/>sent?"}
+                    all_sent-->|yes| return([return])
 
-                        all_sent-->|no| in_send
+                    all_sent-->|no| in_send
 
-                    send_successful-->|no| in_send
+                send_successful-->|no| in_send
 
-            in_send-->|no| return
+        in_send-->|no| return
     end
 
     classDef orange fill:#f5d4a4,stroke:#000000,stroke-width:1px
