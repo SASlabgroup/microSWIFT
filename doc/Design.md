@@ -40,28 +40,31 @@ The GPS module is a GlobalTop FGPMMOPA6H provided on an Adafruit Ultimate GPS v3
 The inertial measurement unit (IMU) is comprised of a 3-axis digital gyroscope (FXAS21002C) and a 6-axis integrated linear accelerometer and magnetometer (FXOS8700CQ), both provided on an Adafruit Precision NXP 9-DOF Breakout Board. The combined IMU measurements can be transformed, numerically integrated, and used to provide an alternative heave estimate in the wave processing.
 
 ### Iridium Modem
+(TODO: description)
 
 ## Software Components
+TODO: many of these can be adapted from the code comments/docstrss
 
-### Sensor Loggers
-* Receive and store data for:
-	* GPS
-	* IMU
+### microSWIFT.py
+(#TODO: description)
 
-### Data store
-* Data store for raw text data
+### Config class
+(TODO: description of class, its methods, and attributes)
 
-### Data processor
-* Functions to process raw text data
+### GPS class
+(TODO: description of class, its methods, and attributes)
 
-### Sensor Testers
-* Functions to fully test functionality of sensors and sensor loggers
+### IMU class
+(TODO: description of class, its methods, and attributes)
 
-### Transmission Unit Tester
-* Functions to test functionality of transmission unit
+### Wave processing algorithms
+(TODO: `gps_waves`, `uvza_waves` descriptions)
 
-### Configuration UI
-* Functions to ingest user set configurations for sensor and transmission functionality
+### SBD class
+(TODO: description of class, its methods, and attributes)
+
+### Telemetry stack
+(TODO: description)
 
 ## Design Diagram
 
