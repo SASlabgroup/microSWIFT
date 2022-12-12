@@ -116,14 +116,14 @@ flowchart LR
     start([start])--> initialization
     initialization --> in_record{"in record<br/>window?"};
     
-    in_record-->|Yes| record_window["record window"]
+    in_record-->|Yes| record_window["record<br/>window"]
         record_window-->recording_successful{"recording<br/>successful?"};
-        recording_successful-->|Yes| processing_window["processing window"]
-        processing_window-->send_window["send window"]
+        recording_successful-->|Yes| processing_window["processing<br/>window"]
+        processing_window-->send_window["send<br/>window"]
         send_window-->update_times
         recording_successful-->|No| wait
 
-    in_record-->|No| wait["wait until the<br/>end of the duty cycle"]
+    in_record-->|No| wait["wait until the end<br/>of the duty cycle"]
         wait-->update_times["update current<br/>window times"]
     
     update_times-->in_record
@@ -132,10 +132,12 @@ flowchart LR
     classDef green fill:#d4f5a4,stroke:#000000,stroke-width:1px
     classDef yellow fill:#f5f5a4,stroke:#000000,stroke-width:1px
     classDef orange fill:#f5d4a4,stroke:#000000,stroke-width:1px
+    classDef darkgreen fill:#82b572,stroke:#000000,stroke-width:1px
     class initialization blue
     class record_window green
     class processing_window yellow
     class send_window orange
+    class start darkgreen
 
 ```
 
@@ -207,7 +209,7 @@ flowchart LR
 
             in_send-->|no| exit
     end
-    
+
     classDef orange fill:#FFFFFF,stroke:#f5d4a4,stroke-width:3px
     class send_window orange
 ```
