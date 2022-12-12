@@ -39,7 +39,7 @@ The GPS module is a GlobalTop FGPMMOPA6H provided on an Adafruit Ultimate GPS v3
 
 The inertial measurement unit (IMU) is comprised of a 3-axis digital gyroscope (FXAS21002C) and a 6-axis integrated linear accelerometer and magnetometer (FXOS8700CQ), both provided on an Adafruit Precision NXP 9-DOF Breakout Board. The combined IMU measurements can be transformed, numerically integrated, and used to provide an alternative heave estimate in the wave processing.
 
-## Iridium Modem
+### Iridium Modem
 
 ## Software Components
 
