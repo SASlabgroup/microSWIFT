@@ -144,11 +144,11 @@ flowchart LR
 Details of the initialization:
 ```mermaid
 flowchart LR
-    user_config[/config.txt/]-->config["init config"];
+    user_config[/config.txt/]-->config["initialize config"];
     subgraph initialization
         direction TB
-        logger["init logger"]
-        config-->gps["init GPS"] & imu["init IMU"] & set_time["set current window start and end times"];
+        logger["initialize logger"]
+        config-->gps["initialize GPS"] & imu["initialize IMU"] & set_time["set current window start and end times"];
     end
 
     classDef blue fill:#FFFFFF,stroke:#a4ccf5,stroke-width:3px
@@ -159,7 +159,7 @@ flowchart LR
 Record window:
 ```mermaid
 flowchart TB
-    subgraph record_window
+    subgraph record_window["record window"]
         direction TB
         gps_on["power on GPS"] --> imu_on["power on IMU"] --> futures
         subgraph futures["concurrent.futures"]
@@ -180,7 +180,7 @@ flowchart TB
 Processing window:
 ```mermaid
 flowchart LR
-    subgraph processing_window
+    subgraph processing_window["processing window"]
     direction LR
     a-->b
 
@@ -193,13 +193,13 @@ flowchart LR
 Send window:
 ```mermaid
 flowchart LR
-    subgraph send_window
+    subgraph send_window["send window"]
     direction LR
-    process["process data"]-->pack["pack payload and<br/>push to telemetry stack"]
+    process["process data"]-->pack["pack payload<br/>and push to<br/>telemetry stack"]
             pack-->in_send{"still in<br/>send window?"}
             in_send-->|yes| send["send from<br/>top of stack"];
                 send-->send_successful{"send<br/>successful?"}
-                    send_successful-->|yes| update_stack["update stack"]
+                    send_successful-->|yes| update_stack["update<br/>stack"]
                         update_stack-->all_sent{"all messages<br/>sent?"}
                         all_sent-->|yes| exit([exit])
 
