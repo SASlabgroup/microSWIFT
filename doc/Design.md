@@ -29,16 +29,17 @@ Able to read documentation and add features.
 
 ### Raspberry Pi
 
-At the heart of the microSWIFT is a Raspberry Pi Zero. This developer-friendly board, combined with easy-to-read Python-based code, makes the microSWIFT an effective tool for ocean wave research and student learning. An obvious tradeoff, however, is a high power consumption compared to that attainable with an embedded microcontroller and code.
+At the heart of the microSWIFT is a Raspberry Pi Zero. This developer-friendly board, combined with easy-to-read Python-based code, makes the microSWIFT an effective tool for ocean wave research and student learning. An obvious tradeoff, however, is its high power consumption compared to that attainable with an embedded microcontroller and code.
 
 ### GPS
 
-The GPS module is a GlobalTop FGPMMOPA6H provided on an Adafruit Ultimate GPS v3 breakout board. It provides the time, position, and velocity  datastreams to the microSWIFT. The last known position of the microSWIFT is reported to the server during every duty cycle as latitude and longitude in decimal degrees. The North and East doppler velocities are fundamental input to the wave processing algorithms used onboard.
+The GPS module is a GlobalTop FGPMMOPA6H provided on an Adafruit Ultimate GPS v3 breakout board. It provides the time, position, and velocity  datastreams to the microSWIFT. The last known position of the microSWIFT is reported to the server during every duty cycle as latitude and longitude in decimal degrees. The North and East doppler velocities are fundamental input to the onboard wave processing algorithms.
 
 ### IMU
 
 The inertial measurement unit (IMU) is comprised of a 3-axis digital gyroscope (FXAS21002C) and a 6-axis integrated linear accelerometer and magnetometer (FXOS8700CQ), both provided on an Adafruit Precision NXP 9-DOF Breakout Board. The combined IMU measurements can be transformed, numerically integrated, and used to provide an alternative heave estimate in the wave processing.
 
+## Iridium Modem
 
 ## Software Components
 
