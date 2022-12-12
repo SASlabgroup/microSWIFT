@@ -47,9 +47,10 @@ Able to read documentation and add features.
 ### Configuration UI
 * Functions to ingest user set configurations for sensor and transmission functionality
 
+## Design Diagram
 
-## Design Diagram 
 Process flow is controlled by `microSWIFT.py` module. At boot-up, `microSWIFT.py` is executed by `microSWIFT.service`. It then instantiates the `logger`, `Config`, `GPS`, and `IMU` objects and enters the record-process-send loop which runs indefinitely. This is sequencing is summarized in the following flow chart:
+
 ```mermaid
 flowchart LR
     start([start])--> initialization
@@ -80,7 +81,8 @@ flowchart LR
 
 ```
 
-Details of the initialization:
+### Initialization window
+
 ```mermaid
 flowchart LR
     user_config[/config.txt/]-->config["initialize config"];
@@ -97,7 +99,8 @@ flowchart LR
     class logger,config,gps,imu,set_time blue
 ```
 
-Record window:
+### Record window
+
 ```mermaid
 flowchart TB
     subgraph record_window["record window"]
@@ -121,7 +124,8 @@ flowchart TB
 
 ```
 
-Processing window:
+### Processing window
+
 ```mermaid
 flowchart LR
     subgraph processing_window["processing window"]
@@ -140,7 +144,7 @@ flowchart LR
         uvza_waves-->exit
 
 
-    fill_bad_values --> exit
+    fill_bad_values --> exit([exit])
     end
 
     classDef yellow fill:#f5f5a4,stroke:#000000,stroke-width:1px
@@ -152,7 +156,9 @@ flowchart LR
     class exit, red
 
 ```
-Send window:
+
+### Send window
+
 ```mermaid
 flowchart LR
     subgraph send_window["send window"]
