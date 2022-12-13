@@ -46,6 +46,7 @@ class IMU:
         """
         try:
             # power on IMU module and set up fxas and fxos objects
+            self.imu_initialized = False
             logger.info('initializing IMU')
             self.imuFreq = config.IMU_SAMPLING_FREQ
             self.imu_samples = config.IMU_SAMPLING_FREQ * config.RECORD_WINDOW_LENGTH.total_seconds()
@@ -62,7 +63,7 @@ class IMU:
         except Exception as e:
             logger.info(e)
             logger.info('error initializing imu')
-            print(e)
+            exit(e)
         self.imu_initialized = True
         logger.info('IMU initialized')
 
