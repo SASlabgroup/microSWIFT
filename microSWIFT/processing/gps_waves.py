@@ -5,7 +5,7 @@ GPS waves
 import numpy as np
 from numpy import fft
 
-from ..utils import log
+from utils import log
 
 def gps_waves(u, v, z, fs): 
     """

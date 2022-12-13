@@ -9,11 +9,11 @@ try:
     import RPi.GPIO as GPIO
     from . import adafruit_fxos8700, adafruit_fxas21002c
 except ImportError as e:
-    from ..mocks import mock_busio as busio
-    from ..mocks import mock_board as board
-    from ..mocks import mock_rpi_gpio as GPIO
-    from ..mocks import mock_adafruit_fxos8700 as adafruit_fxos8700
-    from ..mocks import mock_adafruit_fxas21002c as adafruit_fxas21002c
+    from mocks import mock_busio as busio
+    from mocks import mock_board as board
+    from mocks import mock_rpi_gpio as GPIO
+    from mocks import mock_adafruit_fxos8700 as adafruit_fxos8700
+    from mocks import mock_adafruit_fxas21002c as adafruit_fxas21002c
     print(e, "Using mock hardware")
 
 import logging
@@ -24,7 +24,7 @@ import time
 
 
 from datetime import datetime, timedelta
-from ..processing.integrate_imu import integrate_acc
+from processing.integrate_imu import integrate_acc
 
 
 # Set up module level logger

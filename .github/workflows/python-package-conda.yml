@@ -31,4 +31,5 @@ jobs:
         pylint --fail-under=1 --disable=C0103 ./microSWIFT/
     - name: Test with unittest
       run: |
+        cd microSWIFT
         python -m unittest

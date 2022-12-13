@@ -25,24 +25,24 @@ from datetime import datetime
 
 import numpy as np
 
-from .accoutrements import imu_module
-from .accoutrements import gps_module
-from .accoutrements import sbd
-from .accoutrements import telemetry_stack
-from .processing.gps_waves import gps_waves
-from .processing.uvza_waves import uvza_waves
-from .processing.collate_imu_and_gps import collate_imu_and_gps
-from .utils import configuration
-from .utils import log
-from .utils import utils
+from accoutrements import imu_module
+# from accoutrements import gps_module
+# from accoutrements import sbd
+from accoutrements import telemetry_stack
+from processing.gps_waves import gps_waves
+from processing.uvza_waves import uvza_waves
+from processing.collate_imu_and_gps import collate_imu_and_gps
+from utils import configuration
+from utils import log
+from utils import utils
 
 def main():
     """
     Control flow for microSWIFT operations.
     """
     logger = log.init()
-    config = configuration.Config('./config.txt')
-    gps = gps_module.GPS(config)
+    config = configuration.Config('./microSWIFT/config.txt')
+    # gps = gps_module.GPS(config)
     imu = imu_module.IMU(config)
 
     # Initialize the telemetry stack if it does not exist yet. This is a
