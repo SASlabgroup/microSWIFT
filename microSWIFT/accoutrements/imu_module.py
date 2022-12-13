@@ -142,6 +142,10 @@ class IMU:
         Calibration document
         """
 
+        #setup checks
+        if self.imu_initialized == False:
+            Exception("IMU module not initialized")
+
         if run_time < 1:
             raise ValueError('Run time must be greater than or equal to 1')
 
@@ -149,6 +153,9 @@ class IMU:
             raise ValueError('Run time must be less than or equal to 60')
 
         t_end = time.time() + (60 * run_time)
+
+        #update imu_samples for the shorter record window
+        self.imu_samples = self.imuFreq * (60 * run_time)
 
         print("IMU checkout beginning. Please keep buoy still for", run_time,
         "minute(s).")
