@@ -20,9 +20,9 @@ import logging
 import os
 import sys
 import numpy as np
+import time
 
 
-from time import sleep
 from datetime import datetime, timedelta
 from ..processing.integrate_imu import integrate_acc
 
@@ -31,7 +31,7 @@ from ..processing.integrate_imu import integrate_acc
 logger = logging.getLogger('microSWIFT.'+__name__)
 
 class IMU:
-    """TODO:"""
+    """Instantiates an IMU object"""
     def __init__(self, config):
         """
         Initialize the IMU module.
@@ -46,9 +46,10 @@ class IMU:
         """
         try:
             # power on IMU module and set up fxas and fxos objects
+            self.imu_initialized = False
             logger.info('initializing IMU')
             self.imuFreq = config.IMU_SAMPLING_FREQ
-            self.imu_samples = config.IMU_FREQ * config.RECORD_WINDOW_LENGTH.total_seconds()
+            self.imu_samples = config.IMU_SAMPLING_FREQ * config.RECORD_WINDOW_LENGTH.total_seconds()
             self.imu_gpio = config.IMU_GPIO
             self.floatID = os.uname()[1]
             self.dataDir = './microSWIFT/microSWIFT/data/'
@@ -62,7 +63,7 @@ class IMU:
         except Exception as e:
             logger.info(e)
             logger.info('error initializing imu')
-            print(e)
+            exit(e)
         self.imu_initialized = True
         logger.info('IMU initialized')
 
@@ -85,7 +86,7 @@ class IMU:
         # Loop if the imu did not initialize and it is still within a recording block
         while datetime.utcnow().minute + datetime.utcnow().second/60 < end_time:
             # Sleep to start recording at same time as GPS
-            sleep(5.1)
+            time.sleep(5.1)
 
             ## --------------- Record IMU ----------------------
             #create new file for to record IMU to
@@ -119,7 +120,7 @@ class IMU:
                     isample = isample + 1
 
                     # hard coded sleep to control recording rate. NOT ideal but works for now
-                    sleep(0.065)
+                    time.sleep(0.065)
 
                 # End of IMU sampling
                 logger.info('end burst')
@@ -129,6 +130,38 @@ class IMU:
             # Return IMUdataFilename to main microSWIFT.py
             return IMUdataFilename, self.imu_initialized
 
+    def checkout(self, run_time):
+        """
+        Function to run tests for calibration of the IMU
+
+        Parameters:
+        -----------
+        run_time = time in minutes to run tests. Minumum:1, maximum:60
+
+        Returns:
+        --------
+        Calibration document
+        """
+
+        #setup checks
+        if self.imu_initialized == False:
+            Exception("IMU module not initialized")
+
+        if run_time < 1:
+            raise ValueError('Run time must be greater than or equal to 1')
+
+        if run_time > 60:
+            raise ValueError('Run time must be less than or equal to 60')
+
+        t_end = time.time() + (60 * run_time)
+
+        #update imu_samples for the shorter record window
+        self.imu_samples = self.imuFreq * (60 * run_time)
+
+        print("IMU checkout beginning. Please keep buoy still for", run_time,
+        "minute(s).")
+
+        self.record(t_end)
 
     def power_off(self):
         """
@@ -145,7 +178,7 @@ class IMU:
 
         logger.info('power down IMU')
         GPIO.output(self.imu_gpio,GPIO.LOW)
-        
+
     def sec(n_secs):
         """
         #TODO: fix docstr
