@@ -10,7 +10,7 @@ NOTE: This may be asborbed by sbd.py in future implementations.
 
 ####TODO: Update this block when EJ finishes the config integration ####
 # this will probably go in a developer settings/config
-TELEMETRY_STACK_FILE = '/home/pi/microSWIFT/SBD/telemetry_stack.txt'
+TELEMETRY_STACK_FILE = './microSWIFT/utils/telemetry_stack.txt'
 
 ########################################################################
 

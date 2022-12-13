@@ -1,10 +1,10 @@
 """Unit tests for the imu module"""
 import unittest
-from ..accoutrements import imu_module
-from ..utils import configuration
+from accoutrements import imu_module
+from utils import configuration
 
 # from microSWIFT.utils import configuration
-config = configuration.Config("./microSWIFT/config.txt")
+config = configuration.Config("./config.txt")
 
 class TestImu(unittest.TestCase):
     """
