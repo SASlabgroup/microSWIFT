@@ -31,7 +31,7 @@ from ..processing.integrate_imu import integrate_acc
 logger = logging.getLogger('microSWIFT.'+__name__)
 
 class IMU:
-    """TODO:"""
+    """Instantiates an IMU object"""
     def __init__(self, config):
         """
         Initialize the IMU module.
