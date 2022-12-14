@@ -1,0 +1,3 @@
+"""
+Mocked serial connection
+"""

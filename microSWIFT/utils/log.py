@@ -15,7 +15,7 @@ def init() -> logging.Logger:
     logger = logging.getLogger('microSWIFT')
 
     # Get log parameters from configuration:
-    LOG_FILE_NAME = './microSWIFT/logs/microSWIFT.log'
+    LOG_FILE_NAME = './logs/microSWIFT.log'
     LOG_LEVEL = 'INFO'
     LOG_FORMAT = ('%(asctime)s, %(name)s - [%(levelname)s] - %(message)s')
 
