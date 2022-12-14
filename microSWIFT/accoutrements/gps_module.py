@@ -19,7 +19,7 @@ import serial
 from ..utils.configuration import Config
 
 # Set up module level logger
-logger = logging.getLogger('microSWIFT.'+__name__)
+logger = logging.getLogger('microSWIFT.' + __name__)
 
 #GPS parameters
 dataDir = config.getString('System', 'dataDir')
@@ -30,7 +30,7 @@ gps_timeout = config.getInt('GPS', 'timeout')
 burst_seconds = config.getInt('System', 'burst_seconds')
 gps_samples = gps_freq*burst_seconds
 ser=serial.Serial(config.gps_port,config.start_baud,timeout=1)
-########################################################################
+#######################################################################
 
 class GPS:
     """
@@ -80,10 +80,10 @@ class GPS:
             # TODO: change sampling freq to milliseconds from HZ
             sleep(1)
         except Exception as err:
-            logger.info('Failed to set baudrate' 
+            logger.info('Failed to set baudrate'
                         'and sampling frequency')
             logger.info(err)
-        # read lines from GPS serial port and wait for fix  
+        # read lines from GPS serial port and wait for fix
         try:
             # loop until timeout dictated by gps_timeout value
             # (seconds) or the gps is initialized
@@ -119,12 +119,14 @@ class GPS:
                     # Set gprmc line to False and enter while loop to
                     # read new lines until it gets the correct line
                     gprmc_line = False
-                    #get date and time from GPRMC sentence - GPRMC reported only once every 8 lines
                     while gprmc_line is False:
+                    # Get date and time from GPRMC sentence - GPRMC
+                    # reported only once every 8 lines
                         newline=ser.readline().decode('utf-8')
                         if 'GPRMC' in newline:
                             logger.info('found GPRMC sentence')
-                            # Change value to True so that the while loop exits once a gprmc line is found
+                            # Change value to True so that the while
+                            # loop exits once a gprmc line is found
                             gprmc_line = True
                             try:
                                 gprmc=pynmea2.parse(newline)
@@ -134,9 +136,13 @@ class GPS:
                                 logger.info("nmea date: {}".format(nmea_date))
                                 # set system time
                                 try:
-                                    logger.info("setting system time from GPS: {0} {1}".format(nmea_date, nmea_time))
-                                    os.system('sudo timedatectl set-timezone UTC')
-                                    os.system('sudo date -s "{0} {1}"'.format(nmea_date, nmea_time))
+                                    logger.info('setting system time from GPS:'
+                                                ' {0} {1}'.format(nmea_date,
+                                                                  nmea_time))
+                                    os.system('sudo timedatectl '
+                                              'set-timezone UTC')
+                                    os.system('sudo date -s "{0} {1}"'.format(
+                                              nmea_date, nmea_time))
                                     os.system('sudo hwclock -w')
                                     # GPS is initialized
                                     logger.info("GPS initialized")
@@ -155,8 +161,8 @@ class GPS:
 
     def __record__(self, end_time):
         """
-        This is the function that record the gps component on RPi. The function takes in a timestamp.
-        The output creates a GPS log file.
+        This is the function that record the gps component on RPi.
+        The function takes in a end time and creates a GPS log file.
         """
         # get float_id for file names
         float_id = os.uname()[1]
@@ -205,9 +211,12 @@ class GPS:
                             if ipos == gps_samples and ivel == gps_samples:
                                 break
                         # Output logger information on samples
-                        logger.info('Ending GPS burst at {}'.format(datetime.now()))
-                        logger.info('number of GPGGA samples = {}'.format(ipos))
-                        logger.info('number of GPVTG samples = {}'.format(ivel))
+                        logger.info('Ending GPS burst at {}'
+                                    .format(datetime.now()))
+                        logger.info('number of GPGGA samples = {}'
+                                    .format(ipos))
+                        logger.info('number of GPVTG samples = {}'
+                                    .format(ivel))
                 except Exception as err:
                     logger.info(err, exc_info=True)
                 # Output logger information on samples
@@ -222,12 +231,14 @@ class GPS:
             #create file name but it is a placeholder
             gps_data_filename = ''
 
-            # Return the GPS filename to be read into the onboard processing
+            # Return the GPS filename to be read
+            # into the onboard processing
             return gps_data_filename
 
     def to_uvz(self, gps_file):
         """
-        This function reads in data from the GPS files and stores the fields
+        This function reads in data from the GPS files
+        and stores the fields
         in memory for post-processing.
         """
         # Set up module level logger
