@@ -27,7 +27,7 @@ import numpy as np
 
 from accoutrements import imu_module
 from accoutrements import gps_module
-from accoutrements import sbd
+# from accoutrements import sbd
 from accoutrements import telemetry_stack
 from processing.gps_waves import gps_waves
 from processing.uvza_waves import uvza_waves
@@ -70,7 +70,7 @@ def main():
 
         if recording_complete is True:
             payload = processing_window(gps, imu, logger, config)
-            send_window(payload, logger, config)
+            # send_window(payload, logger, config)
             duty_cycle_count += 1
 
         # The current time is not within the defined record window. Skip
