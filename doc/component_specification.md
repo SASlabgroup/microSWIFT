@@ -28,7 +28,7 @@ TODO: many of these can be adapted from the code comments/docstrss
 ### microSWIFT.py
 
 The main operational script that runs on the microSWIFT V1 wave buoys. This script sequences the microSWIFT data collection, post-processing, and telemetering. Its core task is to schedule these events, ensuring
-that the buoy is in the appropriate record or send window based on the user-defined settings. 
+that the buoy is in the appropriate record or send window based on the user-defined settings.
 
 The process flow is summarized as follows:
     1. Record GPS and record IMU concurrently; write to .dat files
