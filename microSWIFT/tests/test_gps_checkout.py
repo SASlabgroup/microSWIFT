@@ -32,5 +32,5 @@ class TestGPS(unittest.TestCase):
         One shot test to test if the function produces correct 
         output in known case. Should return False.
         """
-        gps = gps_module.GPS(' ')
-        assert gps.gps_initialized == False
+        with self.assertRaises(ValueError):
+            gps_module.GPS(' ')
