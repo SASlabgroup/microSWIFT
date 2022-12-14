@@ -39,12 +39,13 @@ class GPS:
         none
         """
         # setup GPIO and initialize
-        gps_initialized = False
+        self.gps_initialized = False
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
         GPIO.setup(config.gpsGPIO,GPIO.OUT)
+        self.gps_initialized = True
+        logger.info('gps initialized
         GPIO.output(config.gpsGPIO,GPIO.HIGH)
-        logger.info('---------------recordGPS.py------------------')
         logger.info('initializing GPS')
         try:
             # start with GPS default baud
@@ -99,8 +100,6 @@ class GPS:
         """
         Power off the GPS module.
         """
-
-
 
     def checkout(self, init_status):
         """
