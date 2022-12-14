@@ -5,7 +5,7 @@ https://apl.uw.edu/project/projects/swift/pdfs/microSWIFTspecsheet.pdf (spec she
 
 ## Hardware Components
 
-<img src=./images/microSWIFTboard.png alt="microSWIFT hardware components"  width="300"  align=center></img>
+<img src=./images/microSWIFTboard.png alt="microSWIFT hardware components"  width="200"  align=right></img>
 
 ### Raspberry Pi
 
