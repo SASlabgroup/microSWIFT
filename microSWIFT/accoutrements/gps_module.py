@@ -37,12 +37,16 @@ class GPS:
     This class is for the GPS component on the RPi.
     """
     def __init__(self, config):
-        """_summary_
+        """
+        This method initializes the gps module
 
         Parameters
         ----------
-        config : _type_
-            _description_
+        config object
+        
+        Returns:
+        --------
+        none
         """
         # setup GPIO and initialize
         gps_initialized = False
@@ -100,7 +104,15 @@ class GPS:
     def __checkout__(self, init_status):
         """
         This is the check out function for the GPS to initialize.
-        The function takes in a boolean as the initialization status.
+
+        Parameters
+        ----------
+        init_status : boolean object
+        
+        Returns
+        --------
+        none
+
         """
         ser.flushInput()
         ser.read_until('\n'.encode())
@@ -162,7 +174,16 @@ class GPS:
     def __record__(self, end_time):
         """
         This is the function that record the gps component on RPi.
-        The function takes in a end time and creates a GPS log file.
+
+
+        Parameters
+        ----------
+        end_time : object
+
+        Returns
+        --------
+        gps_data_filename: a dat file
+
         """
         # get float_id for file names
         float_id = os.uname()[1]
@@ -238,8 +259,15 @@ class GPS:
     def to_uvz(self, gps_file):
         """
         This function reads in data from the GPS files
-        and stores the fields
-        in memory for post-processing.
+        and stores the fields in memory for post-processing.
+
+        Parameters
+        ----------
+        end_time : a datetime object
+
+        Returns
+        --------
+        GPS_variables: a dictionary
         """
         # Set up module level logger
         logger.info('---------------GPStoUVZ.py------------------')
@@ -253,7 +281,7 @@ class GPS:
         time = []
         ipos=0
         ivel=0
-        GPS = {'east_west':None,'north_south':None,
+        GPS_variables = {'east_west':None,'north_south':None,
                'up_down':None,'lat':None,'lon':None,'time':None}
         # Define Constants
         bad_value=999
@@ -318,11 +346,11 @@ class GPS:
         # latSorted  = np.asarray(lat)[sortInd].transpose()
         # lonSorted  = np.asarray(lon)[sortInd].transpose()
         # assign outputs to GPS dict
-        GPS.update({'east_west':east_west,'north_south':north_south,
+        GPS_variables.update({'east_west':east_west,'north_south':north_south,
                     'up_down':up_down,'lat':lat,'lon':lon,'time':time})
         # GPS.update({'east_west':uSorted,'north_south':vSorted,
         # 'up_down':zSorted,'lat':latSorted,'lon':lonSorted,'time':timeSorted})
         logger.info('GPGGA lines: {}'.format(len(lat)))
         logger.info('GPVTG lines: {}'.format(len(east_west)))
         logger.info('------------------------------------------')
-        return GPS #east_west,north_south,up_down,lat,lon, time
+        return GPS_variables #east_west,north_south,up_down,lat,lon, time

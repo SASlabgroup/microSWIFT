@@ -1,5 +1,5 @@
 """
-Unit tests for the gps module
+This is the test for the gps class methods from gps_module
 """
 
 import unittest
@@ -15,20 +15,22 @@ class TestGPS(unittest.TestCase):
     """
     def test_smoke(self):
         """
-        Smoke test for the IMU.
+        Smoke test to make sure the function runs
         """
         imu_test = imu_module.IMU(config)
 
     def test_init(self):
         """
-        Test that imu is initialized
+        One shot test to test if the function produces correct 
+        output in known case. Should return True.
         """
         imu = imu_module.GPS(config)
         assert imu.imu_initialized == True
     
     def test_init2(self):
         """
-        Test that imu is initialized
+        One shot test to test if the function produces correct 
+        output in known case. Should return False.
         """
-        imu = imu_module.GPS('')
+        imu = imu_module.GPS(' ')
         assert imu.imu_initialized == False
