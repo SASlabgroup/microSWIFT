@@ -67,9 +67,11 @@ class GPS:
             sleep(1)
             # switch ser port to 115200
             ser.baudrate = config.baud
-            logger.info("switching to %s on port %s" % (config.baud, config.gps_port))
-            # set output sentence to GPGGA and GPVTG,plus GPRMC once every
-            # 4 positions(See GlobalTop PMTK command packet PDF)
+            logger.info("switching to %s on port %s" % \
+                (config.baud, config.gps_port))
+            # set output sentence to GPGGA and GPVTG,plus GPRMC
+            # once every 4 positions
+            # (See GlobalTop PMTK command packet PDF)
             ser.write('$PMTK314,0,4,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0'
                       '*2C\r\n'.encode())
             sleep(1)
@@ -83,9 +85,9 @@ class GPS:
         # read lines from GPS serial port and wait for fix
         try:
             # loop until timeout dictated by gps_timeout value (seconds) or the gps is initialized
-            while datetime.utcnow().minute + datetime.utcnow().second/60 < end_time and gps_initialized==False:
+            while datetime.utcnow().minute + datetime.utcnow().second/60 < end_time and gps_initialized is False:
                 gps_initialized = self.__checkout__(gps_initialized)
-            if gps_initialized == False:
+            if gps_initialized is False:
                 logger.info('GPS failed to initialize, timeout')
         except Exception as err:
             logger.info('GPS failed to initialize')
@@ -114,7 +116,7 @@ class GPS:
                     # Set gprmc line to False and enter while loop to read new lines until it gets the correct line
                     gprmc_line = False
                     #get date and time from GPRMC sentence - GPRMC reported only once every 8 lines
-                    while gprmc_line==False:
+                    while gprmc_line is False:
                         newline=ser.readline().decode('utf-8')
                         if 'GPRMC' in newline:
                             logger.info('found GPRMC sentence')
@@ -229,7 +231,7 @@ class GPS:
         ipos=0
         ivel=0
         GPS = {'east_west':None,'north_south':None,'up_down':None,'lat':None,'lon':None,'time':None}
-        # Define Constants 
+        # Define Constants
         bad_value=999
         # current year, month, date for timestamp creation; can also be obtained from utcnow()
         ymd = gps_file[-23:-14]
@@ -243,7 +245,7 @@ class GPS:
                         up_down.append(bad_value)
                         lat.append(bad_value)
                         lon.append(bad_value)
-                        ipos+=1
+                        ipos += 1
                         continue
                     up_down.append(gpgga.altitude)
                     lat.append(gpgga.latitude)
@@ -253,16 +255,16 @@ class GPS:
                     if '.' not in date_time: # if the datetime does not contain a float, append a trailing zero
                         date_time += '.0'
                     time.append(datetime.strptime(date_time,'%d%b%Y %H:%M:%S.%f'))
-                    ipos+=1
+                    ipos += 1
                 elif "GPVTG" in line:
                     gpvtg = pynmea2.parse(line,check=True)   #grab gpvtg sentence
-                    east_west.append( 0.2777 * gpvtg.spd_over_grnd_kmph*np.sin(np.deg2rad(gpvtg.true_track)))#units are m/s
-                    north_south.append( 0.2777 * gpvtg.spd_over_grnd_kmph*np.cos(np.deg2rad(gpvtg.true_track))) #units are m/s
-                    ivel+=1
+                    east_west.append( 0.2777 * gpvtg.spd_over_grnd_kmph * np.sin(np.deg2rad(gpvtg.true_track)))#units are m/s
+                    north_south.append( 0.2777 * gpvtg.spd_over_grnd_kmph * np.cos(np.deg2rad(gpvtg.true_track))) #units are m/s
+                    ivel += 1
                 else: #if not GPGGA or GPVTG, continue to start of loop
                     continue
-            
-        if ivel < ipos: # if an extra GPGGA line exists, remove the last entry
+        # if an extra GPGGA line exists,remove the last entry
+        if ivel < ipos:
             del up_down[-(ipos-ivel)]
             del lat[-(ipos-ivel)]
             del lon[-(ipos-ivel)]
@@ -280,8 +282,10 @@ class GPS:
         # latSorted  = np.asarray(lat)[sortInd].transpose()
         # lonSorted  = np.asarray(lon)[sortInd].transpose()
         # assign outputs to GPS dict
-        GPS.update({'east_west':east_west,'north_south':north_south,'up_down':up_down,'lat':lat,'lon':lon,'time':time})
-        # GPS.update({'east_west':uSorted,'north_south':vSorted,'up_down':zSorted,'lat':latSorted,'lon':lonSorted,'time':timeSorted})
+        GPS.update({'east_west':east_west,'north_south':north_south,
+                    'up_down':up_down,'lat':lat,'lon':lon,'time':time})
+        # GPS.update({'east_west':uSorted,'north_south':vSorted,
+        # 'up_down':zSorted,'lat':latSorted,'lon':lonSorted,'time':timeSorted})
         logger.info('GPGGA lines: {}'.format(len(lat)))
         logger.info('GPVTG lines: {}'.format(len(east_west)))
         logger.info('------------------------------------------')
