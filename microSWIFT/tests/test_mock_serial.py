@@ -10,4 +10,7 @@ class Testserial(unittest.TestCase):
         """
         Smoke test for the IMU.
         """
-        mock_serial.loaded
+        gps_port = '/dev/ttyS0'
+        start_baud = 9600
+        timeout = 1
+        mock_serial.Serial(gps_port, start_baud, timeout)
