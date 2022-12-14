@@ -14,11 +14,11 @@ class TestImu(unittest.TestCase):
         """
         Smoke test for the IMU.
         """
-        imu_test = imu_module.IMU(config)
+        imu_module.IMU(config)
 
     def test_init(self):
         """
         Test that imu is initialized
         """
         imu = imu_module.IMU(config)
-        assert imu.imu_initialized == True
+        assert imu.initialized is True

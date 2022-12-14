@@ -74,10 +74,11 @@ class Config:
         self.ID = os.uname()[1]
         self.PAYLOAD_TYPE = 7
         self.SENSOR_TYPE = 52
+        self.DATA_DIR = './data/'
 
         # GPS Parameters
         self.GPS_SAMPLING_FREQ = gps_sampling_frequency
-        self.gpsGPIO = 21
+        self.GPS_GPIO = 21
         self.GPS_PORT = '/dev/ttyS0'
         self.START_BAUD = 9600
         self.BAUD = 115200
