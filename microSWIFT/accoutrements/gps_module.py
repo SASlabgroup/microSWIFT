@@ -20,8 +20,6 @@ from ..utils.configuration import Config
 
 # Set up module level logger
 logger = logging.getLogger('microSWIFT.'+__name__)
-logger.info('---------------recordGPS.py------------------')
-
 
 #GPS parameters
 dataDir = config.getString('System', 'dataDir')
@@ -47,11 +45,12 @@ class GPS:
             _description_
         """
         # setup GPIO and initialize
+        gps_initialized = False
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
         GPIO.setup(config.gpsGPIO,GPIO.OUT)
         GPIO.output(config.gpsGPIO,GPIO.HIGH)
-
+        logger.info('---------------recordGPS.py------------------')
         logger.info('initializing GPS')
         try:
             # start with GPS default baud
@@ -76,16 +75,20 @@ class GPS:
                       '*2C\r\n'.encode())
             sleep(1)
             # set interval to 250ms (4 Hz)
-            ser.write("$PMTK220,{}*29\r\n".format(config.GPS_SAMPLING_FREQ).encode())
+            ser.write("$PMTK220,{}*29\r\n".format(
+                config.GPS_SAMPLING_FREQ).encode())
             # TODO: change sampling freq to milliseconds from HZ
             sleep(1)
         except Exception as err:
-            logger.info('Failed to set baudrate and sampling frequency')
+            logger.info('Failed to set baudrate' 
+                        'and sampling frequency')
             logger.info(err)
-        # read lines from GPS serial port and wait for fix
+        # read lines from GPS serial port and wait for fix  
         try:
-            # loop until timeout dictated by gps_timeout value (seconds) or the gps is initialized
-            while datetime.utcnow().minute + datetime.utcnow().second/60 < end_time and gps_initialized is False:
+            # loop until timeout dictated by gps_timeout value
+            # (seconds) or the gps is initialized
+            while datetime.utcnow().minute + datetime.utcnow().second/60 < \
+                  end_time and gps_initialized is False:
                 gps_initialized = self.__checkout__(gps_initialized)
             if gps_initialized is False:
                 logger.info('GPS failed to initialize, timeout')
@@ -113,7 +116,8 @@ class GPS:
                 # 0=invalid,1=GPS fix,2=DGPS fix
                 if gpgga.gps_qual > 0:
                     logger.info('GPS fix acquired')
-                    # Set gprmc line to False and enter while loop to read new lines until it gets the correct line
+                    # Set gprmc line to False and enter while loop to
+                    # read new lines until it gets the correct line
                     gprmc_line = False
                     #get date and time from GPRMC sentence - GPRMC reported only once every 8 lines
                     while gprmc_line is False:
@@ -154,41 +158,50 @@ class GPS:
         This is the function that record the gps component on RPi. The function takes in a timestamp.
         The output creates a GPS log file.
         """
-        # get floatID for file names
-        floatID = os.uname()[1]
+        # get float_id for file names
+        float_id = os.uname()[1]
 
         # loop while within the recording block
-        while datetime.utcnow().minute + datetime.utcnow().second/60 < end_time:
+        while datetime.utcnow().minute + \
+              datetime.utcnow().second/60 < end_time:
         # If GPS signal is initialized start recording
             if gps_initialized:
                 #create file name
-                GPSdataFilename = config.dataDir + floatID + '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}".format(datetime.utcnow())
-                logger.info("file name: {}".format(GPSdataFilename))
-
+                gps_data_filename = config.dataDir + float_id + \
+                                    '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}". \
+                                    format(datetime.utcnow())
+                logger.info("file name: {}".format(gps_data_filename))
                 logger.info('starting GPS burst')
                 try:
                     ser.flushInput()
-                    with open(GPSdataFilename, 'w',newline='\n') as gps_out:
-                        logger.info('open file for writing: %s' %GPSdataFilename)
+                    with open(gps_data_filename, 'w',newline='\n') as gps_out:
+                        logger.info('open file for writing: %s'
+                                    % gps_data_filename)
                         ipos=0
                         ivel=0
-                        while datetime.utcnow().minute + datetime.utcnow().second/60 <= end_time:
+                        while datetime.utcnow().minute + \
+                              datetime.utcnow().second/60 <= end_time:
                             newline=ser.readline().decode()
                             gps_out.write(newline)
                             gps_out.flush()
+                            # Grab gpgga sentence and parse.
+                            # Check to see if we have lost GPS fix.
+                            # If so, continue to loop start.
+                            # A bad value will remain at this index
+                            # 
+                            # If the number of position and velocity
+                            # samples is enough then end the loop
                             if "GPGGA" in newline:
-                                gpgga = pynmea2.parse(newline,check=True)   #grab gpgga sentence and parse
-                                # check to see if we have lost GPS fix, and if so, continue to loop start. a bad value will remain at this index
+                                gpgga = pynmea2.parse(newline,check=True)
                                 if gpgga.gps_qual < 1:
-                                    logger.info('lost GPS fix, sample not recorded. Waiting 10 seconds')
-                                    logger.info('lost GPS fix, sample not recorded. Waiting 10 seconds')
+                                    logger.info('lost GPS fix, sample not '
+                                        'recorded. Waiting 10 seconds')
                                     sleep(10)
                                     ipos+=1
                                     continue
                                 ipos+=1
                             elif "GPVTG" in newline:
                                 ivel+=1
-                            # If the number of position and velocity samples is enough then and the loop
                             if ipos == gps_samples and ivel == gps_samples:
                                 break
                         # Output logger information on samples
@@ -201,16 +214,16 @@ class GPS:
                 logger.info('Ending GPS burst at {}'.format(datetime.now()))
                 logger.info('number of GPGGA samples = {}'.format(ipos))
                 logger.info('number of GPVTG samples = {}'.format(ivel))
-                return GPSdataFilename
+                return gps_data_filename
         # If GPS signal is not initialized exit
         else:
             logger.info("GPS not initialized, exiting")
 
             #create file name but it is a placeholder
-            GPSdataFilename = ''
+            gps_data_filename = ''
 
             # Return the GPS filename to be read into the onboard processing
-            return GPSdataFilename
+            return gps_data_filename
 
     def to_uvz(self, gps_file):
         """
@@ -218,7 +231,6 @@ class GPS:
         in memory for post-processing.
         """
         # Set up module level logger
-        logger = logging.getLogger('microSWIFT.'+__name__)
         logger.info('---------------GPStoUVZ.py------------------')
 
         # Define empty lists of variables to append
@@ -230,17 +242,21 @@ class GPS:
         time = []
         ipos=0
         ivel=0
-        GPS = {'east_west':None,'north_south':None,'up_down':None,'lat':None,'lon':None,'time':None}
+        GPS = {'east_west':None,'north_south':None,
+               'up_down':None,'lat':None,'lon':None,'time':None}
         # Define Constants
         bad_value=999
-        # current year, month, date for timestamp creation; can also be obtained from utcnow()
+        # current year, month, date for timestamp creation;
+        # can also be obtained from utcnow()
         ymd = gps_file[-23:-14]
         # ymd = datetime.utcnow().strftime("%Y-%m-%d")
         with open(gps_file, 'r') as file:
             for line in file:
                 if "GPGGA" in line:
-                    gpgga = pynmea2.parse(line,check=True)   #grab gpgga sentence and parse
-                    #check to see if we have lost GPS fix, and if so, continue to loop start. a bad value will remain at this index
+                    #grab gpgga sentence and parse
+                    gpgga = pynmea2.parse(line,check=True)
+                    #check to see if we have lost GPS fix, and if so,
+                    # continue to loop start. a bad value will remain at this index
                     if gpgga.gps_qual < 1:
                         up_down.append(bad_value)
                         lat.append(bad_value)
@@ -250,18 +266,27 @@ class GPS:
                     up_down.append(gpgga.altitude)
                     lat.append(gpgga.latitude)
                     lon.append(gpgga.longitude)
-                    # construct a datetime from the year, month, date, and timestamp
+                    # construct a datetime from the year, month, date,
+                    # and timestamp
                     date_time = f'{ymd} {gpgga.timestamp}'  #.rstrip('0')
-                    if '.' not in date_time: # if the datetime does not contain a float, append a trailing zero
+                    # if the datetime does not contain a float,
+                    # append a trailing zero
+                    if '.' not in date_time:
                         date_time += '.0'
-                    time.append(datetime.strptime(date_time,'%d%b%Y %H:%M:%S.%f'))
+                    time.append(datetime.strptime(date_time,
+                                '%d%b%Y %H:%M:%S.%f'))
                     ipos += 1
                 elif "GPVTG" in line:
-                    gpvtg = pynmea2.parse(line,check=True)   #grab gpvtg sentence
-                    east_west.append( 0.2777 * gpvtg.spd_over_grnd_kmph * np.sin(np.deg2rad(gpvtg.true_track)))#units are m/s
-                    north_south.append( 0.2777 * gpvtg.spd_over_grnd_kmph * np.cos(np.deg2rad(gpvtg.true_track))) #units are m/s
+                    # Grab gpvtg sentence; units are m/s.
+                    # If not GPGGA or GPVTG,
+                    # continue to start of loop
+                    gpvtg = pynmea2.parse(line,check=True)
+                    east_west.append( 0.2777 * gpvtg.spd_over_grnd_kmph * \
+                                      np.sin(np.deg2rad(gpvtg.true_track)))
+                    north_south.append( 0.2777 * gpvtg.spd_over_grnd_kmph * \
+                                        np.cos(np.deg2rad(gpvtg.true_track)))
                     ivel += 1
-                else: #if not GPGGA or GPVTG, continue to start of loop
+                else:
                     continue
         # if an extra GPGGA line exists,remove the last entry
         if ivel < ipos:
