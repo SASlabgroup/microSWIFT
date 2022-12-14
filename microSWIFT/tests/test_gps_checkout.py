@@ -17,14 +17,14 @@ class TestGPS(unittest.TestCase):
         """
         Smoke test to make sure the function runs
         """
-        gps_module.GPS.init(config)
+        gps_module.GPS(config)
 
     def test_init(self):
         """
         One shot test to test if the function produces correct
         output in known case. Should return True.
         """
-        gps = gps_module.GPS.init(config)
+        gps = gps_module.GPS.(config)
         assert gps.initialized is True
 
     def test_init2(self):
@@ -33,28 +33,4 @@ class TestGPS(unittest.TestCase):
         output in known case. Should throw ValueError exception.
         """
         with self.assertRaises(ValueError):
-            gps_module.GPS.init(' ')
-
-    def test_checkout(self):
-        """
-        One shot test to test if the function produces correct
-        output in known case. Should throw ValueError exception.
-        """
-        with self.assertRaises(ValueError):
-            gps_module.GPS.checkout(' ')
-
-    def test_record(self):
-        """
-        One shot test to test if the function produces correct
-        output in known case. Should throw ValueError exception.
-        """
-        with self.assertRaises(ValueError):
-            gps_module.GPS.record(' ')
-
-    def test_to_uvz(self):
-        """
-        One shot test to test if the function produces correct
-        output in known case. Should throw ValueError exception.
-        """
-        with self.assertRaises(ValueError):
-            gps_module.GPS.to_uvz(' ')
+            gps_module.GPS('does_not_exist.txt')
