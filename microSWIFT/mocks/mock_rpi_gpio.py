@@ -23,27 +23,73 @@ RISING = 31
 SERIAL = 40
 SPI = 41
 UNKNOWN = -1
-SETUP = False
+SETUP = {}
 WARNINGS = True
 
 def setmode(pin_numbering_style):
+    """
+
+
+    Parameters
+    ----------
+    pin_numbering_style : _type_
+        _description_
+
+    Raises
+    ------
+    ValueError
+        _description_
+    """
     if pin_numbering_style != BCM:
         raise ValueError('Setmode requires BCM')
 
 def setup(pin_number, direction):
-    global SETUP
+    """_summary_
+
+    Parameters
+    ----------
+    pin_number : _type_
+        _description_
+    direction : _type_
+        _description_
+
+    Raises
+    ------
+    ValueError
+        _description_
+    ValueError
+        _description_
+    """
     if direction not in (IN, OUT):
         raise ValueError('Direction should be IN or OUT')
     if pin_number not in range(1,27):
         raise ValueError('Pin number not valid')
-    SETUP = pin_number
+    SETUP[f'{pin_number}'] = direction
 
 def output(pin_number, value):
+    """_summary_
+
+    Parameters
+    ----------
+    pin_number : _type_
+        _description_
+    value : _type_
+        _description_
+
+    Raises
+    ------
+    ValueError
+        _description_
+    ValueError
+        _description_
+    Exception
+        _description_
+    """
     if value not in (HIGH, LOW):
         raise ValueError('Value should be HIGH or LOW')
     if pin_number not in range(1,27):
         raise ValueError('Pin number not valid')
-    if SETUP != pin_number:
+    if f'{pin_number}' not in SETUP.keys():
         raise Exception('Setup needs to be run first')
 
 def setwarnings(boolean):
