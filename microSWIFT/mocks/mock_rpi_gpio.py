@@ -28,17 +28,15 @@ WARNINGS = True
 
 def setmode(pin_numbering_style):
     """
+    Mock function for setmode.
 
-
-    Parameters
+    Parameters:
     ----------
-    pin_numbering_style : _type_
-        _description_
+    pin_numbering_style. For this project it should always be BCM
 
-    Raises
-    ------
-    ValueError
-        _description_
+    Returns:
+    -------
+    none
     """
     if pin_numbering_style != BCM:
         raise ValueError('Setmode requires BCM')
@@ -67,23 +65,16 @@ def setup(pin_number, direction):
     SETUP[f'{pin_number}'] = direction
 
 def output(pin_number, value):
-    """_summary_
+    """
+    Mock function for output
 
-    Parameters
+    Parameters:
     ----------
-    pin_number : _type_
-        _description_
-    value : _type_
-        _description_
+    pin_number: int 1-27
 
-    Raises
-    ------
-    ValueError
-        _description_
-    ValueError
-        _description_
-    Exception
-        _description_
+    Returns:
+    -------
+    none
     """
     if value not in (HIGH, LOW):
         raise ValueError('Value should be HIGH or LOW')
@@ -95,12 +86,16 @@ def output(pin_number, value):
 def setwarnings(boolean):
     """
     Sets the warnings for GPIO as on or off
-    Parameters
+
+    Parameters:
     ----------
     bool : True or False
+
+    Returns:
+    -------
+    none
     """
     if boolean in (True, False):
         WARNINGS = boolean
     else:
         raise ValueError('must be True or False')
-
