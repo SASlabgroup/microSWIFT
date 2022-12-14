@@ -18,6 +18,8 @@ class Serial:
         self.baud = start_baud
         self.timeout = timeout
         self.messages = []
+        self.return_gpgga = False
+        self.return_gprmc = False
 
     def write(self, binary):
         """
@@ -35,8 +37,8 @@ class Serial:
         clear the input from the serial port
         """
         self.messages = []
-    
-    def read_unitl(self, binary):
+
+    def read_until(self, binary):
         """
         Open serial connection to read for  agiven amount of time.
 
@@ -49,4 +51,14 @@ class Serial:
         """
         Read new lines from the serial port.
         """
+        if self.return_gpgga is False:
+            self.return_gpgga = True
+            return ('GPGGA,140008.500,3610.9582,N,07544.9381,W,2,09,' \
+                   '1.00,14.6,M,-35.6,M,0000,0000*60').encode()
+        else:
+            self.return_gprmc = True
+            return ('GPRMC,140008.500,A,3610.9582,N,07544.9381,W,2.45,' \
+                    '81.33,081021,,,D*42').encode()
+
         
+

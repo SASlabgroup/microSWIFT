@@ -8,9 +8,11 @@ Authors: @EJRainville, @AlexdeKlerk, @VivianaCastillo
 try:
     import RPi.GPIO as GPIO
     import serial
+    mocked_hardware = False
 except ImportError as e:
     from mocks import mock_rpi_gpio as GPIO
     from mocks import mock_serial as serial
+    mocked_hardware = True
     print(e, "Using mock hardware")
 
 import logging
@@ -173,17 +175,18 @@ class GPS:
         gps_data_filename: a dat file
 
         """
+        if self.powered_on is True:
+            gps_data_filename = self.data_dir + self.floatID + \
+                                '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}". \
+                                format(datetime.utcnow())
+            logger.info("file name: {}".format(gps_data_filename))
+            logger.info('starting GPS burst')
+        else:
+            logger.info('GPS is not on - trying to power on')
+            self.power_on()
 
-        # loop while within the recording block
         while datetime.utcnow() < end_time:
-        # If GPS signal is initialized start recording
-            if self.initialized:
-                #create file name
-                gps_data_filename = gps.data_dir + float_id + \
-                                    '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}". \
-                                    format(datetime.utcnow())
-                logger.info("file name: {}".format(gps_data_filename))
-                logger.info('starting GPS burst')
+                
                 try:
                     ser.flushInput()
                     with open(gps_data_filename, 'w',newline='\n') as gps_out:
@@ -341,7 +344,7 @@ class GPS:
 
         Parameters
         ----------
-        newline : 
+        newline :
         """
         try:
             logger.info('found GPGGA sentence')
@@ -373,14 +376,17 @@ class GPS:
             logger.info(exception)
             logger.info('not able to parse GPGGA')
 
-        try:
-            logger.info('setting system time from GPS:{0} {1}'.format(nmea_date,
-                                                                    nmea_time))
-            os.system('sudo timedatectl set-timezone UTC')
-            os.system('sudo date -s "{0} {1}"'.format(nmea_date, nmea_time))
-            os.system('sudo hwclock -w')
-            logger.info('System time reset')
+        if mocked_hardware is False:
+            try:
+                logger.info('setting system time from GPS:{0} {1}'.format(nmea_date,
+                                                                        nmea_time))
+                os.system('sudo timedatectl set-timezone UTC')
+                os.system(f'sudo date -s "{nmea_date} {nmea_time}"')
+                os.system('sudo hwclock -w')
+                logger.info('System time reset')
+                self.gpgga_found = True
+            except Exception as exception:
+                logger.info(exception)
+                logger.info('Not able to set system time from GPS time')
+        else:
             self.gpgga_found = True
-        except Exception as exception:
-            logger.info(exception)
-            logger.info('Not able to set system time from GPS time')
