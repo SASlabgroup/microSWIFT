@@ -20,7 +20,7 @@ microSWIFT uses conda for package management. The required Python dependencies a
 
 ### Hardware requirements
 
-MicroSWIFT v1 is built around a Raspberry Pi Zero with a 1GHz single-core CPU and 512MB RAM. Additional hardware requirements, notably the GPS, IMU, and Iridium modem, are specified in the [component specification](https://github.com/SASlabgroup/microSWIFT/blob/75-finish-design-doc/doc/component_specification).
+MicroSWIFT v1 is built around a Raspberry Pi Zero with a 1GHz single-core CPU and 512MB RAM. Additional hardware requirements, notably the GPS, IMU, and Iridium modem, are specified in the [component specification](https://github.com/SASlabgroup/microSWIFT/blob/main/doc/component_specification.md).
 
 ## Installation
 
