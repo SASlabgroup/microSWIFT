@@ -43,11 +43,11 @@ class IMU:
         --------
         none
         """
-        self.imu_initialized = False
-        self.imu_power_on = False
+        self.initialized = False
+        self.powerered_on = False
         try:
             # power on IMU module and set up fxas and fxos objects
-            self.imu_initialized = False
+            self.initialized = False
             logger.info('initializing IMU')
             self.imuFreq = config.IMU_SAMPLING_FREQ
             self.imu_samples = config.IMU_SAMPLING_FREQ \
@@ -57,7 +57,7 @@ class IMU:
             self.dataDir = config.DATA_DIR
             GPIO.setmode(GPIO.BCM)
             GPIO.setup(self.imu_gpio,GPIO.OUT)
-            self.imu_initialized = True
+            self.initialized = True
             logger.info('imu initialized')
         except Exception as exception:
             logger.info(exception)
@@ -72,7 +72,7 @@ class IMU:
             self.i2c = busio.I2C(board.SCL, board.SDA)
             self.fxos = adafruit_fxos8700.FXOS8700(self.i2c, accel_range=0x00)
             self.fxas = adafruit_fxas21002c.FXAS21002C(self.i2c, gyro_range=500)
-            self.imu_power_on = True
+            self.powered_on = True
             logger.info('IMU has powered on')
         except Exception as exception:
             logger.info(exception)
@@ -93,6 +93,7 @@ class IMU:
         try:
             logger.info('power down IMU')
             GPIO.output(self.imu_gpio,GPIO.LOW)
+            self.powered_on = False
         except Exception as exception:
             logger.info(exception)
             logger.info('could not power off imu')
@@ -110,7 +111,7 @@ class IMU:
         file name and imu initialized
         """
         # IMU is not Initialzied at first
-        if self.imu_initialized is False:
+        if self.initialized is False:
             Exception("IMU module not initialized")
 
         IMUdataFilename = self.dataDir + self.floatID + '_IMU_' \
@@ -171,7 +172,7 @@ class IMU:
         """
 
         #setup checks
-        if self.imu_initialized == False:
+        if self.initialized == False:
             Exception("IMU module not initialized")
 
         if run_time < 1:
