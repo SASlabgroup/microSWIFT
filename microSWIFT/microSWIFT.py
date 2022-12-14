@@ -27,7 +27,7 @@ import numpy as np
 
 from accoutrements import imu_module
 from accoutrements import gps_module
-# from accoutrements import sbd
+from accoutrements import sbd
 from accoutrements import telemetry_stack
 from processing.gps_waves import gps_waves
 from processing.uvza_waves import uvza_waves
@@ -80,7 +80,7 @@ def main():
             while datetime.utcnow() < config.END_DUTY_CYCLE_TIME:
                 time.sleep(10)
                 logger.info('Waiting to enter record window')
-        
+
         config.update_times()
 
 def record_window(gps, imu, config):
