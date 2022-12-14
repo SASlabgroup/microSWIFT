@@ -14,9 +14,7 @@ MicroSWIFT is an expendable version of the [Surface Wave Instrument Float with T
 
 ### Software requirements
 
-The microSWIFT codebase is intended for operational use with unix-based operating systems, particularly the Raspbian GNU/Linux 10 (buster) distribution that runs onboard the microSWIFT's Raspberry Pi Zero with Python 3.7 (note this is not the preinstalled Python that ships with the Raspbian distribution).
-
-In the mock-based simulation mode intended for development and testing, the code has been successfully run on on macOS using python 3.7-3.9.
+The microSWIFT codebase is intended for operational use with unix-based operating systems, particularly the Raspbian GNU/Linux 10 (buster) distribution that runs onboard the microSWIFT's Raspberry Pi Zero with Python 3.7 (note this is not the preinstalled Python that ships with the Raspbian distribution). The code has been successfully run in the mock-based simulation mode intended for development and testing on macOS using python 3.7-3.9.
 
 MicroSWIFT uses conda for package management. The required Python dependencies are specified in [environment.yml](https://github.com/SASlabgroup/microSWIFT/blob/main/environment.yml).
 
