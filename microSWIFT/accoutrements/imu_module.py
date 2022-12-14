@@ -14,7 +14,7 @@ import numpy as np
 try:
     import busio
     import board
-    import RPi.GPIO as GPIO
+    from RPi import GPIO
     from . import adafruit_fxos8700, adafruit_fxas21002c
 except ImportError as e:
     from mocks import mock_busio as busio
@@ -59,7 +59,7 @@ class IMU:
             GPIO.setup(self.imu_gpio,GPIO.OUT)
             self.initialized = True
             logger.info('imu initialized')
-        except Exception as exception:
+        except RuntimeError as exception:
             logger.info(exception)
             logger.info('error initializing imu')
 
@@ -74,7 +74,7 @@ class IMU:
             self.fxas = adafruit_fxas21002c.FXAS21002C(self.i2c, gyro_range=500)
             self.powered_on = True
             logger.info('IMU has powered on')
-        except Exception as exception:
+        except RuntimeError as exception:
             logger.info(exception)
             logger.info('could not power on imu')
 
@@ -94,7 +94,7 @@ class IMU:
             logger.info('power down IMU')
             GPIO.output(self.imu_gpio,GPIO.LOW)
             self.powered_on = False
-        except Exception as exception:
+        except RuntimeError as exception:
             logger.info(exception)
             logger.info('could not power off imu')
 
@@ -129,7 +129,7 @@ class IMU:
                     accel_x, accel_y, accel_z = self.fxos.accelerometer
                     mag_x, mag_y, mag_z = self.fxos.magnetometer
                     gyro_x, gyro_y, gyro_z = self.fxas.gyroscope
-                except Exception as exception:
+                except RuntimeError as exception:
                     logger.info(exception)
                     logger.info('error reading IMU data')
 
@@ -172,7 +172,7 @@ class IMU:
         """
 
         #setup checks
-        if self.initialized == False:
+        if self.initialized is False:
             Exception("IMU module not initialized")
 
         if run_time < 1:
@@ -191,7 +191,7 @@ class IMU:
 
         self.record(t_end)
 
-    def sec(n_secs):
+    def sec(self, n_secs):
         """
         #TODO: fix docstr
         Helper function to convert timedelta into second
@@ -205,7 +205,7 @@ class IMU:
         return timedelta(seconds=n_secs)
 
 
-    def datetimearray2relativetime(datetimeArr):
+    def datetimearray2relativetime(self, datetimeArr):
         """
         #TODO: fix docstr
         Helper function to convert datetime array to relative time in seconds
@@ -221,7 +221,7 @@ class IMU:
         return relTime
 
 
-    def RCfilter(b, fc, fs):
+    def RCfilter(self, b, fc, fs):
         """
         #TODO: fix docstr
         Helper function to perform RC filtering
@@ -260,17 +260,14 @@ class IMU:
             IMU = to_xyz(imufile,fs)
         """
         #-- Set up module level logger
-        logger = logging.getLogger('microSWIFT.'+__name__)
         logger.info('---------------to_xyz.py------------------')
-
-        #TODO: handle badvalues
 
         #--initialization
         timestamp = []
         acc = []
         mag = []
         gyo = []
-        IMU = {'ax':None,'ay':None,'az':None,'vx':None,'vy':None,'vz':None,
+        IMU_dic = {'ax':None,'ay':None,'az':None,'vx':None,'vy':None,'vz':None,
                'px':None,'py':None,'pz':None,'time':None}
 
         #--open imu file and read in acceleration, magnetometer, and gyroscope data
@@ -292,9 +289,9 @@ class IMU:
         magSorted = np.asarray(mag)[sortInd,:].transpose()
         gyoSorted = np.asarray(gyo)[sortInd,:].transpose()
 
-        #--trimming #TODO: not tested live...
+        #--trimming need to try live
         # print(len(timestamp_sorted))
-        # skipFirstSecs = 60 #TODO: make input on config, log etc.
+        # skipFirstSecs = 60 need to make input on config, log etc.
         # skipBool = timestamp_sorted >= timestamp_sorted[0] + timedelta(seconds=skipFirstSecs)
         # skipBool3 = np.tile(skipBool, (3,1))
         # accSorted = accSorted[skipBool3].reshape((3, -1))
@@ -338,20 +335,21 @@ class IMU:
         print(f'Coordinate position {upIdx} assigned as up')
         logger.info(f'Coordinate position {upIdx} assigned as up')
 
-        # create a master time array based on the specified sampling frequency and the start and end times.
-        dt = sec(fs**(-1))
+        # create a master time array based on the specified sampling frequency
+        # and the start and end times.
+        dt = self.sec(fs**(-1))
         t0 = timestamp_sorted[0]
         tf = timestamp_sorted[-1]
         masterTime = np.arange(t0,tf,dt).astype(datetime)
 
         # add milliseconds to each second of the rounded IMU timestamps:
-        timestampSorted_ms = add_ms_to_time(timestamp_sorted)
+        timestampSorted_ms = self.add_ms_to_time(timestamp_sorted)
 
         #--Interpolate IMU onto master clock
         logger.info('Interpolating IMU onto master clock')
         # convert datetime ranges to a relative number of total seconds
-        masterTimeSec = datetimearray2relativetime(masterTime)
-        imuTimeSec    = datetimearray2relativetime(timestampSorted_ms)
+        masterTimeSec = self.datetimearray2relativetime(masterTime)
+        imuTimeSec    = self.datetimearray2relativetime(timestampSorted_ms)
 
         #interpolate
         accInterp = [np.interp(masterTimeSec,imuTimeSec,a) for a in accSorted]
@@ -371,15 +369,16 @@ class IMU:
         #-- integration
         logger.info('Integrating IMU')
         fc = 0.04
-        filt = lambda *b : RCfilter(*b,fc,fs)
+        filt = lambda *b : self.RCfilter(*b,fc,fs)
         # X,Y,Z=[integrate_acc(a,masterTimeSec,filt) for a in accEarth][:] # X = [ax,ay,az], Y = ...
         X,Y,Z=[integrate_acc(a,masterTimeSec,filt) for a in accInterp][:] # X = [ax,ay,az], Y = ...
 
         # assign outputs to IMU dict
-        IMU['ax'],IMU['vx'],IMU['px'] = X # IMU.update({'ax': X[0], 'ay': Y[0], 'az': Z[0]})
-        IMU['ay'],IMU['vy'],IMU['py'] = Y
-        IMU['az'],IMU['vz'],IMU['pz'] = Z
-        IMU['time'] = masterTime
+        IMU_dic['ax'],IMU_dic['vx'],IMU_dic['px'] = X # IMU.update({'ax': X[0], 'ay': Y[0], 'az': Z[0]})
+        IMU_dic['ay'],IMU_dic['vy'],IMU_dic['py'] = Y
+        IMU_dic['az'],IMU_dic['vz'],IMU_dic['pz'] = Z
+        IMU_dic['time'] = masterTime
 
         logger.info('--------------------------------------------')
-        return IMU # X[0], Y[0], Z[0], X[1], Y[1], Z[1], X[2], Y[2], Z[2], masterTime # ax, ay, az, vx, vy, vz, px, py, pz
+        return IMU # X[0], Y[0], Z[0], X[1], Y[1], Z[1], X[2], Y[2], Z[2],
+                   # masterTime # ax, ay, az, vx, vy, vz, px, py, pz
