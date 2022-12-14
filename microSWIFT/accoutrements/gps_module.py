@@ -5,6 +5,13 @@ as an asynchronous task at the same time as the recordIMU function.
 
 Authors: @EJRainville, @AlexdeKlerk, @VivianaCastillo
 """
+try:
+    import RPi.GPIO as GPIO
+    import serial
+except ImportError as e:
+    from mocks import mock_rpi_gpio as GPIO
+    from mocks import mock_serial as serial
+    print(e, "Using mock hardware")
 
 import logging
 import os
@@ -12,26 +19,10 @@ from datetime import datetime
 from time import sleep
 
 import numpy as np
-import RPi.GPIO as GPIO
 import pynmea2
-import serial
-
-from ..utils.config import Config
 
 # Set up module level logger
 logger = logging.getLogger('microSWIFT.'+__name__)
-logger.info('---------------recordGPS.py------------------')
-
-
-#GPS parameters
-dataDir = config.getString('System', 'dataDir')
-gps_port = config.getString('GPS', 'port')
-baud = config.getInt('GPS', 'baud')
-start_aud = config.getInt('GPS', 'startBaud')
-gps_timeout = config.getInt('GPS', 'timeout')
-burst_seconds = config.getInt('System', 'burst_seconds')
-gps_samples = gps_freq*burst_seconds
-########################################################################
 
 class GPS:
     """
@@ -89,8 +80,19 @@ class GPS:
             logger.info('GPS failed to initialize')
             logger.info(err)
 
+    def power_on(self):
+        """
+        Power on the GPS module.
+        """
 
-    def __checkout__(self, init_status):
+    def power_off():
+        """
+        Power off the GPS module.
+        """
+
+
+
+    def checkout(self, init_status):
         """
         This is the check out function for the GPS to initialize.
         The function takes in a boolean as the initialization status.
@@ -146,7 +148,7 @@ class GPS:
         sleep(1)
 
     
-    def __record__(self, end_time):
+    def record(self, end_time):
         """
         This is the function that record the gps component on RPi. The function takes in a timestamp.
         The output creates a GPS log file.

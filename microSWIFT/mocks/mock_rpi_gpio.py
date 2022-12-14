@@ -24,6 +24,7 @@ SERIAL = 40
 SPI = 41
 UNKNOWN = -1
 SETUP = False
+WARNINGS = True
 
 def setmode(pin_numbering_style):
     if pin_numbering_style != BCM:
@@ -44,3 +45,16 @@ def output(pin_number, value):
         raise ValueError('Pin number not valid')
     if SETUP != pin_number:
         raise Exception('Setup needs to be run first')
+
+def setwarnings(boolean):
+    """
+    Sets the warnings for GPIO as on or off
+    Parameters
+    ----------
+    bool : True or False
+    """
+    if boolean in (True, False):
+        WARNINGS = boolean
+    else:
+        raise ValueError('must be True or False')
+
