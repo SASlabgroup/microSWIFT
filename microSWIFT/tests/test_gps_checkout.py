@@ -17,19 +17,19 @@ class TestGPS(unittest.TestCase):
         """
         Smoke test to make sure the function runs
         """
-        imu_gps = gps_module.GPS(config)
+        gps_module.GPS(config)
 
     def test_init(self):
         """
-        One shot test to test if the function produces correct 
+        One shot test to test if the function produces correct
         output in known case. Should return True.
         """
         gps = gps_module.GPS(config)
-        assert gps.gps_initialized == True
-    
+        assert gps.initialized is True
+
     def test_init2(self):
         """
-        One shot test to test if the function produces correct 
+        One shot test to test if the function produces correct
         output in known case. Should return False.
         """
         with self.assertRaises(ValueError):

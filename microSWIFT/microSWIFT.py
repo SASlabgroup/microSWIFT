@@ -64,7 +64,7 @@ def main():
         # and end time) record the imu and gps data until the end of the
         # window. These tasks are submitted concurrently.
         if config.START_TIME <= datetime.utcnow() < config.END_RECORD_TIME:
-            logger.info(log.header('Iteration %d', duty_cycle_count))
+            logger.info(log.header('Iteration %i', duty_cycle_count))
             record_window(gps, imu, config)
             recording_complete = True
 

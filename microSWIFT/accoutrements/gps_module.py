@@ -38,28 +38,51 @@ class GPS:
         --------
         none
         """
+        self.initialized = False
+        self.powered_on = False
         try:
-            isinstance(config.gpsGPIO, int)
-        except:
-            raise ValueError('inut config file is not correct')
-        
-        # setup GPIO and initialize
-        self.gps_initialized = False
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setwarnings(False)
-        GPIO.setup(config.gpsGPIO,GPIO.OUT)
-        self.gps_initialized = True
-        logger.info('gps initialized')
-        GPIO.output(config.gpsGPIO,GPIO.HIGH)
-        logger.info('initializing GPS')
+            isinstance(config.GPS_GPIO, int)
+        except Exception as exception:
+            logger.info(exception)
+            raise ValueError('input config object is not correct')
+
+        try:
+            logger.info('initializing GPS')
+            self.gps_freq = config.GPS_SAMPLING_FREQ
+            self.gps_gpio = config.GPS_GPIO
+            self.floatID = os.uname()[1]
+            self.dataDir = config.DATA_DIR
+            self.gps_port = config.GPS_PORT
+            self.start_baud = config.START_BAUD
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setup(self.gps_gpio,GPIO.OUT)
+            GPIO.setwarnings(False)
+            self.initialized = True
+            logger.info('GPS initialized')
+        except Exception as exception:
+            logger.info(exception)
+            logger.info('error initializing GPS')
+
+    def power_on(self):
+        """
+        Power on the GPS module.
+        """
+        try:
+            GPIO.output(self.gps_gpio,GPIO.HIGH)
+            logger.info('GPS powered on')
+        except Exception as exception:
+            logger.info(exception)
+            logger.info('not able to turn on GPS')
+
         try:
             # start with GPS default baud
             logger.info("try GPS serial port at 9600")
-            ser=serial.Serial(config.gps_port,config.start_baud,
+            ser=serial.Serial(self.gps_port, self.start_baud,
                               timeout=1)
         except Exception as err:
             logger.info('Serial port did not open')
             logger.info(err)
+
         try:
             # set device baud rate to 115200
             ser.write('$PMTK251,115200*1F\r\n'.encode())
@@ -88,20 +111,16 @@ class GPS:
             # loop until timeout dictated by gps_timeout value
             # (seconds) or the gps is initialized
             while datetime.utcnow().minute + datetime.utcnow().second/60 < \
-                  end_time and gps_initialized is False:
-                gps_initialized = self.__checkout__(gps_initialized)
-            if gps_initialized is False:
+                  end_time and self.initialized is False:
+                self.initialized = self.__checkout__(self.initialized)
+            if self.initialized is False:
                 logger.info('GPS failed to initialize, timeout')
         except Exception as err:
             logger.info('GPS failed to initialize')
             logger.info(err)
 
-    def power_on(self):
-        """
-        Power on the GPS module.
-        """
 
-    def power_off():
+    def power_off(self):
         """
         Power off the GPS module.
         """
@@ -194,9 +213,9 @@ class GPS:
         while datetime.utcnow().minute + \
               datetime.utcnow().second/60 < end_time:
         # If GPS signal is initialized start recording
-            if gps_initialized:
+            if self.initialized:
                 #create file name
-                gps_data_filename = config.dataDir + float_id + \
+                gps_data_filename = gps.data_dir + float_id + \
                                     '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}". \
                                     format(datetime.utcnow())
                 logger.info("file name: {}".format(gps_data_filename))
