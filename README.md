@@ -39,7 +39,7 @@ pip install microSWIFT
 MicroSWIFT wave measurements in the form of spectral and bulk parameters are telemetered to the SWIFT server and are accessible using any of the following methods:
 
 - [Web-based query](http://faculty.washington.edu/jmt3rd/SWIFTdata/DynamicDataLinks.html)
-- [View a map of actively deployed SWIFTs](https://swiftserver.apl.washington.edu/map/)
+- [map of actively deployed SWIFTs](https://swiftserver.apl.washington.edu/map/)
 - [microSWIFTtelemetry: Python-based data access](https://github.com/SASlabgroup/microSWIFTtelemetry)
 
 Raw data in the form of GPS and IMU time series is stored on the onboard SD card in `.dat` format in the `microSWIFT/data/` directory.
