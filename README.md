@@ -11,9 +11,18 @@ Operational code for the microSWIFT v1 wave buoy developed at the University of 
 MicroSWIFT is an expendable version of the [Surface Wave Instrument Float with Tracking](https://apl.uw.edu/project/project.php?id=swift) (SWIFT) platform. Original development of the microSWIFT buoy (now v1) began in 2020, led by engineers at the University of Washington Applied Physics Laboratory (UW-APL). It is built around a Raspberry Pi and runs operational code written in Python (this repository). This combination of developer-friendly hardware and easy-to-read code has fostered the creation of an effective tool for ocean wave research and student learning. This version of the microSWIFT continues to be developed and improved, and has been used to study breaking waves in nearshore environments, hurricanes, waves in sea ice, and more.
 
 ## Requirements
-(e.g. need a raspberry pi microSWIFT...!)
-Hardware
-Python version
+
+### Software requirements
+
+The microSWIFT codebase is intended for operational use with unix-based operating systems, particularly the Raspbian GNU/Linux 10 (buster) distribution that runs onboard the microSWIFT's Raspberry Pi Zero with Python 3.7 (note this is not the preinstalled Python that ships with the Raspbian distribution).
+
+In the mock-based simulation mode intended for development and testing, the code has been successfully run on on macOS using python 3.7-3.9.
+
+MicroSWIFT uses conda for package management. The required Python dependencies are specified in [environment.yml](https://github.com/SASlabgroup/microSWIFT/blob/main/environment.yml).
+
+### Hardware requirements
+
+MicroSWIFT v1 is built around a Raspberry Pi Zero with a 1GHz single-core CPU and 512MB RAM. Additional hardware requirements, notably the GPS, IMU, and Iridium modem, are specified in the [component specification](https://github.com/SASlabgroup/microSWIFT/blob/75-finish-design-doc/doc/component_specification).
 
 ## Installation
 How to load onto a raspberry pi
@@ -22,7 +31,8 @@ How to load onto a raspberry pi
 ### Configuration
 e.g. config file use
 
-### Data access: 
+### Data access
+
 microSWIFT wave measurements in the form of spectral and bulk parameters are telemetered to the SWIFT server:
 - http://faculty.washington.edu/jmt3rd/SWIFTdata/DynamicDataLinks.html (web page)
 - https://swiftserver.apl.washington.edu/map/ (map)
@@ -92,7 +102,10 @@ microSWIFT/
 ```
 
 ### Contributions
+
 #TODO: 
+For consistency in results, contributors are encouraged to use conda for package management. 
+
 
 ### Acknowledgements
 #TODO:
