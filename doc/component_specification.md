@@ -1,31 +1,11 @@
-# microSWIFT Design
+# Component Specification
 
-## Users and Use Cases
-
-### Researchers: Want to deploy the microSWIFT and change settings
-
-A researcher would like to be able to quickly and easily install the microSWIFT software on a buoy with the appropriate hardware so that they may collect data. The researcher also would like to have a high degree of confidence that all of the sensors are working correctly before deployment. Finally, the researcher would like an easy way to configure setting regarding data collection and data transmission. The researcher has a high level of domain expertice but likely only a medium-level of technical competency.
-
-Use Cases:
-
-* Install microSWIFT software on newly built buoy
-* Run diagnostic test on sensors and transmission unit
-* Based on diagnostic tests, know if a sensor is working or not
-* Configure sensor and transmission settings
-
-### Technicians: Wants to build the microSWIFT
-
-The technician is the user who actually built the physical buoy. The technician needs to be able to know whether or not the sensors have been installed correctly and receive detailed diagnostic information if they are not. The technician has a high technical competency (on both the hardware and software side) but wouldn't necessarily be a domain expert.
-
-* Individual sensor testing
-* Full system diagnostics
-* Fully configure system
-
-### Developers: Wants to add features to the microSWIFT (software and hardware)
-
-Able to read documentation and add features.
+Specifications for microSWIFT v1 can be found here:
+https://apl.uw.edu/project/projects/swift/pdfs/microSWIFTspecsheet.pdf (spec sheet)
 
 ## Hardware Components
+
+<img src=./images/microSWIFTboard.jpg alt="microSWIFT hardware components"  width="200"  align=right></img>
 
 ### Raspberry Pi
 
@@ -40,22 +20,105 @@ The GPS module is a GlobalTop FGPMMOPA6H provided on an Adafruit Ultimate GPS v3
 The inertial measurement unit (IMU) is comprised of a 3-axis digital gyroscope (FXAS21002C) and a 6-axis integrated linear accelerometer and magnetometer (FXOS8700CQ), both provided on an Adafruit Precision NXP 9-DOF Breakout Board. The combined IMU measurements can be transformed, numerically integrated, and used to provide an alternative heave estimate in the wave processing.
 
 ### Iridium Modem
-(TODO: description)
+MicroSWIFT data is telemetered over the Iridium network using a RockBLOCK 9603 module/modem. Note that there is a monthly rental service to exchange information with the Iridium satellite network.
 
 ## Software Components
 TODO: many of these can be adapted from the code comments/docstrss
 
 ### microSWIFT.py
-(#TODO: description)
+
+The main operational script that runs on the microSWIFT V1 wave buoys. This script sequences the microSWIFT data collection, post-processing, and telemetering. Its core task is to schedule these events, ensuring
+that the buoy is in the appropriate record or send window based on the user-defined settings.
+
+The process flow is summarized as follows:
+    1. Record GPS and record IMU concurrently; write to .dat files
+    2. Read the raw data into memory and process it into a wave solution
+    3. Create a payload and pack it into an .sbd message; telemeter the
+       message to the SWIFT server.
 
 ### Config class
-(TODO: description of class, its methods, and attributes)
+Description: Class object for configuration of the microSWIFT.
+
+#### Attributes
+##### Timing 
+DUTY_CYCLES_PER_HOUR = int(60/duty_cycle_length)
+DUTY_CYCLE_LENGTH = timedelta(minutes=duty_cycle_length)
+RECORD_WINDOW_LENGTH = timedelta(minutes=record_window_length)
+START_TIME = self.get_start_time()
+END_RECORD_TIME = self.START_TIME + self.RECORD_WINDOW_LENGTH
+END_DUTY_CYCLE_TIME = self.START_TIME + self.DUTY_CYCLE_LENGTH
+
+##### System
+ID = os.uname()[1]
+PAYLOAD_TYPE = 7
+SENSOR_TYPE = 52
+DATA_DIR = './data/'
+
+##### GPS
+GPS_SAMPLING_FREQ = gps_sampling_frequency
+GPS_GPIO = 21
+GPS_PORT = '/dev/ttyS0'
+START_BAUD = 9600
+BAUD = 115200
+
+##### IMU
+IMU_SAMPLING_FREQ = imu_sampling_frequency
+IMU_GPIO = 20
+
+##### Data
+WAVE_PROCESSING_TYPE = 'gps_waves'
+BAD_VALUE = 999
+NUM_COEF = 42
+
+#### Methods:
+read_config_file(config_fname)
+get_start_time()
+update_times()
 
 ### GPS class
-(TODO: description of class, its methods, and attributes)
+Description: Class object for the GPS component on the RPi.
+
+#### Attributes
+initialized
+powered_on
+gps_freq = config.GPS_SAMPLING_FREQ
+gps_gpio = config.GPS_GPIO
+dataDir = config.DATA_DIR
+gps_port = config.GPS_PORT
+start_baud = config.START_BAUD
+baud = config.BAUD
+gpgga_found
+gprmc_found
+
+#### Methods
+power on()
+power off()
+checkout(ser)
+record(end_time)
+to_uvz(gps_file)
+
 
 ### IMU class
-(TODO: description of class, its methods, and attributes)
+Description: Class object for the IMU component on the RPi.
+
+#### Attributes
+initialized
+imuFreq = config.IMU_SAMPLING_FREQ
+imu_samples = config.IMU_SAMPLING_FREQ * config.RECORD_WINDOW_LENGTH.total_seconds()
+imu_gpio = config.IMU_GPIO
+dataDir = config.DATA_DIR
+
+
+#### Methods
+power_on()
+power_off()
+record(end_time)
+checkout(run_time)
+sec(n_secs)
+datetimearray2relativetime(datetimeArr)
+RCfilter(b, fc, fs)
+to_xyz(imufile, fs)
+
 
 ### Wave processing algorithms
 (TODO: `gps_waves`, `uvza_waves` descriptions)
