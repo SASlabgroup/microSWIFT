@@ -5,4 +5,5 @@ channels:
 dependencies:
   - numpy
   - python=3.9
+  - pynmea2
 prefix: /Users/edwinrainville/opt/miniconda3/envs/microSWIFT
