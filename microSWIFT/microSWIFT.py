@@ -109,7 +109,7 @@ def record_window(gps, imu, config):
         record_gps_future.result()
         record_imu_future.result()
 
-    # gps.power_off()
+    gps.power_off()
     imu.power_off()
 
 
