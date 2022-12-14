@@ -49,23 +49,51 @@ class IMU:
             self.imu_initialized = False
             logger.info('initializing IMU')
             self.imuFreq = config.IMU_SAMPLING_FREQ
-            self.imu_samples = config.IMU_SAMPLING_FREQ * config.RECORD_WINDOW_LENGTH.total_seconds()
+            self.imu_samples = config.IMU_SAMPLING_FREQ \
+                              * config.RECORD_WINDOW_LENGTH.total_seconds()
             self.imu_gpio = config.IMU_GPIO
             self.floatID = os.uname()[1]
-            self.dataDir = './microSWIFT/microSWIFT/data/'
+            self.dataDir = './data/'
             GPIO.setmode(GPIO.BCM)
             GPIO.setup(self.imu_gpio,GPIO.OUT)
-            logger.info('power on IMU')
-            GPIO.output(self.imu_gpio,GPIO.HIGH)
-            self.i2c = busio.I2C(board.SCL, board.SDA)
-            self.fxos = adafruit_fxos8700.FXOS8700(self.i2c, accel_range=0x00)
-            self.fxas = adafruit_fxas21002c.FXAS21002C(self.i2c, gyro_range=500)
         except Exception as e:
             logger.info(e)
             logger.info('error initializing imu')
             exit(e)
         self.imu_initialized = True
+        self.imu_power_on = False
         logger.info('IMU initialized')
+    
+    def power_on(self):
+        try:
+            GPIO.output(self.imu_gpio,GPIO.HIGH)
+            self.i2c = busio.I2C(board.SCL, board.SDA)
+            self.fxos = adafruit_fxos8700.FXOS8700(self.i2c, accel_range=0x00)
+            self.fxas = adafruit_fxas21002c.FXAS21002C(self.i2c, gyro_range=500)
+            self.imu_power_on = True
+            logger.info('IMU has powered on')
+        except Exception as e:
+            logger.info(e)
+            logger.info('could not power on imu')
+    
+    def power_off(self):
+        """
+        power off IMU module
+
+        Paramenters:
+        ------------
+        none
+
+        Returns:
+        --------
+        none
+        """
+        try:
+            logger.info('power down IMU')
+            GPIO.output(self.imu_gpio,GPIO.LOW)
+        except Exception as e:
+            logger.info(e)
+            logger.info('could not power off imu')
 
     def record(self, end_time):
         """
@@ -83,52 +111,49 @@ class IMU:
         if self.imu_initialized == False:
             Exception("IMU module not initialized")
 
-        # Loop if the imu did not initialize and it is still within a recording block
-        while datetime.utcnow().minute + datetime.utcnow().second/60 < end_time:
-            # Sleep to start recording at same time as GPS
-            time.sleep(5.1)
+        IMUdataFilename = self.dataDir + self.floatID + '_IMU_' \
+                          + '{:%d%b%Y_%H%M%SUTC.dat}'.format(datetime.utcnow())
+        logger.info('file name: {}'.format(IMUdataFilename))
+        logger.info('starting IMU burst at {}'.format(datetime.now()))
 
-            ## --------------- Record IMU ----------------------
-            #create new file for to record IMU to
-            logger.info('---------------recordIMU.py------------------')
-            IMUdataFilename = self.dataDir + self.floatID + '_IMU_'+'{:%d%b%Y_%H%M%SUTC.dat}'.format(datetime.utcnow())
-            logger.info('file name: {}'.format(IMUdataFilename))
-            logger.info('starting IMU burst at {}'.format(datetime.now()))
+        while datetime.utcnow() < end_time:
 
             # Open the new IMU data file for logging
             with open(IMUdataFilename, 'w',newline='\n') as imu_out:
                 logger.info('open file for writing: {}'.format(IMUdataFilename))
-                isample=0
-                while datetime.utcnow().minute + datetime.utcnow().second/60 < end_time and isample < self.imu_samples:
-                    # Get values from IMU
-                    try:
-                        accel_x, accel_y, accel_z = self.fxos.accelerometer
-                        mag_x, mag_y, mag_z = self.fxos.magnetometer
-                        gyro_x, gyro_y, gyro_z = self.fxas.gyroscope
-                    except Exception as e:
-                        logger.info(e)
-                        logger.info('error reading IMU data')
 
-                    # Get current timestamp
-                    timestamp='{:%Y-%m-%d %H:%M:%S.%f}'.format(datetime.utcnow())
+                try:
+                    accel_x, accel_y, accel_z = self.fxos.accelerometer
+                    mag_x, mag_y, mag_z = self.fxos.magnetometer
+                    gyro_x, gyro_y, gyro_z = self.fxas.gyroscope
+                except Exception as e:
+                    logger.info(e)
+                    logger.info('error reading IMU data')
 
-                    # Write data and timestamp to file
-                    imu_out.write('%s,%f,%f,%f,%f,%f,%f,%f,%f,%f\n' %(timestamp,accel_x,accel_y,accel_z,mag_x,mag_y,mag_z,gyro_x,gyro_y,gyro_z))
-                    imu_out.flush()
+                # Get current timestamp
+                timestamp='{:%Y-%m-%d %H:%M:%S.%f}'.format(datetime.utcnow())
 
-                    # Index up number of samples
-                    isample = isample + 1
+                # Write data and timestamp to file
+                imu_out.write('%s,%f,%f,%f,%f,%f,%f,%f,%f,%f\n' %(timestamp,
+                                                                  accel_x,
+                                                                  accel_y,
+                                                                  accel_z,
+                                                                  mag_x,
+                                                                  mag_y,
+                                                                  mag_z,
+                                                                  gyro_x,
+                                                                  gyro_y,
+                                                                  gyro_z))
+                imu_out.flush()
 
-                    # hard coded sleep to control recording rate. NOT ideal but works for now
-                    time.sleep(0.065)
+                # hard coded sleep to control recording rate. 
+                # NOT ideal but works for now
+                time.sleep(0.065)
 
-                # End of IMU sampling
-                logger.info('end burst')
-                logger.info('IMU samples {}'.format(isample))
-                logger.info('IMU ending burst at: {}'.format(datetime.now()))
+            logger.info('IMU ending burst at: {}'.format(datetime.now()))
 
             # Return IMUdataFilename to main microSWIFT.py
-            return IMUdataFilename, self.imu_initialized
+            return IMUdataFilename
 
     def checkout(self, run_time):
         """
@@ -162,22 +187,6 @@ class IMU:
         "minute(s).")
 
         self.record(t_end)
-
-    def power_off(self):
-        """
-        power off IMU module
-
-        Paramenters:
-        ------------
-        none
-
-        Returns:
-        --------
-        none
-        """
-
-        logger.info('power down IMU')
-        GPIO.output(self.imu_gpio,GPIO.LOW)
 
     def sec(n_secs):
         """

@@ -26,7 +26,7 @@ from datetime import datetime
 import numpy as np
 
 from accoutrements import imu_module
-# from accoutrements import gps_module
+from accoutrements import gps_module
 # from accoutrements import sbd
 from accoutrements import telemetry_stack
 from processing.gps_waves import gps_waves
@@ -42,7 +42,7 @@ def main():
     """
     logger = log.init()
     config = configuration.Config('./config.txt')
-    # gps = gps_module.GPS(config)
+    gps = gps_module.GPS(config)
     imu = imu_module.IMU(config)
 
     # Initialize the telemetry stack if it does not exist yet. This is a
@@ -82,6 +82,7 @@ def main():
                 logger.info('Waiting to enter record window')
         
         config.update_times()
+
 def record_window(gps, imu, config):
     """
     Schedule GPS and IMU recording.
@@ -92,21 +93,23 @@ def record_window(gps, imu, config):
     imu : IMU class
     config : Config class
     """
+    gps.power_on()
+    imu.power_on()
     # Records GPS and IMU data concurrently with
     # asynchronous futures. This is a two-step call that
     # requires scheduling the tasks then returning the result
     # from each Future instance. Flip the`recording_complete`
     # state when the tasks are completed.
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        record_gps_future = executor.submit(gps.record,
-                                            config.END_RECORD_TIME)
+        # record_gps_future = executor.submit(gps.record,
+        #                                     config.END_RECORD_TIME)
         record_imu_future = executor.submit(imu.record,
                                             config.END_RECORD_TIME)
 
-        record_gps_future.result()
+        # record_gps_future.result()
         record_imu_future.result()
 
-    gps.power_off()
+    # gps.power_off()
     imu.power_off()
 
 
