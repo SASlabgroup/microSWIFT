@@ -43,6 +43,8 @@ class IMU:
         --------
         none
         """
+        self.imu_initialized = False
+        self.imu_power_on = False
         try:
             # power on IMU module and set up fxas and fxos objects
             self.imu_initialized = False
@@ -55,13 +57,11 @@ class IMU:
             self.dataDir = './data/'
             GPIO.setmode(GPIO.BCM)
             GPIO.setup(self.imu_gpio,GPIO.OUT)
+            self.imu_initialized = True
+            logger.info('imu initialized')
         except Exception as exception:
             logger.info(exception)
             logger.info('error initializing imu')
-
-        self.imu_initialized = True
-        self.imu_power_on = False
-        logger.info('IMU initialized')
 
     def power_on(self):
         """
