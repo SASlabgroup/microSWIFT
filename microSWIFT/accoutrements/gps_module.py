@@ -49,15 +49,19 @@ class GPS:
         try:
             logger.info('initializing GPS')
             self.gps_freq = config.GPS_SAMPLING_FREQ
+            self.gps_freq_ms = int(1000/self.gps_freq)
             self.gps_gpio = config.GPS_GPIO
             self.floatID = os.uname()[1]
             self.dataDir = config.DATA_DIR
             self.gps_port = config.GPS_PORT
             self.start_baud = config.START_BAUD
+            self.baud = config.BAUD
             GPIO.setmode(GPIO.BCM)
             GPIO.setup(self.gps_gpio,GPIO.OUT)
             GPIO.setwarnings(False)
             self.initialized = True
+            self.gpgga_found = False
+            self.gprmc_found = False
             logger.info('GPS initialized')
         except Exception as exception:
             logger.info(exception)
@@ -74,10 +78,10 @@ class GPS:
             logger.info(exception)
             logger.info('not able to turn on GPS')
 
+        # Open the serial connection to the GPS module and set baud rate
         try:
-            # start with GPS default baud
             logger.info("try GPS serial port at 9600")
-            ser=serial.Serial(self.gps_port, self.start_baud,
+            ser = serial.Serial(self.gps_port, self.start_baud,
                               timeout=1)
         except Exception as err:
             logger.info('Serial port did not open')
@@ -85,47 +89,50 @@ class GPS:
 
         try:
             # set device baud rate to 115200
-            ser.write('$PMTK251,115200*1F\r\n'.encode())
+            ser.write(f'$PMTK251,{self.baud}*1F\r\n'.encode())
             sleep(1)
-            # switch ser port to 115200
-            ser.baudrate = config.baud
+            ser.baudrate = self.baud
             logger.info("switching to %s on port %s" % \
-                (config.baud, config.gps_port))
+                        (self.baud, self.gps_port))
+        except Exception as err:
+            logger.info('could not update GPS baud rate')
+            logger.info(err)
+
+        try:
             # set output sentence to GPGGA and GPVTG,plus GPRMC
             # once every 4 positions
             # (See GlobalTop PMTK command packet PDF)
             ser.write('$PMTK314,0,4,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0'
                       '*2C\r\n'.encode())
             sleep(1)
-            # set interval to 250ms (4 Hz)
-            ser.write("$PMTK220,{}*29\r\n".format(
-                config.GPS_SAMPLING_FREQ).encode())
-            # TODO: change sampling freq to milliseconds from HZ
+            ser.write(f"$PMTK220,{self.gps_freq_ms}*29\r\n".encode())
             sleep(1)
         except Exception as err:
-            logger.info('Failed to set baudrate'
-                        'and sampling frequency')
-            logger.info(err)
-        # read lines from GPS serial port and wait for fix
-        try:
-            # loop until timeout dictated by gps_timeout value
-            # (seconds) or the gps is initialized
-            while datetime.utcnow().minute + datetime.utcnow().second/60 < \
-                  end_time and self.initialized is False:
-                self.initialized = self.__checkout__(self.initialized)
-            if self.initialized is False:
-                logger.info('GPS failed to initialize, timeout')
-        except Exception as err:
-            logger.info('GPS failed to initialize')
+            logger.info('Failed to set sampling frequency')
             logger.info(err)
 
+        try:
+            self.checkout(ser)
+            if self.initialized is True:
+                pass
+            else:
+                logger.info('GPS failed to initialize, timeout')
+        except Exception as err:
+            logger.info('GPS did not pass checkout')
+            logger.info(err)
 
     def power_off(self):
         """
         Power off the GPS module.
         """
+        try:
+            GPIO.output(self.gps_gpio,GPIO.LOW)
+            logger.info('GPS powered on')
+        except Exception as exception:
+            logger.info(exception)
+            logger.info('not able to turn on GPS')
 
-    def checkout(self, init_status):
+    def checkout(self, ser):
         """
         This is the check out function for the GPS to initialize.
 
@@ -137,61 +144,21 @@ class GPS:
         none
 
         """
-        ser.flushInput()
-        ser.read_until('\n'.encode())
-        newline=ser.readline().decode('utf-8')
-        if not 'GPGGA' in newline:
-            newline=ser.readline().decode('utf-8')
-            if 'GPGGA' in newline:
-                logger.info('found GPGGA sentence')
-                logger.info(newline)
-                gpgga=pynmea2.parse(newline,check=True)
-                logger.info('GPS quality= {}'.format(gpgga.gps_qual))
-                # check gps_qual value from GPGGS sentence.
-                # 0=invalid,1=GPS fix,2=DGPS fix
-                if gpgga.gps_qual > 0:
-                    logger.info('GPS fix acquired')
-                    # Set gprmc line to False and enter while loop to
-                    # read new lines until it gets the correct line
-                    gprmc_line = False
-                    while gprmc_line is False:
-                    # Get date and time from GPRMC sentence - GPRMC
-                    # reported only once every 8 lines
-                        newline=ser.readline().decode('utf-8')
-                        if 'GPRMC' in newline:
-                            logger.info('found GPRMC sentence')
-                            # Change value to True so that the while
-                            # loop exits once a gprmc line is found
-                            gprmc_line = True
-                            try:
-                                gprmc=pynmea2.parse(newline)
-                                nmea_time=gprmc.timestamp
-                                nmea_date=gprmc.datestamp
-                                logger.info("nmea time: {}".format(nmea_time))
-                                logger.info("nmea date: {}".format(nmea_date))
-                                # set system time
-                                try:
-                                    logger.info('setting system time from GPS:'
-                                                ' {0} {1}'.format(nmea_date,
-                                                                  nmea_time))
-                                    os.system('sudo timedatectl '
-                                              'set-timezone UTC')
-                                    os.system('sudo date -s "{0} {1}"'.format(
-                                              nmea_date, nmea_time))
-                                    os.system('sudo hwclock -w')
-                                    # GPS is initialized
-                                    logger.info("GPS initialized")
-                                    init_status = True
-                                    return init_status
+        try:
+            while self.gpgga_found is False and self.gprmc_found is False:
+                ser.flushInput()
+                ser.read_until('\n'.encode())
+                newline = ser.readline().decode('utf-8')
+                if 'GPGGA'in newline:
+                    self.gpgga_line(newline)
+                elif 'GPRMC' in newline:
+                    self.gprmc_line(newline)
+                else:
+                    continue
 
-                                except Exception as err:
-                                    logger.info(err)
-                                    logger.info('error setting system time')
-                                    continue
-                            except Exception as err:
-                                logger.info(err)
-                                logger.info('error parsing nmea sentence')
-                                continue
+        except Exception as exception:
+            logger.info(exception)
+            logger.info('not able to recieve GPS signal')
 
     def record(self, end_time):
         """
@@ -206,12 +173,9 @@ class GPS:
         gps_data_filename: a dat file
 
         """
-        # get float_id for file names
-        float_id = os.uname()[1]
 
         # loop while within the recording block
-        while datetime.utcnow().minute + \
-              datetime.utcnow().second/60 < end_time:
+        while datetime.utcnow() < end_time:
         # If GPS signal is initialized start recording
             if self.initialized:
                 #create file name
@@ -289,9 +253,6 @@ class GPS:
         --------
         GPS_variables: a dictionary
         """
-        # Set up module level logger
-        logger.info('---------------GPStoUVZ.py------------------')
-
         # Define empty lists of variables to append
         east_west = []
         north_south = []
@@ -374,3 +335,52 @@ class GPS:
         logger.info('GPVTG lines: {}'.format(len(east_west)))
         logger.info('------------------------------------------')
         return GPS_variables #east_west,north_south,up_down,lat,lon, time
+
+    def gpgga_line(self, newline):
+        """
+
+        Parameters
+        ----------
+        newline : 
+        """
+        try:
+            logger.info('found GPGGA sentence')
+            logger.info(newline)
+            gpgga = pynmea2.parse(newline,check=True)
+            logger.info('GPS quality= {}'.format(gpgga.gps_qual))
+            if gpgga.gps_qual > 0:
+                logger.info('GPS fix acquired')
+            self.gpgga_found = True
+        except Exception as exception:
+            logger.info(exception)
+            logger.info('GPGGA not correct')
+
+    def gprmc_line(self, newline):
+        """
+
+        Parameters
+        ----------
+        newline :
+        """
+        logger.info('found GPRMC sentence')
+        try:
+            gprmc = pynmea2.parse(newline)
+            nmea_time=gprmc.timestamp
+            nmea_date=gprmc.datestamp
+            logger.info("nmea time: {}".format(nmea_time))
+            logger.info("nmea date: {}".format(nmea_date))
+        except Exception as exception:
+            logger.info(exception)
+            logger.info('not able to parse GPGGA')
+
+        try:
+            logger.info('setting system time from GPS:{0} {1}'.format(nmea_date,
+                                                                    nmea_time))
+            os.system('sudo timedatectl set-timezone UTC')
+            os.system('sudo date -s "{0} {1}"'.format(nmea_date, nmea_time))
+            os.system('sudo hwclock -w')
+            logger.info('System time reset')
+            self.gpgga_found = True
+        except Exception as exception:
+            logger.info(exception)
+            logger.info('Not able to set system time from GPS time')
