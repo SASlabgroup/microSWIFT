@@ -44,7 +44,7 @@ class GPS:
         GPIO.setwarnings(False)
         GPIO.setup(config.gpsGPIO,GPIO.OUT)
         self.gps_initialized = True
-        logger.info('gps initialized
+        logger.info('gps initialized')
         GPIO.output(config.gpsGPIO,GPIO.HIGH)
         logger.info('initializing GPS')
         try:
