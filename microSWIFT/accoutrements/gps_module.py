@@ -38,6 +38,11 @@ class GPS:
         --------
         none
         """
+        try:
+            isinstance(config.gpsGPIO, int)
+        except:
+            raise ValueError('inut config file is not correct')
+        
         # setup GPIO and initialize
         self.gps_initialized = False
         GPIO.setmode(GPIO.BCM)
