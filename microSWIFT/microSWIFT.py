@@ -101,12 +101,12 @@ def record_window(gps, imu, config):
     # from each Future instance. Flip the`recording_complete`
     # state when the tasks are completed.
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        # record_gps_future = executor.submit(gps.record,
-        #                                     config.END_RECORD_TIME)
+        record_gps_future = executor.submit(gps.record,
+                                            config.END_RECORD_TIME)
         record_imu_future = executor.submit(imu.record,
                                             config.END_RECORD_TIME)
 
-        # record_gps_future.result()
+        record_gps_future.result()
         record_imu_future.result()
 
     # gps.power_off()
