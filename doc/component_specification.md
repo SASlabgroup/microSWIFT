@@ -24,16 +24,99 @@ The inertial measurement unit (IMU) is comprised of a 3-axis digital gyroscope (
 TODO: many of these can be adapted from the code comments/docstrss
 
 ### microSWIFT.py
-(#TODO: description)
+
+The main operational script that runs on the microSWIFT V1 wave buoys. This script sequences the microSWIFT data collection, post-processing, and telemetering. Its core task is to schedule these events, ensuring
+that the buoy is in the appropriate record or send window based on the user-defined settings. 
+
+The process flow is summarized as follows:
+    1. Record GPS and record IMU concurrently; write to .dat files
+    2. Read the raw data into memory and process it into a wave solution
+    3. Create a payload and pack it into an .sbd message; telemeter the
+       message to the SWIFT server.
 
 ### Config class
-(TODO: description of class, its methods, and attributes)
+Description: Class object for configuration of the microSWIFT.
+
+#### Attributes
+##### Timing 
+DUTY_CYCLES_PER_HOUR = int(60/duty_cycle_length)
+DUTY_CYCLE_LENGTH = timedelta(minutes=duty_cycle_length)
+RECORD_WINDOW_LENGTH = timedelta(minutes=record_window_length)
+START_TIME = self.get_start_time()
+END_RECORD_TIME = self.START_TIME + self.RECORD_WINDOW_LENGTH
+END_DUTY_CYCLE_TIME = self.START_TIME + self.DUTY_CYCLE_LENGTH
+
+##### System
+ID = os.uname()[1]
+PAYLOAD_TYPE = 7
+SENSOR_TYPE = 52
+DATA_DIR = './data/'
+
+##### GPS
+GPS_SAMPLING_FREQ = gps_sampling_frequency
+GPS_GPIO = 21
+GPS_PORT = '/dev/ttyS0'
+START_BAUD = 9600
+BAUD = 115200
+
+##### IMU
+IMU_SAMPLING_FREQ = imu_sampling_frequency
+IMU_GPIO = 20
+
+##### Data
+WAVE_PROCESSING_TYPE = 'gps_waves'
+BAD_VALUE = 999
+NUM_COEF = 42
+
+#### Methods:
+read_config_file(config_fname)
+get_start_time()
+update_times()
 
 ### GPS class
-(TODO: description of class, its methods, and attributes)
+Description: Class object for the GPS component on the RPi.
+
+#### Attributes
+initialized
+powered_on
+gps_freq = config.GPS_SAMPLING_FREQ
+gps_gpio = config.GPS_GPIO
+dataDir = config.DATA_DIR
+gps_port = config.GPS_PORT
+start_baud = config.START_BAUD
+baud = config.BAUD
+gpgga_found
+gprmc_found
+
+#### Methods
+power on()
+power off()
+checkout(ser)
+record(end_time)
+to_uvz(gps_file)
+
 
 ### IMU class
-(TODO: description of class, its methods, and attributes)
+Description: Class object for the IMU component on the RPi.
+
+#### Attributes
+initialized
+imuFreq = config.IMU_SAMPLING_FREQ
+imu_samples = config.IMU_SAMPLING_FREQ * config.RECORD_WINDOW_LENGTH.total_seconds()
+imu_gpio = config.IMU_GPIO
+dataDir = config.DATA_DIR
+
+
+#### Methods
+power_on()
+power_off()
+record(end_time)
+checkout(run_time)
+sec(n_secs)
+datetimearray2relativetime(datetimeArr)
+RCfilter(b, fc, fs)
+to_xyz(imufile, fs)
+
 
 ### Wave processing algorithms
 (TODO: `gps_waves`, `uvza_waves` descriptions)
