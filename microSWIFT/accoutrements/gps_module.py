@@ -39,11 +39,9 @@ class GPS:
     def __init__(self, config):
         """
         This method initializes the gps module
-
         Parameters
         ----------
         config object
-        
         Returns:
         --------
         none
@@ -108,7 +106,6 @@ class GPS:
         Parameters
         ----------
         init_status : boolean object
-        
         Returns
         --------
         none
@@ -175,7 +172,6 @@ class GPS:
         """
         This is the function that record the gps component on RPi.
 
-
         Parameters
         ----------
         end_time : object
@@ -214,8 +210,7 @@ class GPS:
                             # Grab gpgga sentence and parse.
                             # Check to see if we have lost GPS fix.
                             # If so, continue to loop start.
-                            # A bad value will remain at this index
-                            # 
+                            # A bad value will remain at this index.
                             # If the number of position and velocity
                             # samples is enough then end the loop
                             if "GPGGA" in newline:
