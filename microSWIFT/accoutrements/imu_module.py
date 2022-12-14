@@ -54,7 +54,7 @@ class IMU:
                               * config.RECORD_WINDOW_LENGTH.total_seconds()
             self.imu_gpio = config.IMU_GPIO
             self.floatID = os.uname()[1]
-            self.dataDir = './data/'
+            self.dataDir = config.DATA_DIR
             GPIO.setmode(GPIO.BCM)
             GPIO.setup(self.imu_gpio,GPIO.OUT)
             self.imu_initialized = True
