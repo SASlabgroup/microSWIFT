@@ -24,7 +24,7 @@ class TestGPS(unittest.TestCase):
         One shot test to test if the function produces correct
         output in known case. Should return True.
         """
-        gps = gps_module.GPS.(config)
+        gps = gps_module.GPS(config)
         assert gps.initialized is True
 
     def test_init2(self):
