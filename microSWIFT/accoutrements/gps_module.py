@@ -50,6 +50,7 @@ class GPS:
 
         try:
             logger.info('initializing GPS')
+            self.gps_data_filename = ''
             self.gps_freq = config.GPS_SAMPLING_FREQ
             self.gps_freq_ms = int(1000/self.gps_freq)
             self.gps_gpio = config.GPS_GPIO
@@ -83,7 +84,7 @@ class GPS:
         # Open the serial connection to the GPS module and set baud rate
         try:
             logger.info("try GPS serial port at 9600")
-            ser = serial.Serial(self.gps_port, self.start_baud,
+            self.ser = serial.Serial(self.gps_port, self.start_baud,
                               timeout=1)
         except Exception as err:
             logger.info('Serial port did not open')
@@ -91,9 +92,9 @@ class GPS:
 
         try:
             # set device baud rate to 115200
-            ser.write(f'$PMTK251,{self.baud}*1F\r\n'.encode())
+            self.ser.write(f'$PMTK251,{self.baud}*1F\r\n'.encode())
             sleep(1)
-            ser.baudrate = self.baud
+            self.ser.baudrate = self.baud
             logger.info("switching to %s on port %s" % \
                         (self.baud, self.gps_port))
         except Exception as err:
@@ -104,17 +105,17 @@ class GPS:
             # set output sentence to GPGGA and GPVTG,plus GPRMC
             # once every 4 positions
             # (See GlobalTop PMTK command packet PDF)
-            ser.write('$PMTK314,0,4,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0'
+            self.ser.write('$PMTK314,0,4,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0'
                       '*2C\r\n'.encode())
             sleep(1)
-            ser.write(f"$PMTK220,{self.gps_freq_ms}*29\r\n".encode())
+            self.ser.write(f"$PMTK220,{self.gps_freq_ms}*29\r\n".encode())
             sleep(1)
         except Exception as err:
             logger.info('Failed to set sampling frequency')
             logger.info(err)
 
         try:
-            self.checkout(ser)
+            self.checkout(self.ser)
             if self.initialized is True:
                 pass
             else:
@@ -122,6 +123,8 @@ class GPS:
         except Exception as err:
             logger.info('GPS did not pass checkout')
             logger.info(err)
+
+        self.powered_on = True
 
     def power_off(self):
         """
@@ -148,9 +151,9 @@ class GPS:
         """
         try:
             while self.gpgga_found is False and self.gprmc_found is False:
-                ser.flushInput()
-                ser.read_until('\n'.encode())
-                newline = ser.readline().decode('utf-8')
+                self.ser.flushInput()
+                self.ser.read_until('\n'.encode())
+                newline = self.ser.readline().decode('utf-8')
                 if 'GPGGA'in newline:
                     self.gpgga_line(newline)
                 elif 'GPRMC' in newline:
@@ -175,28 +178,32 @@ class GPS:
         gps_data_filename: a dat file
 
         """
+        self.power_on()
         if self.powered_on is True:
-            gps_data_filename = self.data_dir + self.floatID + \
+            self.gps_data_filename = self.dataDir + self.floatID + \
                                 '_GPS_'+"{:%d%b%Y_%H%M%SUTC.dat}". \
                                 format(datetime.utcnow())
-            logger.info("file name: {}".format(gps_data_filename))
+            logger.info("file name: {}".format(self.gps_data_filename))
             logger.info('starting GPS burst')
         else:
             logger.info('GPS is not on - trying to power on')
             self.power_on()
 
+
         while datetime.utcnow() < end_time:
-                
+
+                ipos=0
+                ivel=0
+
                 try:
-                    ser.flushInput()
-                    with open(gps_data_filename, 'w',newline='\n') as gps_out:
+                    self.ser.flushInput()
+                    with open(self.gps_data_filename, 'w',newline='\n') as gps_out:
                         logger.info('open file for writing: %s'
-                                    % gps_data_filename)
-                        ipos=0
-                        ivel=0
+                                    % self.gps_data_filename)
+
                         while datetime.utcnow().minute + \
                               datetime.utcnow().second/60 <= end_time:
-                            newline=ser.readline().decode()
+                            newline=self.ser.readline().decode()
                             gps_out.write(newline)
                             gps_out.flush()
                             # Grab gpgga sentence and parse.
@@ -231,17 +238,17 @@ class GPS:
                 logger.info('Ending GPS burst at {}'.format(datetime.now()))
                 logger.info('number of GPGGA samples = {}'.format(ipos))
                 logger.info('number of GPVTG samples = {}'.format(ivel))
-                return gps_data_filename
+                return self.gps_data_filename
         # If GPS signal is not initialized exit
         else:
             logger.info("GPS not initialized, exiting")
 
             #create file name but it is a placeholder
-            gps_data_filename = ''
+            self.gps_data_filename = ''
 
             # Return the GPS filename to be read
             # into the onboard processing
-            return gps_data_filename
+            return self.gps_data_filename
 
     def to_uvz(self, gps_file):
         """
