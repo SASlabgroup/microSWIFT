@@ -23,11 +23,12 @@ def init() -> logging.Logger:
     logger.setLevel(LOG_LEVEL)
     try:
         log_file_handler = logging.FileHandler(LOG_FILE_NAME)
+        log_file_handler.setLevel(LOG_LEVEL)
+        log_file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
+        logger.addHandler(log_file_handler)
     except FileNotFoundError as err:
          print(err, 'please create a ./microSWIFT/logs/ directory.')
-    log_file_handler.setLevel(LOG_LEVEL)
-    log_file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
-    logger.addHandler(log_file_handler)
+
 
     return logger
 

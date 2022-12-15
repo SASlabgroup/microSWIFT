@@ -139,7 +139,7 @@ def processing_window(gps, imu, logger, config):
     # velocity (u), North-South velocity (v), and elevation (z),
     # then produce a wave estimate.
     if config.WAVE_PROCESSING_TYPE == 'gps_waves' and gps.initialized:
-        gps.to_uvz(gps.filename)
+        gps.to_uvz(gps.gps_data_filename)
         payload = gps_waves(gps.u,
                             gps.v,
                             gps.z,
