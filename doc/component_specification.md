@@ -23,60 +23,59 @@ The inertial measurement unit (IMU) is comprised of a 3-axis digital gyroscope (
 MicroSWIFT data is telemetered over the Iridium network using a RockBLOCK 9603 module/modem. Note that there is a monthly rental service to exchange information with the Iridium satellite network.
 
 ## Software Components
-TODO: many of these can be adapted from the code comments/docstrss
 
 ### microSWIFT.py
 
 The main operational script that runs on the microSWIFT V1 wave buoys. This script sequences the microSWIFT data collection, post-processing, and telemetering. Its core task is to schedule these events, ensuring
 that the buoy is in the appropriate record or send window based on the user-defined settings.
 
-The process flow is summarized as follows:
-    1. Record GPS and record IMU concurrently; write to .dat files
-    2. Read the raw data into memory and process it into a wave solution
-    3. Create a payload and pack it into an .sbd message; telemeter the
-       message to the SWIFT server.
-
 ### Config class
-Description: Class object for configuration of the microSWIFT.
+Sets and manages the user-defined configuration of the microSWIFT based on `config.txt`.
 
 #### Attributes
-##### Timing 
-DUTY_CYCLES_PER_HOUR = int(60/duty_cycle_length)
-DUTY_CYCLE_LENGTH = timedelta(minutes=duty_cycle_length)
-RECORD_WINDOW_LENGTH = timedelta(minutes=record_window_length)
-START_TIME = self.get_start_time()
-END_RECORD_TIME = self.START_TIME + self.RECORD_WINDOW_LENGTH
-END_DUTY_CYCLE_TIME = self.START_TIME + self.DUTY_CYCLE_LENGTH
 
-##### System
-ID = os.uname()[1]
-PAYLOAD_TYPE = 7
-SENSOR_TYPE = 52
-DATA_DIR = './data/'
+*Timing configuration:*
 
-##### GPS
-GPS_SAMPLING_FREQ = gps_sampling_frequency
-GPS_GPIO = 21
-GPS_PORT = '/dev/ttyS0'
-START_BAUD = 9600
-BAUD = 115200
+- DUTY_CYCLES_PER_HOUR (int) - number of duty cycles per hour [-] (= `int(60/duty_cycle_length)`)
+- DUTY_CYCLE_LENGTH (timedelta) - length of a full duty cycle in minutes [min] (= `timedelta(minutes=duty_cycle_length)`)
+- RECORD_WINDOW_LENGTH (timedelta) - length of a record window in minutes [min] (= `timedelta(minutes=record_window_length)`)
+- START_TIME (datetime) - start of a duty cycle/record window as an absolute time in UTC [UTC time](= `self.get_start_time()`)
+- END_RECORD_TIME (datetime) - end of a record window as an absolute time in UTC [UTC time] (= `self.START_TIME + self.RECORD_WINDOW_LENGTH`)
+- END_DUTY_CYCLE_TIME (datetime) - end of a duty cycle/send window as an absolute time in UTC [UTC time] (= `self.START_TIME + self.DUTY_CYCLE_LENGTH`)
 
-##### IMU
-IMU_SAMPLING_FREQ = imu_sampling_frequency
-IMU_GPIO = 20
+*System configuration:*
 
-##### Data
-WAVE_PROCESSING_TYPE = 'gps_waves'
-BAD_VALUE = 999
-NUM_COEF = 42
+- ID (str) - microSWIFT ID including leading zero [-] (= `os.uname()[1]`)
+- PAYLOAD_TYPE (int) - short burst data payload type (= `7`)
+- SENSOR_TYPE (int) - short burst data sensor type (= `52`)
+- DATA_DIR (str) - directory containing `.dat` data (= `'./data/'`)
 
-#### Methods:
+*GPS configuration:*
+
+- GPS_SAMPLING_FREQ (float) - GPS sampling frequency (user-defined)
+- GPS_GPIO (int) - GPS general purpose input/output pin (= `21`)
+- GPS_PORT (str) - GPS port (= `'/dev/ttyS0'`)
+- START_BAUD = 9600
+- BAUD = 115200
+
+*IMU configuration:*
+
+- IMU_SAMPLING_FREQ (float) - IMU sampling frequency (user-defined)
+- IMU_GPIO (int) - IMUgeneral purpose input/output pin (= `20`)
+
+*Processing configuration:*
+
+- WAVE_PROCESSING_TYPE (str) - processing type for the wave solution (user-defined)
+- BAD_VALUE (int) - value to replace bad data (= `999`)
+- NUM_COEF (int) - number of spectral coefficients (= `42`)
+
+#### Methods
 read_config_file(config_fname)
 get_start_time()
 update_times()
 
 ### GPS class
-Description: Class object for the GPS component on the RPi.
+Methods for interfacing with the GPS module. Stores `lat`, `lon`, `u`, `v`, and `z` data.
 
 #### Attributes
 initialized
