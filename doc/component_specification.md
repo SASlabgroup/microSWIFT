@@ -23,11 +23,10 @@ The inertial measurement unit (IMU) is comprised of a 3-axis digital gyroscope (
 MicroSWIFT data is telemetered over the Iridium network using a RockBLOCK 9603 module/modem. Note that there is a monthly rental service to exchange information with the Iridium satellite network.
 
 ## Software Components
-
 ### microSWIFT.py
 
 The main operational script that runs on the microSWIFT V1 wave buoys. This script sequences the microSWIFT data collection, post-processing, and telemetering. Its core task is to schedule these events, ensuring
-that the buoy is in the appropriate record or send window based on the user-defined settings.
+that the buoy is in the appropriate record or send window based on the user-defined settings.\
 
 ### Config class
 Sets and manages the user-defined configuration of the microSWIFT based on `config.txt`.
@@ -78,22 +77,22 @@ update_times()
 Methods for interfacing with the GPS module. Stores `lat`, `lon`, `u`, `v`, and `z` data.
 
 #### Attributes
-initialized
-powered_on
-gps_freq = config.GPS_SAMPLING_FREQ
-gps_gpio = config.GPS_GPIO
-dataDir = config.DATA_DIR
-gps_port = config.GPS_PORT
-start_baud = config.START_BAUD
-baud = config.BAUD
-gpgga_found
+initialized\
+powered_on\
+gps_freq = config.GPS_SAMPLING_FREQ\
+gps_gpio = config.GPS_GPIO\
+dataDir = config.DATA_DIR\
+gps_port = config.GPS_PORT\
+start_baud = config.START_BAUD\
+baud = config.BAUD\
+gpgga_found\
 gprmc_found
 
 #### Methods
-power on()
-power off()
-checkout(ser)
-record(end_time)
+power on()\
+power off()\
+checkout(ser)\
+record(end_time)\
 to_uvz(gps_file)
 
 
@@ -101,21 +100,21 @@ to_uvz(gps_file)
 Description: Class object for the IMU component on the RPi.
 
 #### Attributes
-initialized
-imuFreq = config.IMU_SAMPLING_FREQ
-imu_samples = config.IMU_SAMPLING_FREQ * config.RECORD_WINDOW_LENGTH.total_seconds()
-imu_gpio = config.IMU_GPIO
+initialized\
+imuFreq = config.IMU_SAMPLING_FREQ\
+imu_samples = config.IMU_SAMPLING_FREQ * config.RECORD_WINDOW_LENGTH.total_seconds()\
+imu_gpio = config.IMU_GPIO\
 dataDir = config.DATA_DIR
 
 
 #### Methods
-power_on()
-power_off()
-record(end_time)
-checkout(run_time)
-sec(n_secs)
-datetimearray2relativetime(datetimeArr)
-RCfilter(b, fc, fs)
+power_on()\
+power_off()\
+record(end_time)\
+checkout(run_time)\
+sec(n_secs)\
+datetimearray2relativetime(datetimeArr)\
+RCfilter(b, fc, fs)\
 to_xyz(imufile, fs)
 
 
