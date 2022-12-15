@@ -3,8 +3,7 @@ WantedBy=multi-user.target
 
 [Unit]
 Description=microSWIFT wave buoy
-Documentation=https://github.com/alexdeklerk/microSWIFT/blob/main/README.md 
-
+Documentation=https://github.com/SASlabgroup/microSWIFT
 
 [Service]
 Type=exec
@@ -13,4 +12,4 @@ Restart=always
 TimeoutStartSec=10
 TimoutStopSec=10
 KillMode=control-group
-ExecStart=/usr/bin/python3 /home/pi/microSWIFT/microSWIFT/microSWIFT.py 2>&1 /home/pi/microSWIFT/errors.txt
+ExecStart=/usr/bin/python3 /home/pi/microSWIFT/microSWIFT/microSWIFT.py
