@@ -409,7 +409,7 @@ class GPS:
                 os.system(f'sudo date -s "{nmea_date} {nmea_time}"')
                 os.system('sudo hwclock -w')
                 logger.info('System time reset')
-                self.gpgga_found = True TODO: gprmc?
+                self.gpgga_found = True #TODO: gprmc?
             except Exception as exception:
                 logger.info(exception)
                 logger.info('Not able to set system time from GPS time')
