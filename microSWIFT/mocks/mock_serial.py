@@ -8,8 +8,26 @@ logger = logging.getLogger('microSWIFT.'+__name__)
 
 class Serial:
     """
-    Mocked Serial connection class
+    Mocked Serial connection class.
+
+    TODO: Class long description.
+
+    Attributes
+    ----------
+    attribute1 : type
+        Description.
+    attribute2 : type
+        Description.
+
+    Methods
+    -------
+    method1(argument1, argument2)
+        Description.
+    method2(argument1, argument2)
+        Description.
+
     """
+
     def __init__(self, gps_port, start_baud, timeout):
         """
         Initialize the Serial connection mock class

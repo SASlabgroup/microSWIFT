@@ -1,7 +1,17 @@
 """
 Initialize and record IMU.
 
-authors: @EJRainville, @AlexdeKlerk, @Viviana Castillo
+TODO:
+    - imu_data_filename needs to be set as an attribute in record() method
+    - PEP8-compliant variable and attribute names
+    - class docstr
+    - accel and gyro ranges and rates need to be user-configurable and
+        properly set within adafruit_fxas21002c and adafruit_fxos8700.
+    - fix hardcoded sleep intervals
+    - long descriptions in docstrs
+    - log formatting to lazy
+    - write checkout
+    - update every legacy method past checkout(...)
 """
 
 from datetime import datetime, timedelta
@@ -30,18 +40,46 @@ from processing.integrate_imu import integrate_acc
 logger = logging.getLogger('microSWIFT.'+__name__)
 
 class IMU:
-    """Instantiates an IMU object"""
+    """
+    Methods for interfacing with the IMU module. Stores the IMU
+    configuration and data as attributes.
+
+    TODO: Class long description.
+
+    Attributes
+    ----------
+    attribute1 : type
+        Description.
+    attribute2 : type
+        Description.
+
+    Methods
+    -------
+    method1(argument1, argument2)
+        Description.
+    method2(argument1, argument2)
+        Description.
+    """
+
     def __init__(self, config):
         """
         Initialize the IMU module.
 
-        Paramenters:
-        ------------
-        config object
+        TODO: Long description.
 
-        Returns:
-        --------
-        none
+        Parameters
+        ----------
+        config: Config
+            Configuration containing IMU settings.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        RuntimeError
+            If the IMU is unable to initialized.
         """
         self.initialized = False
         self.powerered_on = False
@@ -65,7 +103,24 @@ class IMU:
 
     def power_on(self):
         """
-        Power on the IMU chipset
+        Power on IMU module.
+
+        Sets IMU's GPIO pin to high, writes the range and rate settings
+        to the hardware, and flips the state of the `powered_on`
+        attribute to True.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        RuntimeError
+            If the IMU is unable to be powered on.
         """
         try:
             GPIO.output(self.imu_gpio,GPIO.HIGH)
@@ -80,15 +135,23 @@ class IMU:
 
     def power_off(self):
         """
-        power off IMU module
+        Power off IMU module.
 
-        Paramenters:
-        ------------
-        none
+        Sets IMU's GPIO pin to low and flips the state of the
+        `powered_on` attribute to False.
 
-        Returns:
-        --------
-        none
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        RuntimeError
+            If the IMU is unable to be powered off.
         """
         try:
             logger.info('power down IMU')
@@ -98,32 +161,40 @@ class IMU:
             logger.info(exception)
             logger.info('could not power off imu')
 
-    def record(self, end_time):
+    def record(self, end_time: datetime):
         """
-        Record IMU data and create data file
+        Record IMU data and write it to a file.
 
-        Paramenters:
-        ------------
-        End time
+        #TODO: long description.
 
-        Returns:
-        --------
-        file name and imu initialized
+        Parameters
+        ----------
+        end_time : datetime
+            The end of the record burst.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        RuntimeError
+            If the IMU data can not be read.
         """
-        # IMU is not Initialzied at first
+        # IMU is not initialized at first
         if self.initialized is False:
             Exception("IMU module not initialized")
 
-        IMUdataFilename = self.dataDir + self.floatID + '_IMU_' \
+        imu_data_filename = self.dataDir + self.floatID + '_IMU_' \
                           + '{:%d%b%Y_%H%M%SUTC.dat}'.format(datetime.utcnow())
-        logger.info(f'file name: {IMUdataFilename}')
+        logger.info(f'file name: {imu_data_filename}')
         logger.info(f'starting IMU burst at {datetime.utcnow()}')
 
         while datetime.utcnow() < end_time:
 
             # Open the new IMU data file for logging
-            with open(IMUdataFilename, 'w', newline='\n') as imu_out:
-                logger.info(f'open file for writing: {IMUdataFilename}')
+            with open(imu_data_filename, 'w', newline='\n') as imu_out:
+                logger.info(f'open file for writing: {imu_data_filename}')
 
                 try:
                     accel_x, accel_y, accel_z = self.fxos.accelerometer
@@ -155,20 +226,28 @@ class IMU:
 
             logger.info(f'IMU ending burst at: {datetime.utcnow()}')
 
-            # Return IMUdataFilename to main microSWIFT.py
-            return IMUdataFilename
+            # Return imu_data_filename to main microSWIFT.py
+            return imu_data_filename #TODO: this needs to be set as an attribute
 
     def checkout(self, run_time):
         """
-        Function to run tests for calibration of the IMU
+        Checks proper functioning of the IMU module.
 
-        Parameters:
-        -----------
-        run_time = time in minutes to run tests. Minumum:1, maximum:60
+        TODO: long description
 
-        Returns:
-        --------
-        Calibration document
+        Parameters
+        ----------
+        run_time : float
+            Time in minutes to run tests; minumum: 1, maximum: 60.
+
+        Returns
+        -------
+        TODO: Calibration document
+
+        Raises
+        ------
+        ValueError
+            If 1 < run_time < 60
         """
 
         #setup checks
@@ -247,7 +326,7 @@ class IMU:
         cropped to lie within the available GPS record and then the GPS
         is interpolated up to the IMU rate using the IMU as the master
         time.
-
+        
         Inputs:
             - imufile, path to file containing IMU data
             - fs, sampling frequency
