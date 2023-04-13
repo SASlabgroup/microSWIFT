@@ -7,9 +7,30 @@ run microSWIFT code.
 """
 
 class FXAS21002C:
-    """Class for the mock driver"""
+    """
+    TODO: Class short description.
+
+    TODO: Class long description.
+
+    Attributes
+    ----------
+    attribute1 : type
+        Description.
+    attribute2 : type
+        Description.
+
+    Methods
+    -------
+    method1(argument1, argument2)
+        Description.
+    method2(argument1, argument2)
+        Description.
+
+    """
+
     def __init__(self, i2c, gyro_range):
         """
+        TODO:
         """
 
         if i2c is False:

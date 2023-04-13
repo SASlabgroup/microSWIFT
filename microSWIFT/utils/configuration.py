@@ -1,6 +1,11 @@
 """
 Definition of the configuration class for the microSWIFT. The
 configuration will read in a few variables from the
+
+TODO:
+    - class docstrs
+    - finish method docstrs
+    - log to lazy formatting
 """
 
 from datetime import datetime, timedelta
@@ -13,7 +18,25 @@ from . import log
 class Config:
     """
     Class object for configuration of the microSWIFT.
+
+    TODO: Class long description.
+
+    Attributes
+    ----------
+    attribute1 : type
+        Description.
+    attribute2 : type
+        Description.
+
+    Methods
+    -------
+    method1(argument1, argument2)
+        Description.
+    method2(argument1, argument2)
+        Description.
+
     """
+
     def __init__(self, config_fname: str):
         """
         Initialize the configuration of the microSWIFT with all
@@ -29,10 +52,17 @@ class Config:
 
         Returns
         -------
-        config : class
-            A class that contains all the parameters for the microSWIFT
+        config : Config
+            Class containing all the parameters for the microSWIFT
             configuration including user changeable settings and
             hardcoded settings.
+
+        Raises
+        ------
+        ValueError
+            If record window length is greater than the duty cycle
+            length, send and process are shorter than 5 minutes, and if
+            the GPS or IMU rates are out of their acceptable ranges.
         """
         logger = logging.getLogger('microSWIFT')
 
@@ -113,8 +143,14 @@ class Config:
 
         Returns
         -------
+        None
 
-
+        Raises
+        ------
+        FileNotFoundError
+            TODO: If...
+        ValueError
+            TODO: If...
         """
         try:
             config_file = open(config_fname, 'r')
@@ -161,6 +197,15 @@ class Config:
     def get_start_time(self):
         """
         Find the start of the current duty cycle as a datetime.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        start_time : datetime
+            Start of the current duty cycle.
         """
         current_hour = datetime.utcnow().replace(minute=0, second=0)
         for i in range(self.DUTY_CYCLES_PER_HOUR):
@@ -176,6 +221,14 @@ class Config:
     def update_times(self):
         """
         Update timing parameters.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
         """
         self.START_TIME = self.START_TIME + self.DUTY_CYCLE_LENGTH
         self.END_RECORD_TIME = self.START_TIME + self.RECORD_WINDOW_LENGTH
