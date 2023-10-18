@@ -102,7 +102,7 @@ microSWIFT/
 └── setup.py
 
 ```
-
+ 
 ### Contributions
 We welcome any contributions from any career stages and backgrounds. Please submit a pull request to add fixes or features to the software or submit an issue if you have suggestions.  For consistency in results, contributors are encouraged to use conda for package management. Using the provided `environment.yml` file, you can install the necessary dependencies to work on this project. 
 
