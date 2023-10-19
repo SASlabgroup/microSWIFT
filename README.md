@@ -43,7 +43,7 @@ MicroSWIFT wave measurements in the form of spectral and bulk parameters are tel
 - [microSWIFTtelemetry: Python-based data access](https://github.com/SASlabgroup/microSWIFTtelemetry)
 
 Raw data in the form of GPS and IMU time series is stored on the onboard SD card in `.dat` format in the `microSWIFT/data/` directory.
-
+ 
 ### Repository Structure
 
 ```bash
