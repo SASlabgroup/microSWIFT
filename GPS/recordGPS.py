@@ -15,6 +15,7 @@ from datetime import datetime
 import time as t
 import pynmea2
 from time import sleep
+import threading
 
 # Raspberry pi GPIO
 import RPi.GPIO as GPIO
@@ -51,8 +52,8 @@ GPIO.setwarnings(False)
 GPIO.setup(gpsGPIO,GPIO.OUT)
 GPIO.output(gpsGPIO,GPIO.HIGH) #set GPS enable pin high to turn on and start acquiring signal
 
-
 def recordGPS(end_time):
+    
     # GPS has not been initialized yet
     gps_initialized = False
 
@@ -165,7 +166,7 @@ def recordGPS(end_time):
                     newline=ser.readline().decode()
                     gps_out.write(newline)
                     gps_out.flush()
-            
+
                     if "GPGGA" in newline:
                         gpgga = pynmea2.parse(newline,check=True)   #grab gpgga sentence and parse
                         #check to see if we have lost GPS fix, and if so, continue to loop start. a badValue will remain at this index
@@ -176,6 +177,14 @@ def recordGPS(end_time):
                             ipos+=1
                             continue
                         ipos+=1
+                        
+                        # remember last value for some infrequent transmissions to shore
+                        # store in /dev/shm for avoiding threading / locking problems
+                        # Writing to file, os.replace makes it an atomic operation
+                        with open("/dev/shm/GPS2", "w") as file:
+                            file.write("0,1," + newline)
+                        os.replace("/dev/shm/GPS2", "/dev/shm/GPS")
+                        
                     elif "GPVTG" in newline:
                         ivel+=1
                     

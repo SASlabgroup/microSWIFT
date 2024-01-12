@@ -22,6 +22,9 @@ import numpy as np
 import RPi.GPIO as GPIO
 import time as t
 import serial
+import time
+import bz2
+import re
 
 #Define Config file name and load file
 configFilename = r'/home/pi/microSWIFT/utils/Config.dat'
@@ -158,24 +161,50 @@ def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, la
         nowEpoch = now.timestamp() # unpack with datetime.fromtimestamp(nowEpoch)  
 
         # create formatted struct with all payload data
-        payload_size = struct.calcsize('<sbbheee42eee42b42b42b42b42Bffeeef') 
-        payload_data = (struct.pack('<sbbh', str(payload_type).encode(), sensor_type, port, payload_size) + 
-                        struct.pack('<eee', Hs,Tp,Dp) +
-                        struct.pack('<42e', *E) +
-                        struct.pack('<e', fmin) +
-                        struct.pack('<e', fmax) +
-                        struct.pack('<42b', *a1_8bit) +
-                        struct.pack('<42b', *b1_8bit) +
-                        struct.pack('<42b', *a2_8bit) +
-                        struct.pack('<42b', *b2_8bit) +
-                        struct.pack('<42B', *check_8bit) +
-                        struct.pack('<f', lat) +
-                        struct.pack('<f', lon) +
-                        struct.pack('<e', temp) + 
-                        struct.pack('<e', salinity) +
-                        struct.pack('<e', volt) +
-                        struct.pack('<f', nowEpoch) # float saves 4 bytes but looses +/- 1s precision 
-                        )
+        # payload_size = struct.calcsize('<sbbheee42eee42b42b42b42b42Bffeeef') 
+        # payload_data = (struct.pack('<sbbh', str(payload_type).encode(), sensor_type, port, payload_size) + 
+        #                struct.pack('<eee', Hs,Tp,Dp) +
+        #                struct.pack('<42e', *E) +
+        #                struct.pack('<e', fmin) +
+        #                struct.pack('<e', fmax) +
+        #                struct.pack('<42b', *a1_8bit) +
+        #                struct.pack('<42b', *b1_8bit) +
+        #                struct.pack('<42b', *a2_8bit) +
+        #                struct.pack('<42b', *b2_8bit) +
+        #                struct.pack('<42B', *check_8bit) +
+        #                struct.pack('<f', lat) +
+        #                struct.pack('<f', lon) +
+        #                struct.pack('<e', temp) + 
+        #                struct.pack('<e', salinity) +
+        #                struct.pack('<e', volt) +
+        #                struct.pack('<f', nowEpoch) # float saves 4 bytes but looses +/- 1s precision 
+        #                )
+        payload_data = ""
+        payload_data += str(payload_type) + ','
+        payload_data += str(sensor_type) + ','
+        payload_data += str(Hs) + ','
+        payload_data += str(Tp) + ','
+        payload_data += str(Dp) + ','
+        payload_data += str(fmin) + ','
+        payload_data += str(fmax) + ',\n'
+        payload_data += str(E) + ',\n'
+        payload_data += str(a1) + ',\n'
+        payload_data += str(b1) + ',\n'
+        payload_data += str(a2) + ',\n'
+        payload_data += str(b2) + ',\n'
+        payload_data += str(check_8bit) + ',\n'
+        # no, all were transported, just compressed to a byte each
+        # payload_data += str(*a1_8bit) + ','
+        # payload_data += str(*b1_8bit) + ','
+        # payload_data += str(*a2_8bit) + ','
+        # payload_data += str(*b2_8bit) + ','
+        # payload_data += str(*check_8bit) + ','
+        payload_data += str(lat) + ','
+        payload_data += str(lon) + ','
+        payload_data += str(temp) + ','
+        payload_data += str(salinity) + ','
+        payload_data += str(volt) + ','
+        payload_data += str(nowEpoch)
 
     else: 
         logger.info('invalid sensor type: {}'.format(sensor_type))
@@ -187,15 +216,21 @@ def createTX(Hs, Tp, Dp, E, f, a1, b1, a2, b2, check, u_mean, v_mean, z_mean, la
     if os.path.exists(TX_fname): # support secondary estimate
         TX_fname = dataDir+floatID+'_TX_'+"{:%d%b%Y_%H%M%SUTC}".format(now)+'_2.dat'
 
+    if sensor_type == 52:
+        # append the filename to the payload, so it can be written to file on receiving end
+        payload_data += ',\n' + TX_fname.split('/')[-1]
+        
     # Open the TX file and start to write to it    
-    with open(TX_fname, 'wb') as file:
+    # RS: not binary data, but ascii
+    # with open(TX_fname, 'wb') as file:
+    with open(TX_fname, 'w') as file:
         logger.info('create telemetry file: {}'.format(TX_fname))
         # Write the binary packed data to a file 
         logger.info('writing data to file')
         file.write(payload_data)
         logger.info('done')
         file.flush()
-
+    
     logger.info('----------------------------------------------------')
 
     return TX_fname, payload_data
@@ -231,6 +266,8 @@ def get_response(ser,command, response='OK'):
 #Returns signal quality, default range is 0-5. Returns -1 for an error or no response
 #Example modem output: AT+CSQF +CSQF:0 OK    
 def sig_qual(ser, command='AT+CSQ'):
+    # FIXME hardcoded to return 4 for now - test later for >3 for 3 samples
+    return 4
     ser.flushInput()
     ser.write((command+'\r').encode())
     logger.info('command = {} '.format(command))
@@ -250,8 +287,69 @@ def sig_qual(ser, command='AT+CSQ'):
         logger.info('Unexpected response: {}'.format(r))  
         return -1
 
-def initModem():
+def initModem_atStart():
+    # almost 1:1 copy from initModem(), but now initialized RDF900 to correct NodeID and DestinationID (broadcast)
+    ser=None
+    
+    #open serial port
+    logger.info('opening serial port with modem at {0} on port {1}...'.format(modemBaud,modemPort))
+    try:
+        ser=serial.Serial(modemPort,modemBaud,timeout=timeout)
+        logger.info('serial port opened successfully')
+    except serial.SerialException as e:
+        logger.info('unable to open serial port: {}'.format(e))
+        return ser, False
+    except Exception as e:
+        logger.info('unable to open serial port')
+        logger.info(e)
+        return ser, False
+    
+    hn = os.uname().nodename
+    if hn.startswith("buoy"):
+        logger.info('setting radio link numbers for ' + hn)
+        # no activity for more than 1.5 sec
+        time.sleep(1.75)
+        ser.write(b'+++')
+        # no activity for more than 1.5 sec
+        time.sleep(1.75)
+        line = ser.readline()
+        
+        string = 'ATS10=' + hn[4:] + '\n\r'
+        logger.info('setting radio - step 1: ' + string)
+        ser.write(string.encode())
+        time.sleep(0.25)
+        line = ser.readline()
+        logger.info('setting radio - result: ' + line.decode())
+        # logger.info('setting radio - step 3: setting to broadcast')
+        # ser.write(b'ATS11=65535\n\r')
+        logger.info('setting radio - step 2: destination ID is beach station')
+        ser.write(b'ATS11=1\n\r')
+        time.sleep(0.25)
+        line = ser.readline()
+        logger.info('setting radio - result: ' + line.decode())
+        logger.info('setting radio - step 3: set to full power')
+        ser.write(b'ATS12=30\n\r')
+        time.sleep(0.25)
+        line = ser.readline()
+        logger.info('setting radio - result: ' + line.decode())
+        logger.info('setting radio - step 4: writing to EEPROM')
+        ser.write(b'AT&W')
+        line = ser.readline()
+        logger.info('setting radio - result: ' + line.decode())
+        logger.info('setting radio - step 5: going to reboot radio')
+        ser.write(b'ATZ\n\r')
+        time.sleep(0.25)
+        line = ser.readline()
+        logger.info('setting radio - result: ' + line.decode())
+        logger.info('setting radio - step 6: radio rebooted: ' + line.decode())
+        
+    logger.info('setting radio - all steps done')
+    return ser, True
 
+
+def initModem():
+    
+    ser=None
     # Turn on the pin to power on the modem
     try:
         GPIO.setup(modemGPIO, GPIO.OUT)
@@ -275,7 +373,11 @@ def initModem():
         logger.info('unable to open serial port')
         logger.info(e)
         return ser, False
-
+        
+    if True:
+        logger.info('setting radio - step 5')
+        return ser, True
+    
     logger.info('command = AT')
     if get_response(ser,'AT'): #send AT command
         logger.info('command = AT&F')
@@ -381,10 +483,11 @@ def transmit_bin(ser,msg):
 def transmit_ascii(ser,msg):
  
     msg_len=len(msg)
-    
-    if msg_len > 340: #check message length
-        logger.info('message too long. must be 340 bytes or less')
-        return False
+
+    # not in our case
+    #if msg_len > 340: #check message length
+    #    logger.info('message too long. must be 340 bytes or less')
+    #    return False
     
     if not msg.isascii(): #check for ascii text
         logger.info('message must be ascii text')
@@ -392,8 +495,12 @@ def transmit_ascii(ser,msg):
     
     try:  
         ser.flushInput()
-        logger.info('command = AT+SBDWT')
-        ser.write(b'AT+SBDWT\r') #command to write text to modem buffer
+        # logger.info('command = AT+SBDWT')
+        # ser.write(b'AT+SBDWT\r') #command to write text to modem buffer
+        logger.info('getting ready')
+        # add newline at end...
+        # ser.write(b'getting ready\r')
+        ser.write(b'getting ready\r\n')
         t.sleep(0.25)
     except serial.SerialException as e:
         logger.info('serial error: {}'.format(e))
@@ -402,11 +509,22 @@ def transmit_ascii(ser,msg):
         logger.info('error: {}'.format(e))
         return False
     
-    r = ser.read_until(b'READY') #block until READY message is received
+    # now using async communication ...
+    # r = ser.read_until(b'READY') #block until READY message is received
+    r = b'READY' #block until READY message is received
     if b'READY' in r: #only pass bytes if modem is ready, otherwise it has timed out
         logger.info('response = READY')
         ser.flushInput()
-        ser.write((msg + '\r').encode()) #pass bytes to modem. Must have carriage return
+        # no encode ...
+        # ser.write((msg + '\r\n').encode()) #pass bytes to modem. Must have carriage return
+        
+        compressed = bz2.compress(msg.encode())
+        logger.info(" bz2 would have reduced size from / to : " + str(len(msg)) + " / " + str(len(compressed)))
+        
+        ser.write(('payload: ' + msg + '\r\n').encode()) #pass bytes to modem. Must have carriage return
+        return True
+    
+        # below code seems really modem specific, cut out.
         t.sleep(0.25)
         logger.info('passing message to modem buffer')
         r=ser.read(msg_len+9).decode() #read response to get result code (0 for successful save in buffer or 1 for fail)
@@ -415,6 +533,10 @@ def transmit_ascii(ser,msg):
             r=r[index:index+1] 
             logger.info('response = {}'.format(r))        
             if r == '0':
+                # short cut the code avoid asking for a sending receipt
+                logger.info('looks all good')
+                return True
+            
                 logger.info('command = AT+SBDIX')
                 ser.flushInput()
                 ser.write(b'AT+SBDIX\r') #start extended Iridium session (transmit)
@@ -526,7 +648,8 @@ def send_microSWIFT_50(payload_data, timeout):
                     while issent == False:
                         if datetime.utcnow() < timeout:
                             logger.info('Sending {} packet. Retry {}'.format(ordinal[i], retry))
-                            issent  = transmit_bin(ser,message[i])            
+                            # issent  = transmit_bin(ser,message[i])            
+                            issent  = transmit_ascii(ser,message[i])
                             retry += 1
                         else:
                             logger.info('Send SBD timeout. Message not sent')
@@ -627,7 +750,8 @@ def send_microSWIFT_51(payload_data, timeout):
                 issent  = False
                 while issent == False and datetime.utcnow() < timeout:
                     logger.info('Sending packet. Retry {}'.format(retry))
-                    issent  = transmit_bin(ser, packet0)            
+                    # issent  = transmit_bin(ser, packet0)            
+                    issent  = transmit_ascii(ser, packet0)
                     retry += 1
                 #increment message counter for each completed message
                 if id >= 99:
@@ -672,21 +796,22 @@ def send_microSWIFT_52(payload_data, timeout): #TODO: finish working on!
         logger.info('Error: payload data is empty')
         successful_send = False
         return successful_send
+
+    # send in ascii for time being
+    #if payload_size != payload_size_exp:
+    #    logger.info(f'Error: unexpected number of bytes in payload data. Expected bytes: {payload_size_exp}, bytes received: {payload_size}')
+    #    successful_send = False
+    #    return successful_send
     
-    if payload_size != payload_size_exp:
-        logger.info(f'Error: unexpected number of bytes in payload data. Expected bytes: {payload_size_exp}, bytes received: {payload_size}')
-        successful_send = False
-        return successful_send
+    ##split up payload data into packets    
+    #index = 0 #byte index
+    #packet_type = 0 #single packet
     
-    #split up payload data into packets    
-    index = 0 #byte index
-    packet_type = 0 #single packet
-    
-    #packet to send
-    header = str(packet_type).encode('ascii') #packet type as as ascii number
-    sub_header0 = str(','+str(id)+','+str(index)+','+str(payload_size)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
-    payload_bytes0 = payload_data[index:payload_size_exp] #data bytes for packet
-    packet0 = header + sub_header0 + payload_bytes0 
+    ##packet to send
+    #header = str(packet_type).encode('ascii') #packet type as as ascii number
+    #sub_header0 = str(','+str(id)+','+str(index)+','+str(payload_size)+':').encode('ascii') # ',<id>,<start-byte>,<total-bytes>:'
+    #payload_bytes0 = payload_data[index:payload_size_exp] #data bytes for packet
+    #packet0 = header + sub_header0 + payload_bytes0 
     
     while datetime.utcnow() < timeout:
     
@@ -721,7 +846,8 @@ def send_microSWIFT_52(payload_data, timeout): #TODO: finish working on!
                 issent  = False
                 while issent == False and datetime.utcnow() < timeout:
                     logger.info('Sending packet. Retry {}'.format(retry))
-                    issent  = transmit_bin(ser, packet0)            
+                    # issent  = transmit_bin(ser, packet0)            
+                    issent  = transmit_ascii(ser, payload_data)
                     retry += 1
                 #increment message counter for each completed message
                 if id >= 99:
@@ -752,6 +878,132 @@ def send_microSWIFT_52(payload_data, timeout): #TODO: finish working on!
     logger.info('-----------------------------------------------------------')
 
     return successful_send
+
+def send_GPS(payload_loc, timeout):
+    logger.info('---------------sendSBD.send_locationand_health-------------')
+    logger.info('sending location and health')
+    
+    global id
+    
+    ser, modem_initialized = initModem()
+
+    successful_send = False
+    if datetime.utcnow() < timeout:
+        if not modem_initialized:
+            logger.info('Modem not initialized')
+            GPIO.output(modemGPIO,GPIO.LOW) #power off modem
+        
+        logger.info('Sending location packet.')
+        payload_data = payload_loc.rstrip() + ',' + floatID
+        issent  = transmit_ascii(ser, payload_data)
+        
+        # Final print statement that it sent
+        logger.info('Sent SBD successfully')      
+        #turn off modem
+        logger.info('Powering down modem')    
+        GPIO.output(modemGPIO,GPIO.LOW)
+        successful_send = True
+        
+        logger.info('-----------------------------------------------------------')
+    
+    return successful_send
+
+def send_health(payload_health, timeout):
+    logger.info('---------------sendSBD.send_health----------------------')
+    logger.info('sending location and health')
+    
+    global id
+
+    successful_send = False
+    if datetime.utcnow() < timeout:
+        ser, modem_initialized = initModem()
+        
+        if not modem_initialized:
+            logger.info('Modem not initialized')
+            GPIO.output(modemGPIO,GPIO.LOW) #power off modem
+
+        rssi='toberemoved'
+        # ## following code doesn't work in Async mode for out RDF900us radios
+        # logger.info('getting radio link numbers')
+        # # no activity for more than 1.5 sec
+        # time.sleep(1.75)
+        # ser.write(b'+++')
+        # # no activity for more than 1.5 sec
+        # time.sleep(1.75)
+        # line = ser.readline()
+        
+        # ser.write(b'AT&T=RSSI\n\r')
+        # # first line is repeating the command
+        # line = ser.readline()
+        # # this is the output we want
+        # rssi = ser.readline().decode("UTF-8")
+        # time.sleep(0.15)
+        # logger.info('got this')
+        # logger.info(rssi)
+        # logger.info('got this')
+        # rssi = rssi.replace('L/R RSSI:','rssi=')
+        # rssi = rssi.replace('L/R noise:','noise=')
+        # rssi = rssi.replace('pkts:','pkts=')
+        # rssi = re.sub(r"=\s+","=",rssi)
+        # rssi = re.sub(r"\s+",",",rssi)
+        # rssi = rssi.rstrip()
+        # # 'L/R RSSI: 162/161  L/R noise: 59/28 pkts: 1870  txe=0 rxe=0 stx=0 srx=0 ecc=0/0 temp=29 dco=0\r\n'
+        # logger.info(rssi)
+        # logger.info('got this')
+        
+        # ser.write(b'AT&T\n\r')
+        # line = ser.readline()
+        # time.sleep(0.15)
+        
+        # ser.write(b'ATO\n\r')
+        # line = ser.readline()
+        
+        logger.info('Sending health packet.')
+        payload_data = rssi + payload_health.rstrip() + ',' + floatID
+        issent  = transmit_ascii(ser, payload_data)
+        
+        # Final print statement that it sent
+        logger.info('Sent SBD successfully')      
+        #turn off modem
+        logger.info('Powering down modem')    
+        GPIO.output(modemGPIO,GPIO.LOW)
+        successful_send = True
+        
+        logger.info('-----------------------------------------------------------')
+    
+    return successful_send, str(time.time()) + "," + rssi
+
+def send_location_and_health(payload_loc, payload_health):
+    logger.info('---------------sendSBD.send_locationand_health-------------')
+    logger.info('sending location and health')
+    
+    global id
+    
+    ser, modem_initialized = initModem()
+    
+    if not modem_initialized:
+        logger.info('Modem not initialized')
+        GPIO.output(modemGPIO,GPIO.LOW) #power off modem
+    
+    logger.info('Sending location packet.')
+    payload_data = payload_loc
+    issent  = transmit_ascii(ser, payload_data)
+
+    logger.info('Sending health packet.')
+    payload_data = payload_health
+    issent  = transmit_ascii(ser, payload_data)
+
+    # Final print statement that it sent
+    logger.info('Sent SBD successfully')      
+    #turn off modem
+    logger.info('Powering down modem')    
+    GPIO.output(modemGPIO,GPIO.LOW)
+    successful_send = True
+    
+    logger.info('-----------------------------------------------------------')
+    
+    return successful_send
+
 
 def sendSBD(ser, payload_data, next_start):
     import time

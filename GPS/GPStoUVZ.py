@@ -54,6 +54,11 @@ def GPStoUVZ(gpsfile):
                 lon.append(gpgga.longitude)
                 # construct a datetime from the year, month, date, and timestamp
                 dt = f'{ymd} {gpgga.timestamp}'  #.rstrip('0')
+
+                #RS: GPS string format is different - we have an additional +00:00, presumably for timezone info
+                if dt.endswith('+00:00'):
+                    dt = dt[0:-6]
+
                 if '.' not in dt: # if the datetime does not contain a float, append a trailing zero
                     dt += '.0'
                 time.append(datetime.strptime(dt,'%d%b%Y %H:%M:%S.%f'))

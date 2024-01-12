@@ -18,8 +18,10 @@ from time import sleep
 import RPi.GPIO as GPIO
 
 # IMU sensor imports
-import IMU.adafruit_fxos8700_microSWIFT
-import IMU.adafruit_fxas21002c_microSWIFT
+# import IMU.adafruit_fxos8700_microSWIFT
+# import IMU.adafruit_fxas21002c_microSWIFT
+from adafruit_lsm6ds.lsm6dsox import LSM6DSOX as LSM6DS
+from adafruit_lis3mdl import LIS3MDL
 
 # Configuration imports
 from utils.config3 import Config
@@ -68,9 +70,11 @@ def recordIMU(end_time):
         logger.info('power on IMU')
         GPIO.output(imu_gpio,GPIO.HIGH)
         i2c = busio.I2C(board.SCL, board.SDA)
-        fxos = IMU.adafruit_fxos8700_microSWIFT.FXOS8700(i2c, accel_range=0x00)
-        fxas = IMU.adafruit_fxas21002c_microSWIFT.FXAS21002C(i2c, gyro_range=500)
-
+        # fxos = IMU.adafruit_fxos8700_microSWIFT.FXOS8700(i2c, accel_range=0x00)
+        # fxas = IMU.adafruit_fxas21002c_microSWIFT.FXAS21002C(i2c, gyro_range=500)
+        accel_gyro = LSM6DS(i2c)
+        mag = LIS3MDL(i2c)
+        
         # Sleep to start recording at same time as GPS
         sleep(5.1)
         
@@ -93,9 +97,12 @@ def recordIMU(end_time):
             while datetime.utcnow().minute + datetime.utcnow().second/60 < end_time and isample < imu_samples:
                 # Get values from IMU
                 try:
-                    accel_x, accel_y, accel_z = fxos.accelerometer
-                    mag_x, mag_y, mag_z = fxos.magnetometer
-                    gyro_x, gyro_y, gyro_z = fxas.gyroscope
+                    # accel_x, accel_y, accel_z = fxos.accelerometer
+                    # mag_x, mag_y, mag_z = fxos.magnetometer
+                    # gyro_x, gyro_y, gyro_z = fxas.gyroscope
+                    accel_x, accel_y, accel_z = accel_gyro.acceleration
+                    gyro_x, gyro_y, gyro_z = accel_gyro.gyro
+                    mag_x, mag_y, mag_z = mag.magnetic
                 except Exception as e:
                     logger.info(e)
                     logger.info('error reading IMU data')

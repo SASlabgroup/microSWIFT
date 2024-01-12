@@ -32,7 +32,7 @@
 # ========================== Logging Parameters =================
 [Loggers]
 #where to put logs
-logDir=/home/pi/microSWIFT/logs/ 
+logDir=/home/microswift/microswift/microSWIFT/logs/ 
 
 # Set the default logging level.
 # This is used in any module which does not specify a level
@@ -51,7 +51,7 @@ DefaultLogLevel=INFO
 #=============== micoSWIFT System Parameters ===============
 [System]
 #data directory
-dataDir=/home/pi/microSWIFT/data/
+dataDir=/home/microswift/microswift/microSWIFT/data/
 
 #where to send data for offloading raw
 shipIP=192.168.0.178
@@ -69,20 +69,22 @@ payloadType=7
 badValue=999
 
 #length of burst in seconds
-burst_seconds=2400
+burst_seconds=1150
 
 #minute of the hour on which to start the burst
 burst_time=0
 
 #number of minutes between bursts (12=5x6, 15=4x6, 20=3x6, 30=2x6, 60=1x6)
-burst_interval=60
+burst_interval=20
 
 port=6
 numCoef=42
 #======================== Iridium Parameters =======================
 [Iridium]
 port=/dev/ttyUSB0
-baud=19200
+# baud=19200
+# baud=57600
+baud=115200
 modemGPIO=16
 #interval of call (minutes)
 call_interval=60

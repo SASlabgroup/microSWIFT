@@ -86,7 +86,17 @@ def collateIMUandGPS(IMU,GPS):
     minLen = np.min(GPSlens)
 
     for key in GPS.keys()-['time']:
-        GPSintp[key] = np.interp(relTimeIMU,relTimeGPS[:minLen],GPS[key][:minLen]) # interpolate GPS onto IMU
+        lt=len(relTimeGPS[:minLen])
+        gl=len(GPS[key][:minLen])
+        logger.info(f'debug: array lengths are {lt} and {gl}')
+        if lt == gl:
+            GPSintp[key] = np.interp(relTimeIMU,relTimeGPS[:minLen],GPS[key][:minLen]) # interpolate GPS onto IMU
+        else:
+            # fill with dummy values, 999 is badValue (not imported here)
+            GPSintp[key] = []
+            for i in relTimeIMU:
+                GPSintp[key].append(999)
+                
         NaNbools.append(~np.isnan(GPSintp[key])) # record any NaNs as False
 
     GPSintp.update({'time':IMUcrop['time']}) # update new GPS dict with datetime 
