@@ -35,7 +35,11 @@ diff --git a/IMU/recordIMU.py b/IMU/recordIMU.py
 ### Operational Notes - How to upload this file
 1. connect router to laptop as for reading out the data
 2. setup laptop for password-less login to buoys (via ssh-key)
-3. scp -P2233 recordIMU.py microswift@192.168.0.<#bouy>:microswift/microSWIFT/IMU
+3. get the new code, point your browser to
+   https://github.com/SASlabgroup/microSWIFT/tree/UVic
+   change into the IMU directory and click on the recordIMU.py file
+4. click on "RAW" on the left and save the file to your laptop   
+5. scp -P2233 recordIMU.py microswift@192.168.0.<#bouy>:microswift/microSWIFT/IMU
 
 The new default of +/-8g fo rthe accelerator is uploaded in the github
 repository.
