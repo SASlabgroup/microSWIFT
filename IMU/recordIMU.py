@@ -20,6 +20,7 @@ import RPi.GPIO as GPIO
 # IMU sensor imports
 # import IMU.adafruit_fxos8700_microSWIFT
 # import IMU.adafruit_fxas21002c_microSWIFT
+from adafruit_lsm6ds import AccelRange
 from adafruit_lsm6ds.lsm6dsox import LSM6DSOX as LSM6DS
 from adafruit_lis3mdl import LIS3MDL
 
@@ -73,6 +74,7 @@ def recordIMU(end_time):
         # fxos = IMU.adafruit_fxos8700_microSWIFT.FXOS8700(i2c, accel_range=0x00)
         # fxas = IMU.adafruit_fxas21002c_microSWIFT.FXAS21002C(i2c, gyro_range=500)
         accel_gyro = LSM6DS(i2c)
+        accel_gyro.accelerometer_range = AccelRange.RANGE_8G
         mag = LIS3MDL(i2c)
         
         # Sleep to start recording at same time as GPS
