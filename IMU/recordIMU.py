@@ -13,14 +13,16 @@ import numpy as np
 import logging
 from logging import *
 from time import sleep
+import subprocess
 
 # Raspberry pi inputs
 import RPi.GPIO as GPIO
 
 # IMU sensor imports
-# import IMU.adafruit_fxos8700_microSWIFT
-# import IMU.adafruit_fxas21002c_microSWIFT
 from adafruit_lsm6ds import AccelRange
+from adafruit_lsm6ds import GyroRange
+from adafruit_lsm6ds import Rate
+from adafruit_lsm6ds import AccelHPF
 from adafruit_lsm6ds.lsm6dsox import LSM6DSOX as LSM6DS
 from adafruit_lis3mdl import LIS3MDL
 
@@ -46,8 +48,15 @@ burst_seconds=config.getInt('System', 'burst_seconds')
 bad = config.getInt('System', 'badValue')
 
 #IMU parameters
-imuFreq=config.getFloat('IMU', 'imuFreq')
-imu_samples = imuFreq*burst_seconds
+# RS May24 Start
+# imuFreq=config.getFloat('IMU', 'IMU_Rate')
+IMU_Rate=config.getString('IMU', 'imuRate')
+IMU_accRg = config.getString('IMU', 'imuAccelRange')
+IMU_gyrRg = config.getString('IMU', 'imuGyroRange')
+IMU_accHPF = config.getString('IMU', 'imuAccelHPF')
+# RS May24 End
+
+# imu_samples = imuFreq*burst_seconds
 imu_gpio=config.getInt('IMU', 'imu_gpio')
 
 #initialize IMU GPIO pin as modem on/off control
@@ -71,11 +80,94 @@ def recordIMU(end_time):
         logger.info('power on IMU')
         GPIO.output(imu_gpio,GPIO.HIGH)
         i2c = busio.I2C(board.SCL, board.SDA)
-        # fxos = IMU.adafruit_fxos8700_microSWIFT.FXOS8700(i2c, accel_range=0x00)
-        # fxas = IMU.adafruit_fxas21002c_microSWIFT.FXAS21002C(i2c, gyro_range=500)
         accel_gyro = LSM6DS(i2c)
-        accel_gyro.accelerometer_range = AccelRange.RANGE_8G
-        mag = LIS3MDL(i2c)
+        # RS May24 Start
+
+        rs=512
+        myRate=Rate.RATE_104_HZ
+        if IMU_Rate == "RATE_SHUTDOWN":
+            myRate=Rate.RATE_SHUTDOWN
+            imuRate=0
+        if IMU_Rate == "RATE_1_6_HZ":
+            myRate=Rate.RATE_1_6_HZ
+            imuRate=1.6
+        if IMU_Rate == "RATE_12_5_HZ":
+            myRate=Rate.RATE_12_5_HZ
+            imuRate=12.5
+        if IMU_Rate == "RATE_26_HZ":
+            myRate=Rate.RATE_26_HZ
+            imuRate=26
+            rs=256
+        if IMU_Rate == "RATE_52_HZ":
+            myRate=Rate.RATE_52_HZ
+            imuRate=52
+            rs=128
+        if IMU_Rate == "RATE_104_HZ":
+            myRate=Rate.RATE_104_HZ
+            imuRate=104
+            rs=64
+        if IMU_Rate == "RATE_208_HZ":
+            myRate=Rate.RATE_208_HZ
+            imuRate=208
+            rs=32
+        if IMU_Rate == "RATE_416_HZ":
+            myRate=Rate.RATE_416_HZ
+            imuRate=416
+            rs=16
+        if IMU_Rate == "RATE_833_HZ":
+            myRate=Rate.RATE_833_HZ
+            imuRate=833
+            rs=8
+        if IMU_Rate == "RATE_1_66K_HZ":
+            myRate=Rate.RATE_1_66K_HZ
+            imuRate=1660
+            rs=4
+        if IMU_Rate == "RATE_3_33K_HZ":
+            myRate=Rate.RATE_3_33K_HZ
+            imuRate=3330
+            rs=2
+        if IMU_Rate == "RATE_6_66K_HZ":
+            myRate=Rate.RATE_6_66K_HZ
+            imuRate=6660
+            rs=1        
+        # AccelRange
+        myAccelRange=AccelRange.RANGE_8G
+        #if IMU_accRg == "RANGE_2G":
+        #    myAccelRange=AccelRange.RANGE_2G
+        #if IMU_accRg == "RANGE_4G":
+        #    myAccelRange=AccelRange.RANGE_4G
+        #if IMU_accRg == "RANGE_8G":
+        #    myAccelRange=AccelRange.RANGE_8G
+        #if IMU_accRg == "RANGE_16G":
+        #    myAccelRange=AccelRange.RANGE_16G
+        
+        myGyroRange=GyroRange.RANGE_2000_DPS
+        #if IMU_gyrRg == "RANGE_125_DPS":
+        #    myGyroRange=GyroRange.RANGE_125_DPS
+        #if IMU_gyrRg == "RANGE_500_DPS":
+        #    myGyroRange=GyroRange.RANGE_500_DPS
+        #if IMU_gyrRg == "RANGE_1000_DPS":
+        #    myGyroRange=GyroRange.RANGE_1000_DPS
+        #if IMU_gyrRg == "RANGE_2000_DPS":
+        #    myGyroRange=GyroRange.RANGE_2000_DPS
+        
+        #myAccelHPF=AccelHPF.SLOPE
+        #if IMU_accHPF == "SLOPE":
+        #    myAccelHPF=AccelHPF.SLOPE
+        #if IMU_accHPF == "HPF_DIV100":
+        #    myAccelHPF=AccelHPF.HPF_DIV100
+        #if IMU_accHPF == "HPF_DIV9":
+        #    myAccelHPF=AccelHPF.HPF_DIV9
+        #if IMU_accHPF == "HPF_DIV400":
+        #    myAccelHPF=AccelHPF.HPF_DIV400
+        
+        accel_gyro.accelerometer_range = myAccelRange
+        accel_gyro.gyro_range = myGyroRange
+        accel_gyro.accelerometer_data_rate = myRate
+        accel_gyro.gyro_data_rate = myRate
+        # accel_gyro.high_pass_filter = myAccelHPF
+        # RS May24 mag = LIS3MDL(i2c)
+        # RS May24 End
         
         # Sleep to start recording at same time as GPS
         sleep(5.1)
@@ -83,7 +175,12 @@ def recordIMU(end_time):
         # return initialized values
         imu_initialized = True
 
-        logger.info('IMU initialized')
+        #logger.info('IMU initialized : {}' % str(accel_gyro))
+        logger.info('IMU initialized : %s' % str(accel_gyro.accelerometer_range))
+        logger.info('IMU initialized : %s' % str(accel_gyro.gyro_range))
+        logger.info('IMU initialized : %s' % str(accel_gyro.accelerometer_data_rate))
+        logger.info('IMU initialized : %s' % str(accel_gyro.gyro_data_rate))
+        logger.info('IMU initialized : %s' % str(accel_gyro.high_pass_filter))
 
         ## --------------- Record IMU ----------------------
         #create new file for to record IMU to 
@@ -91,45 +188,32 @@ def recordIMU(end_time):
         IMUdataFilename = dataDir + floatID + '_IMU_'+'{:%d%b%Y_%H%M%SUTC.dat}'.format(datetime.utcnow())
         logger.info('file name: {}'.format(IMUdataFilename))
         logger.info('starting IMU burst at {}'.format(datetime.now()))
-            
+        
         # Open the new IMU data file for logging
-        with open(IMUdataFilename, 'w',newline='\n') as imu_out:
-            logger.info('open file for writing: {}'.format(IMUdataFilename))
-            isample=0
-            while datetime.utcnow().minute + datetime.utcnow().second/60 < end_time and isample < imu_samples:
-                # Get values from IMU
-                try:
-                    # accel_x, accel_y, accel_z = fxos.accelerometer
-                    # mag_x, mag_y, mag_z = fxos.magnetometer
-                    # gyro_x, gyro_y, gyro_z = fxas.gyroscope
-                    accel_x, accel_y, accel_z = accel_gyro.acceleration
-                    gyro_x, gyro_y, gyro_z = accel_gyro.gyro
-                    mag_x, mag_y, mag_z = mag.magnetic
-                except Exception as e:
-                    logger.info(e)
-                    logger.info('error reading IMU data')
+        logger.info('open file for writing: {}'.format(IMUdataFilename))
+        isample=0
 
-                # Get current timestamp
-                timestamp='{:%Y-%m-%d %H:%M:%S}'.format(datetime.utcnow())
+        req_samples = imuRate*(60*(end_time -
+                                   datetime.utcnow().minute) -
+                               datetime.utcnow().second)
+        if req_samples < 0:
+            req_samples = 0
+        
+        result = subprocess.run(["/home/microswift/microswift/microSWIFT/cpp/minimu9-ahrs/minimu9-ms2",
+                                 "--mode", "raw",
+                                 "--sample",  str(int(req_samples)),
+                                 "--output_file", str(IMUdataFilename),
+                                 "--freq_int", str(myRate)],
+                                capture_output = True, text = True)
 
-                # Write data and timestamp to file
-                imu_out.write('%s,%f,%f,%f,%f,%f,%f,%f,%f,%f\n' %(timestamp,accel_x,accel_y,accel_z,mag_x,mag_y,mag_z,gyro_x,gyro_y,gyro_z))
-                imu_out.flush()
-                
-                # Index up number of samples
-                isample = isample + 1
+        logger.info('output from minimu9: %s' % result.stdout.rsplit())
+        ri=int(result.stdout.rsplit()[2])
 
-                # hard coded sleep to control recording rate. NOT ideal but works for now    
-                sleep(0.065)
-            
-            # End of IMU sampling
-            logger.info('end burst')
-            logger.info('IMU samples {}'.format(isample)) 
-            logger.info('IMU ending burst at: {}'.format(datetime.now()))
-
-            # Turn IMU Off   
-            GPIO.output(imu_gpio,GPIO.LOW)
-            logger.info('power down IMU')
-
+        odr=(6667.+0.0015*float(ri)*6667.)/rs
+        logger.info('converts to output data rate ODR of {}:'.format(odr))
+        
+        GPIO.output(imu_gpio,GPIO.LOW)
+        logger.info('power down IMU')
+        
         # Return IMUdataFilename to main microSWIFT.py
         return IMUdataFilename, imu_initialized

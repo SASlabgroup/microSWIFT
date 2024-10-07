@@ -102,7 +102,32 @@ gps_frequency=4
 timeout=60
 #========================== IMU Parameters ========================
 [IMU]
-imuFreq=12
+# imuFreq=12
+# RS May24 Start
+# AccelRange, possible Values: RANGE_2G, RANGE_4G, RANGE_8G, RANGE_16G
+# default / misconfigured: RANGE_4G
+#  in c++ code 8G is hardcoded for now
+imuAccelRange=RANGE_8G
+
+# GyroRange, possible Values: RANGE_125_DPS, RANGE_250_DPS, RANGE_500_DPS, RANGE_1000_DPS, RANGE_2000_DPS
+# default / misconfigured: RANGE_250_DPS
+#  in c++ code 2000 DPS hardcoded
+# imuGyroRange=RANGE_250_DPS
+
+# Rate, possible Values: RATE_SHUTDOWN, RATE_1_6_HZ, RATE_12_5_HZ, RATE_26_HZ, RATE_52_HZ, RATE_104_HZ,
+#                        RATE_208_HZ, RATE_416_HZ, RATE_833_HZ, RATE_1_66K_HZ, RATE_3_33K_HZ, RATE_6_66K_HZ, 
+# default / misconfigured: RATE_104_HZ
+#  in c++ configurable, tested intil 800Hz (gives readout of ~500Hz)
+# imuRate=RATE_12_5_HZ
+# imuRate=RATE_416_HZ
+imuRate=RATE_208_HZ
+
+# high pass filter for accelerometer, possible Values: SLOPE, HPF_DIV100, HPF_DIV9, HPF_DIV400
+# default / misconfigured: ??? - not set in code
+#  in c++ code not used so far
+# imuAccelHPF=SLOPE
+
+# RS May24 End
 imu_gpio=20
 
 #===================== Temperature Parameters =====================

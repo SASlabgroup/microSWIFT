@@ -140,7 +140,7 @@ def IMUtoXYZ(imufile,fs):
         for line in file:
             currentLine = line.strip('\n').rstrip('\x00').split(',')
             if currentLine[0] is not '':
-                timestamp.append(datetime.strptime(currentLine[0],'%Y-%m-%d %H:%M:%S'))
+                timestamp.append(datetime.strptime(currentLine[0],'%Y-%m-%d %H:%M:%S.%f'))
                 acc.append(list(map(float,currentLine[1:4])))  # acc = [ax,ay,az]
                 mag.append(list(map(float,currentLine[4:7])))  # mag = [mx,my,mz]
                 gyo.append(list(map(float,currentLine[7:10]))) # gyo = [gx,gy,gz]
@@ -207,13 +207,13 @@ def IMUtoXYZ(imufile,fs):
     masterTime = np.arange(t0,tf,dt).astype(datetime)
 
     # add milliseconds to each second of the rounded IMU timestamps:
-    timestampSorted_ms = add_ms_to_IMUtime(timestampSorted)
+    # timestampSorted_ms = add_ms_to_IMUtime(timestampSorted)
 
     #--Interpolate IMU onto master clock
     logger.info('Interpolating IMU onto master clock')
     # convert datetime ranges to a relative number of total seconds
     masterTimeSec = datetimearray2relativetime(masterTime)
-    imuTimeSec    = datetimearray2relativetime(timestampSorted_ms)
+    imuTimeSec    = datetimearray2relativetime(timestampSorted) # _ms)
 
     #interpolate
     accInterp = [np.interp(masterTimeSec,imuTimeSec,a) for a in accSorted]

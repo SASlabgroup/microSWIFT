@@ -8,5 +8,3 @@ design:
 For more information on the UVic version of the microSWIFT buoy, see
 [here](UVic.md).
 
-See [further modifications](more_mods.md) to track more modifications
-we applied later on.

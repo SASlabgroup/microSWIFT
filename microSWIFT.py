@@ -482,7 +482,43 @@ if __name__=="__main__":
     # GPS parameters
     GPS_fs = config.getInt('GPS', 'gps_frequency') #currently not used, hardcoded at 4 Hz (see init_gps function)
     # IMU parameters
-    IMU_fs = config.getFloat('IMU', 'imuFreq') #TODO: NOTE this has been changed to 12 from 12.5 (actual) to obtain proper # of pts in processing
+    # RS May24 Start
+    # IMU_fs = config.getFloat('IMU', 'imuFreq') #TODO: NOTE this has been changed to 12 from 12.5 (actual) to obtain proper # of pts in processing
+
+    IMU_fsStr = config.getString('IMU', 'imuRate')
+    IMU_fs=104
+    if IMU_fsStr == "RATE_SHUTDOWN":
+        IMU_fs=0
+    if IMU_fsStr == "RATE_1_6_HZ":
+        IMU_fs=1.6
+    if IMU_fsStr == "RATE_12_5_HZ":
+        IMU_fs=12.5
+    if IMU_fsStr == "RATE_26_HZ":
+        IMU_fs=26
+    if IMU_fsStr == "RATE_52_HZ":
+        IMU_fs=52
+    if IMU_fsStr == "RATE_104_HZ":
+        IMU_fs=104
+    if IMU_fsStr == "RATE_208_HZ":
+        IMU_fs=208
+    if IMU_fsStr == "RATE_416_HZ":
+        IMU_fs=416
+    if IMU_fsStr == "RATE_833_HZ":
+        IMU_fs=833
+    if IMU_fsStr == "RATE_1_66K_HZ":
+        IMU_fs=1660
+    if IMU_fsStr == "RATE_3_33K_HZ":
+        IMU_fs=3330
+    if IMU_fsStr == "RATE_6_66K_HZ":
+        IMU_fs=6660
+
+    IMU_accRg = config.getString('IMU', 'imuAccelRange')
+    IMU_gyrRg = config.getString('IMU', 'imuGyroRange')
+    IMU_accHPF = config.getString('IMU', 'imuAccelHPF')
+    
+    
+    
+    # RS May24 End
     
     #Compute number of bursts per hour
     num_bursts = int(60 / burst_int)
