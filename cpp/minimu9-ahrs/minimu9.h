@@ -49,9 +49,9 @@ namespace minimu9
     virtual float get_acc_scale() const;
     virtual float get_gyro_scale() const;
 
-    virtual vector read_acc();
-    virtual vector read_mag();
-    virtual vector read_gyro();
+    // virtual vector read_acc();
+    // virtual vector read_mag();
+    // virtual vector read_gyro();
 
     virtual void enable(uint16_t f);
     virtual void load_calibration();
