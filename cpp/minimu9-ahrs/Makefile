@@ -7,7 +7,7 @@ CPPFLAGS += -I. -Wall -Wextra -std=gnu++11 -O2 -g
 
 # Use the Eigen library.
 EIGEN_NAME = eigen3
-# CPPFLAGS += $(shell pkg-config --cflags $(EIGEN_NAME))
+CPPFLAGS += $(shell pkg-config --cflags $(EIGEN_NAME))
 
 # Use boost libraries
 LDLIBS += -lboost_program_options

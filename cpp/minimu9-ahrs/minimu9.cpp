@@ -272,7 +272,6 @@ void minimu9::handle::enable(uint16_t f)
 
 void minimu9::handle::load_calibration()
 {
-  /*
   wordexp_t expansion_result;
   wordexp("~/.minimu9-ahrs-cal", &expansion_result, 0);
 
@@ -288,7 +287,7 @@ void minimu9::handle::load_calibration()
   if (file.fail() || file.bad())
   {
     throw std::runtime_error("Failed to parse calibration file ~/.minimu9-ahrs-cal");
-  } */
+  }
 }
 
 bool minimu9::handle::data_available()
@@ -379,7 +378,6 @@ float minimu9::handle::get_gyro_scale() const
 
 void minimu9::handle::measure_offsets()
 {
-  /*
   // LSM303 accelerometer: 8 g sensitivity.  3.8 mg/digit; 1 g = 256.
   gyro_offset = vector::Zero();
   const int sampleCount = 32;
@@ -390,9 +388,8 @@ void minimu9::handle::measure_offsets()
     usleep(20 * 1000);
   }
   gyro_offset /= sampleCount;
-  */
 }
-/*
+
 vector minimu9::handle::read_mag()
 {
   read_mag_raw();
@@ -415,4 +412,3 @@ vector minimu9::handle::read_gyro()
   read_gyro_raw();
   return (vector_from_ints(&g) - gyro_offset) * get_gyro_scale();
 }
-*/

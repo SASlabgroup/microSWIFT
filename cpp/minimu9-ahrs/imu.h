@@ -32,9 +32,9 @@ public:
   // TODO: remove stuff below this point
 
   // Scaled readings
-  // virtual vector read_mag() = 0;  // In body coords, scaled to -1..1 range
-  // virtual vector read_acc() = 0;  // In body coords, with units = g
-  // virtual vector read_gyro() = 0; // In body coords, with units = rad/sec
+  virtual vector read_mag() = 0;  // In body coords, scaled to -1..1 range
+  virtual vector read_acc() = 0;  // In body coords, with units = g
+  virtual vector read_gyro() = 0; // In body coords, with units = rad/sec
   void read(){ read_mag(); read_acc(); read_gyro(); }
 
   virtual void measure_offsets() = 0;
@@ -42,6 +42,6 @@ public:
   virtual void load_calibration() = 0;
 
   useconds_t w;
-  // vector gyro_offset;
-  // int_vector mag_min, mag_max;
+  vector gyro_offset;
+  int_vector mag_min, mag_max;
 };
